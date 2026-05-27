@@ -1,11 +1,19 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { cn } from "@/lib/utils";
+
+import { Geist } from "next/font/google";
+
 import CTA from "./components/cta";
 import Footer from "./components/footer";
 import Navbar from "./components/navbar";
 
-export const metadata = {
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist",
+  display: "swap",
+});
+
+export const metadata: Metadata = {
   title: "SitesByKareem — High-Converting Websites",
   description:
     "I help businesses scale with high-converting websites built for performance, trust, and growth.",
@@ -17,11 +25,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={` antialiased bg-[#0c0909] text-white`}
-      >
-                <svg className="pointer-events-none absolute cursor-none"><filter id="grainy"><feTurbulence type="turbulence" baseFrequency="0.5"></feTurbulence><feColorMatrix type="saturate" values="0"></feColorMatrix></filter></svg>
+    <html lang="en" className={geist.variable}>
+      <body className="antialiased bg-[#0c0909] text-white">
+        <svg className="pointer-events-none absolute cursor-none">
+          <filter id="grainy">
+            <feTurbulence
+              type="turbulence"
+              baseFrequency="0.5"
+            />
+            <feColorMatrix
+              type="saturate"
+              values="0"
+            />
+          </filter>
+        </svg>
+
         <Navbar />
         {children}
         <CTA />
