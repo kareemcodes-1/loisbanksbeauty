@@ -82,7 +82,7 @@ function ProjectRow({
   };
 
   const content = (
-    <div className="flex flex-col justify-between h-full py-8 md:py-14 px-4 md:px-10">
+    <div className="flex flex-col justify-between py-8 md:py-14 px-4 md:px-10 h-full lg:h-[30rem]">
       {/* top row */}
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <span className="text-[0.7rem] sm:text-[0.75rem] font-medium text-[#9CA3AF] uppercase tracking-[0.12em]">
@@ -102,7 +102,7 @@ function ProjectRow({
 
       {/* title + desc */}
       <div className="flex-1 flex flex-col justify-center gap-4 md:gap-5">
-        <h2 className="text-white text-[2.2rem] sm:text-[3rem]  md:text-[4rem] tracking-[-0.03em]">
+        <h2 className="text-white text-[2.2rem] sm:text-[3rem] md:text-[4rem] tracking-[-0.03em]">
           {project.title}
         </h2>
 
@@ -114,29 +114,20 @@ function ProjectRow({
           {project.tags.map((tag) => (
             <span
               key={tag}
-              className="text-[0.6rem] sm:text-[0.65rem] font-normal tracking-[0.08em] uppercase
-                         text-white/70 bg-[#ffffff1a] border border-[#ffffff1a]
-                         rounded-full px-3 py-1"
+              className="
+                text-[0.6rem] sm:text-[0.65rem]
+                font-normal
+                tracking-[0.08em]
+                uppercase
+                text-white/70
+                bg-[#ffffff1a]
+                border border-[#ffffff1a]
+                rounded-full
+                px-3 py-1
+              "
             >
               {tag}
             </span>
-          ))}
-        </div>
-      </div>
-
-      {/* metrics */}
-      <div className="flex flex-col sm:flex-row gap-6 sm:gap-10 items-start sm:items-end justify-between mt-8">
-        <div className="flex gap-8 sm:gap-10">
-          {project.metrics.map((m, i) => (
-            <div key={i}>
-              <p className="text-white text-[1.6rem] sm:text-[2rem] md:text-[2.2rem] tracking-[-0.04em] leading-none">
-                {m.value}
-              </p>
-
-              <p className="text-[0.75rem] sm:text-[0.8rem] text-[#9CA3AF] mt-1 leading-[1.4] whitespace-pre-line">
-                {m.label}
-              </p>
-            </div>
           ))}
         </div>
       </div>
@@ -155,9 +146,18 @@ function ProjectRow({
         onMouseMove={handleMove}
         onMouseEnter={() => setVisible(true)}
         onMouseLeave={() => setVisible(false)}
-        className="relative grid grid-cols-1 md:grid-cols-2 gap-0 rounded-[1.5rem] md:rounded-[2rem] bg-[#1111118c] border border-[#1f1f1f] overflow-hidden"
+        className="
+          relative
+          flex flex-col
+          md:grid md:grid-cols-2
+          gap-0
+          rounded-[1.5rem] md:rounded-[2rem]
+          bg-[#1111118c]
+          border border-[#1f1f1f]
+          overflow-hidden
+        "
       >
-        {/* hover cursor */}
+        {/* Hover Cursor */}
         <div
           className="hidden md:flex absolute top-0 left-0 pointer-events-none z-50 transition-opacity duration-200"
           style={{
@@ -183,41 +183,43 @@ function ProjectRow({
           </div>
         </div>
 
-        {project.imageLeft ? (
-          <>
-            <div className="p-3 sm:p-4 md:p-0">
-              <div className="relative w-full h-[240px] sm:h-[320px] md:h-full min-h-[260px] md:min-h-[380px] overflow-hidden rounded-2xl">
-                <Image
-                  src={project.image}
-                  alt={project.client}
-                  fill
-                  className="object-cover transition-transform duration-500 ease-out hover:scale-[1.03]"
-                  quality={100}
-                />
-                <div className="absolute inset-0 bg-black/10" />
-              </div>
-            </div>
+        {/* IMAGE */}
+        <div
+          className={`
+            order-1
+            p-3 sm:p-4 md:p-0
+            ${
+              project.imageLeft
+                ? "md:order-1"
+                : "md:order-2"
+            }
+          `}
+        >
+          <div className="relative w-full h-[240px] sm:h-[320px] md:h-full min-h-[260px] md:min-h-[380px] overflow-hidden rounded-2xl">
+            <Image
+              src={project.image}
+              alt={project.client}
+              fill
+              className="object-cover transition-transform duration-500 ease-out hover:scale-[1.03]"
+              quality={100}
+            />
+            <div className="absolute inset-0 bg-black/10" />
+          </div>
+        </div>
 
-            <div>{content}</div>
-          </>
-        ) : (
-          <>
-            <div>{content}</div>
-
-            <div className="p-3 sm:p-4 md:p-0">
-              <div className="relative w-full h-[240px] sm:h-[320px] md:h-full min-h-[260px] md:min-h-[380px] overflow-hidden rounded-2xl">
-                <Image
-                  src={project.image}
-                  alt={project.client}
-                  fill
-                  className="object-cover transition-transform duration-500 ease-out hover:scale-[1.03]"
-                  quality={100}
-                />
-                <div className="absolute inset-0 bg-black/10" />
-              </div>
-            </div>
-          </>
-        )}
+        {/* CONTENT */}
+        <div
+          className={`
+            order-2
+            ${
+              project.imageLeft
+                ? "md:order-2"
+                : "md:order-1"
+            }
+          `}
+        >
+          {content}
+        </div>
       </Link>
     </AnimatedBorder>
   );

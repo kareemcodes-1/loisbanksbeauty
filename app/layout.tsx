@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+// @ts-ignore
 import "./globals.css";
 
 import { Geist } from "next/font/google";
@@ -14,7 +15,7 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "SitesByKareem — High-Converting Websites",
+  title: "SitesByKareem — High-Converting Websites For Service Businesses",
   description:
     "I help businesses scale with high-converting websites built for performance, trust, and growth.",
 };

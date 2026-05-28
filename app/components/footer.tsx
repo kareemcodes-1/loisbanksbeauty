@@ -6,6 +6,7 @@ import {
   FaFacebook,
   FaInstagram,
   FaLinkedin,
+  FaTiktok,
   FaTwitter,
 } from "react-icons/fa";
 
@@ -54,16 +55,16 @@ const Footer = () => {
                 href: "https://instagram.com/code.bykareem",
               },
               {
-                icon: FaFacebook,
-                href: "https://facebook.com",
+                icon: FaTiktok,
+                href: "https://www.tiktok.com/@codebykareem",
               },
               {
                 icon: FaTwitter,
-                href: "https://twitter.com",
+                href: "https://x.com/codebykareem",
               },
               {
                 icon: FaLinkedin,
-                href: "https://linkedin.com",
+                href: "https://www.linkedin.com/in/kareem-braimoh-66b5b7271/?originalSubdomain=ng",
               },
             ].map((social, i) => {
               const Icon = social.icon;
