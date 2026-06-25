@@ -1,67 +1,192 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
-import Stats from "./stats";
+import { useState, useEffect, useRef } from "react";
+import gsap from "gsap";
+import { SplitLines } from "../../components/animations/SplitLines";
+
+const slides = ["/hero.jpg", "/hero.jpg", "/hero.jpg"];
+
+const SLIDE_INTERVAL = 8000;
 
 export default function Hero() {
+  const [active, setActive] = useState(0);
+  const isAnimating = useRef(false);
+
+  const clipRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const imgRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const slideWrapperRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Refs for the orange progress fill inside each indicator
+  const progressRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const progressTweens = useRef<(gsap.core.Tween | null)[]>([]);
+
+  const revealSlide = (index: number) => {
+    const clip = clipRefs.current[index];
+    const img = imgRefs.current[index];
+    const wrapper = slideWrapperRefs.current[index];
+    if (!clip || !img || !wrapper) return;
+
+    gsap.set(wrapper, { zIndex: 10 });
+    gsap.set(clip, { clipPath: "inset(100% 0% 0% 0%)" });
+    gsap.set(img, { yPercent: -10 });
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        isAnimating.current = false;
+        slideWrapperRefs.current.forEach((w, i) => {
+          if (w && i !== index) gsap.set(w, { zIndex: 0 });
+        });
+      },
+    });
+
+    tl.to(clip, {
+      clipPath: "inset(0% 0% 0% 0%)",
+      duration: 1.2,
+      ease: "power4.inOut",
+    }).to(img, {
+      yPercent: 0,
+      duration: 1.2,
+      ease: "power4.inOut",
+    }, "<");
+  };
+
+  // Kick off progress animation for the active indicator
+  const startProgress = (index: number) => {
+    // Kill any running tweens
+    progressTweens.current.forEach((t) => t?.kill());
+
+    progressRefs.current.forEach((el, i) => {
+      if (!el) return;
+      if (i === index) {
+        // Reset to 0 width then animate to 100% over SLIDE_INTERVAL
+        gsap.set(el, { scaleX: 0, transformOrigin: "left center" });
+        progressTweens.current[i] = gsap.to(el, {
+          scaleX: 1,
+          duration: SLIDE_INTERVAL / 1000,
+          ease: "none",
+        });
+      } else {
+        // Non-active: collapse to 0
+        gsap.set(el, { scaleX: 0 });
+      }
+    });
+  };
+
+  useEffect(() => {
+    revealSlide(0);
+    startProgress(0);
+  }, []);
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      const next = (active + 1) % slides.length;
+      handleSlideChange(next);
+    }, SLIDE_INTERVAL);
+    return () => clearInterval(t);
+  }, [active]);
+
+  const handleSlideChange = (next: number) => {
+    if (next === active || isAnimating.current) return;
+    isAnimating.current = true;
+    setActive(next);
+    revealSlide(next);
+    startProgress(next);
+  };
+
   return (
-    <section
-      className="relative min-h-screen flex flex-col items-center
-             justify-center text-center
-             px-4  md:px-12 lg:px-[3rem]
-             pt-[8rem]  md:pt-40 lg:pt-[12rem]
-             pb-16"
-    >
-      <div className="max-w-5xl mx-auto flex flex-col items-center">
-        {/* ── Availability badge ── */}
-        <div className="mb-10 flex items-center gap-2.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-5 py-2 will-change-transform">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-          </span>
-          <span className="text-xs font-medium text-white/80 tracking-[0.1em] uppercase">
-            Available for new projects
-          </span>
-        </div>
+    <section className="relative w-full h-screen overflow-hidden">
 
-        <h1 className="relative text-white mb-6 text-3xl sm:text-4xl md:text-5xl lg:text-white">
-          Websites That Actually
-          <br />
-          Get <span className="text-white/65">You Clients</span>
-        </h1>
-
-        <p
-          className="text-sm sm:text-base md:text-lg lg:text-[1.2rem]
-                   text-gray-400
-                   max-w-[480px]
-                   leading-[1.7]
-                   mb-11"
+      {/* ── SLIDES ── */}
+      {slides.map((src, i) => (
+        <div
+          key={i}
+          ref={(el) => { slideWrapperRefs.current[i] = el; }}
+          style={{ position: "absolute", inset: 0, zIndex: 0 }}
         >
-          I help businesses stand out with a website that looks good, loads fast,
-          and actually brings in clients
+          <div
+            ref={(el) => { clipRefs.current[i] = el; }}
+            style={{
+              position: "absolute",
+              inset: 0,
+              overflow: "hidden",
+              clipPath: "inset(100% 0% 0% 0%)",
+            }}
+          >
+            <div
+              ref={(el) => { imgRefs.current[i] = el; }}
+              style={{
+                position: "absolute",
+                inset: "-10% 0 0 0",
+                backgroundImage: `url('${src}')`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            />
+          </div>
+        </div>
+      ))}
+
+      <div className="absolute inset-0 z-[100] bg-black/30" />
+
+      <div className="absolute inset-0 z-[150] bottom-[-10rem] w-full flex flex-col items-start justify-center px-[1rem] md:px-12 gap-[2rem] text-left">
+
+        <SplitLines
+          text='Where Beauty Meets Luxury'
+          tag="h1"
+          className="overflow-hidden text-[2.5rem] md:text-[5rem] text-white leading-[1.2] w-full max-w-[50%]"
+          duration={1}
+          stagger={0.1}
+          ease="power3.out"
+          yPercent={150}
+          threshold={0.1}
+          rootMargin="0px"
+        />
+
+        <p className="text-white/90 text-[1rem] md:text-[1.1rem] leading-[1.8] max-w-[500px]">
+          Shop high-quality wigs, beauty essentials, and premium lifestyle pieces curated for your everyday glow.
         </p>
 
-        {/* ── CTAs ── */}
-        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-[1.5rem] w-full sm:w-auto">
+        <div
+          className="overflow-hidden inline-block"
+        >
           <Link
-            href="https://wa.link/11epdm"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-primary"
+            href="/shop"
+            className=" bg-[#FD3F92] text-white uppercase px-[3rem] py-[1.1rem] inline-block rounded-full text-sm font-medium tracking-wide hover:bg-[#E63281] hover:text-white transition transition-colors duration-300"
           >
-            Let's Talk
-          </Link>
-
-          <Link href="/works" className="btn-secondary">
-            See My Works
+            Shop Now
           </Link>
         </div>
       </div>
 
-      <div className="mt-12 md:mt-20">
-        <Stats />
+      {/* ── PAGINATION ── */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[1001] flex items-center gap-2">
+        {slides.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => handleSlideChange(i)}
+            aria-label={`Go to slide ${i + 1}`}
+            className="relative overflow-hidden rounded-full bg-white/30 transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)]"
+            style={{
+              height: "3px",
+              width: active === i ? "52px" : "24px",
+            }}
+          >
+            {/* Orange progress fill */}
+            <div
+              ref={(el) => { progressRefs.current[i] = el; }}
+              style={{
+                position: "absolute",
+                inset: 0,
+                backgroundColor: "#fff",
+                transformOrigin: "left center",
+                transform: "scaleX(0)",
+              }}
+            />
+          </button>
+        ))}
       </div>
+
     </section>
   );
 }

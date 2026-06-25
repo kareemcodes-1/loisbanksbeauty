@@ -1,50 +1,204 @@
-export const projects = [
+export const collections = [
   {
-    id: "01",
-    client: "Hair Extension Brand",
-    period: "2026",
-    title: "hairbyama",
-    description:
-      "Built a high-converting e-commerce experience for a premium hair extension brand, improving product discovery and driving consistent client growth.",
-    tags: ["E-commerce", "Branding", "SEO", "Ads"],
-    metrics: [
-      // { value: "80%", label: "Inbound\ninquiries" },
-      // { value: "$300k", label: "Revenue\nincrease" },
-    ],
-    image: "/hairbyama.png",
-    href: "https://hairbyama.vercel.app",
-    imageLeft: false,
+  "_id": {
+    "$oid": "69da60f294a614570f5b35fb"
   },
-  {
-    id: "02",
-    client: "Clothing Store",
-    period: "2026",
-    title: "Zuvora",
-    description:
-      "Designed a sleek e-commerce storefront that elevated the brand into a premium online fashion experience.",
-    tags: ["E-commerce", "SEO", "Performance"],
-    metrics: [
-      // { value: "120%", label: "Inbound\ninquiries" },
-      // { value: "$230k", label: "Revenue\nincrease" },
-    ],
-    image: "/zuvora.png",
-    href: "https://zuvora.vercel.app",
-    imageLeft: true,
+  "name": "Wigs",
+  "userId": {
+    "$oid": "69da606b94a614570f5b35f2"
   },
-  {
-    id: "03",
-    client: "Jewellery Store",
-    period: "2025",
-    title: "Sparkle",
-    description:
-      "Built a conversion-focused jewellery website that improved trust, discovery, and online sales.",
-    tags: ["E-commerce", "Branding", "SEO", "Automations"],
-    metrics: [
-      // { value: "80%", label: "Inbound\ninquiries" },
-      // { value: "$100k", label: "Revenue\nincrease" },
-    ],
-    image: "/sparkle.png",
-    href: "https://sparkle-store.vercel.app",
-    imageLeft: false,
+  "description": "Our Men’s Collection redefines style with statement designs, premium fabrics, and details that set you apart from the crowd.",
+  "createdAt": {
+    "$date": "2025-06-22T18:00:13.408Z"
   },
+  "updatedAt": {
+    "$date": "2025-06-22T18:00:13.408Z"
+  },
+  "__v": 0,
+  "image": "/p1.jpg"
+},
+
+ {
+  "_id": {
+    "$oid": "69da618194a614570f5b35fc"
+  },
+  "name": "Hair Essentials",
+  "userId": {
+    "$oid": "69da606b94a614570f5b35f2"
+  },
+  "description": "Our Men’s Collection redefines style with statement designs, premium fabrics, and details that set you apart from the crowd.",
+  "createdAt": {
+    "$date": "2025-06-22T18:00:13.408Z"
+  },
+  "updatedAt": {
+    "$date": "2025-06-22T18:00:13.408Z"
+  },
+  "__v": 0,
+  "image": "/p1.jpg"
+},
+{
+  "_id": {
+    "$oid": "69da618f94a614570f5b35fd"
+  },
+  "name": "Luxury Wears",
+  "userId": {
+    "$oid": "69da606b94a614570f5b35f2"
+  },
+  "description": "Our Men’s Collection redefines style with statement designs, premium fabrics, and details that set you apart from the crowd.",
+  "createdAt": {
+    "$date": "2025-06-22T18:00:13.408Z"
+  },
+  "updatedAt": {
+    "$date": "2025-06-22T18:00:13.408Z"
+  },
+  "__v": 0,
+  "image": "/p1.jpg"
+}
+];
+
+export const products = [
+ {
+  "_id": {
+    "$oid": "69da5e2694a614570f5b35e9"
+  },
+  "name": "Body Wave 24”",
+  "collectionId": {
+    "$oid": "69da60f294a614570f5b35fb"
+  },
+  "userId": {
+    "$oid": "69da606b94a614570f5b35f2"
+  },
+  "description": "Experience unmatched luxury with our 50-inch raw human hair wig, designed with a 13×6 HD lace frontal for a natural, flawless melt. Silky, soft, and full from root to tip, this wig offers maximum styling freedom and a glamorous, extra-long look that stands out.",
+  "price": 250,
+  "images": [
+    "/p1.jpg"
+  ],
+  "createdAt": {
+    "$date": "2025-06-22T13:14:33.577Z"
+  },
+  "updatedAt": {
+    "$date": "2025-06-22T13:14:33.577Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69da5fce94a614570f5b35ea"
+  },
+  "name": "HD Body Wave 30”",
+  "collectionId": {
+    "$oid": "69da60f294a614570f5b35fb"
+  },
+  "userId": {
+    "$oid": "69da606b94a614570f5b35f2"
+  },
+  "description": "Experience unmatched luxury with our 50-inch raw human hair wig, designed with a 13×6 HD lace frontal for a natural, flawless melt. Silky, soft, and full from root to tip, this wig offers maximum styling freedom and a glamorous, extra-long look that stands out.",
+  "price": 375,
+  "images": [
+    "/p1.jpg"
+  ],
+  "createdAt": {
+    "$date": "2025-06-22T13:14:33.577Z"
+  },
+  "updatedAt": {
+    "$date": "2025-06-22T13:14:33.577Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69da601794a614570f5b35eb"
+  },
+  "name": "Body Wave 24”",
+  "collectionId": {
+    "$oid": "69da60f294a614570f5b35fb"
+  },
+  "userId": {
+    "$oid": "69da606b94a614570f5b35f2"
+  },
+  "description": "Experience unmatched luxury with our 50-inch raw human hair wig, designed with a 13×6 HD lace frontal for a natural, flawless melt. Silky, soft, and full from root to tip, this wig offers maximum styling freedom and a glamorous, extra-long look that stands out.",
+  "price": 275,
+  "images": [
+    "/p1.jpg"
+  ],
+  "createdAt": {
+    "$date": "2025-06-22T13:14:33.577Z"
+  },
+  "updatedAt": {
+    "$date": "2025-06-22T13:14:33.577Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69da603f94a614570f5b35ed"
+  },
+  "name": "Body Wave Luxe 24”",
+  "collectionId": {
+    "$oid": "69da60f294a614570f5b35fb"
+  },
+  "userId": {
+    "$oid": "69da606b94a614570f5b35f2"
+  },
+  "description": "Experience unmatched luxury with our 50-inch raw human hair wig, designed with a 13×6 HD lace frontal for a natural, flawless melt. Silky, soft, and full from root to tip, this wig offers maximum styling freedom and a glamorous, extra-long look that stands out.",
+  "price": 329,
+  "images": [
+    "/p1.jpg"
+  ],
+  "createdAt": {
+    "$date": "2025-06-22T13:14:33.577Z"
+  },
+  "updatedAt": {
+    "$date": "2025-06-22T13:14:33.577Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69da604c94a614570f5b35ee"
+  },
+  "name": "Body Wave Classic",
+  "collectionId": {
+    "$oid": "69da60f294a614570f5b35fb"
+  },
+  "userId": {
+    "$oid": "69da606b94a614570f5b35f2"
+  },
+  "description": "Experience unmatched luxury with our 50-inch raw human hair wig, designed with a 13×6 HD lace frontal for a natural, flawless melt. Silky, soft, and full from root to tip, this wig offers maximum styling freedom and a glamorous, extra-long look that stands out.",
+  "price": 360,
+  "images": [
+    "/p1.jpg"
+  ],
+  "createdAt": {
+    "$date": "2025-06-22T13:14:33.577Z"
+  },
+  "updatedAt": {
+    "$date": "2025-06-22T13:14:33.577Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69da5fce94a614570f5b35ea"
+  },
+  "name": "HD Body Wave 30”",
+  "collectionId": {
+    "$oid": "69da60f294a614570f5b35fb"
+  },
+  "userId": {
+    "$oid": "69da606b94a614570f5b35f2"
+  },
+  "description": "Experience unmatched luxury with our 50-inch raw human hair wig, designed with a 13×6 HD lace frontal for a natural, flawless melt. Silky, soft, and full from root to tip, this wig offers maximum styling freedom and a glamorous, extra-long look that stands out.",
+  "price": 375,
+  "images": [
+    "/p1.jpg"
+  ],
+  "createdAt": {
+    "$date": "2025-06-22T13:14:33.577Z"
+  },
+  "updatedAt": {
+    "$date": "2025-06-22T13:14:33.577Z"
+  },
+  "__v": 0
+}
 ];

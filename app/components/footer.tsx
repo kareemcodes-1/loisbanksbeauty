@@ -1,226 +1,130 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import React from "react";
-import {
-  FaFacebook,
-  FaInstagram,
-  FaLinkedin,
-  FaTiktok,
-  FaTwitter,
-} from "react-icons/fa";
+import Link from 'next/link';
+import React, { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { FaInstagram, FaTwitter, FaFacebook } from 'react-icons/fa';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const Footer = () => {
+  useEffect(() => {
+    gsap.set(".footer", { yPercent: -50 });
+
+    const uncover = gsap.timeline({ paused: true });
+    uncover.to(".footer", { yPercent: 0, ease: "none" });
+
+    ScrollTrigger.create({
+      trigger: ".scroll-trigger",
+      start: "bottom bottom",
+      end: "+=50%",
+      animation: uncover,
+      scrub: true,
+    });
+  }, []);
+
   return (
-    <footer
-      className="section-spacing w-full overflow-hidden mt-24 sm:mt-32"
-      style={{
-        background:
-          "radial-gradient(circle at bottom, rgba(249,115,22,0.18), #0d0d0d 60%)",
-      }}
-    >
-      {/* ── Main Grid ── */}
-      <div
-        className="
-          w-full
-          grid
-          grid-cols-1
-          sm:grid-cols-2
-          lg:grid-cols-4
-          gap-10 lg:gap-[4rem]
-          px-5 sm:px-8 md:px-14
-          py-12 sm:py-14
-          text-sm text-white/55
-        "
-      >
-        {/* Col 1 */}
-        <div className="flex flex-col gap-6">
-          <Link
-            href="/"
-            className="logo text-[1.35rem] sm:text-[1.5rem] font-semibold text-white"
-          >
-            sitesbykareem
-          </Link>
+    <>
+      <div className="section scroll-trigger"></div>
 
-          <p className="text-[1rem] sm:text-[1.1rem] leading-[1.8] text-white/70 max-w-[320px]">
-            Premium website development for high-end service businesses.
-            Strategy. Design. Conversion.
-          </p>
+      <div className="overflow-hidden relative bg-black w-full">
+        <footer className="footer bg-black text-white px-5 py-20 md:py-28 sm:px-8 md:px-[3rem] mt-10 sm:mt-12 md:mt-[5rem]">
 
-          {/* Socials */}
-          <div className="flex items-center flex-wrap gap-3">
-            {[
-              {
-                icon: FaInstagram,
-                href: "https://instagram.com/code.bykareem",
-              },
-              {
-                icon: FaTiktok,
-                href: "https://www.tiktok.com/@codebykareem",
-              },
-              {
-                icon: FaTwitter,
-                href: "https://x.com/codebykareem",
-              },
-              {
-                icon: FaLinkedin,
-                href: "https://www.linkedin.com/in/kareem-braimoh-66b5b7271/?originalSubdomain=ng",
-              },
-            ].map((social, i) => {
-              const Icon = social.icon;
+          {/* Dashed top border */}
+          <div className="border-t border-dashed border-pink-500/40 mb-16" />
 
-              return (
-                <Link
-                  key={i}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="
-                    w-11 h-11 sm:w-12 sm:h-12
-                    bg-[#1a1a1a]
-                    border border-white/10
-                    rounded-xl
-                    flex items-center justify-center
-                    transition-all duration-300
-                    hover:border-orange-400/30
-                    hover:text-orange-400
-                  "
-                >
-                  <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+          {/* Main Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-4">
+
+            {/* Col 1 — Brand */}
+            <div className="flex flex-col gap-6 md:pr-10">
+              <Link href="/">
+                <img
+                  src="/favicon.jpeg"
+                  className="w-[4rem] h-[4rem] rounded-full object-cover"
+                  alt=""
+                />
+              </Link>
+
+              <p className="text-white/60 leading-relaxed max-w-xs">
+                Premium luxury hair extensions crafted for confidence, beauty and timeless elegance.
+              </p>
+
+              <div className="flex gap-3 mt-2">
+                <Link href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-pink-500 transition">
+                  <FaFacebook size={16} />
                 </Link>
-              );
-            })}
+                <Link href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-pink-500 transition">
+                  <FaInstagram size={16} />
+                </Link>
+                <Link href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-pink-500 transition">
+                  <FaTwitter size={16} />
+                </Link>
+              </div>
+            </div>
+
+            {/* Col 2 — Quick Links */}
+            <div className="flex flex-col gap-5 md:px-10 md:border-l border-dashed border-pink-500/40 mt-10 md:mt-0">
+              <h4 className="text-white font-medium tracking-widest text-[1rem] uppercase">Quick Links</h4>
+              <div className="flex flex-col gap-4 text-white/60">
+                <Link href="/" className="hover:text-white transition">Home</Link>
+                <Link href="/about" className="hover:text-white transition">About Us</Link>
+                <Link href="/shop" className="hover:text-white transition">Shop</Link>
+                <Link href="/contact" className="hover:text-white transition">Contact Us</Link>
+              </div>
+            </div>
+
+            {/* Col 3 — Get in Touch */}
+            <div className="flex flex-col gap-5 md:px-10 md:border-l border-dashed border-pink-500/40 mt-10 md:mt-0">
+              <h4 className="text-white font-medium tracking-widest text-[1rem] uppercase">Get in Touch</h4>
+              <div className="flex flex-col gap-5 text-white/60">
+                <div className="flex flex-col gap-1">
+                  <p className="text-white font-medium text-sm">Email</p>
+                  <Link href="mailto:hello@loisbanksbeauty.com" className="hover:text-white transition">
+                    hello@loisbanksbeauty.com
+                  </Link>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <p className="text-white font-medium text-sm">WhatsApp</p>
+                  <Link href="#" className="hover:text-white transition">Chat with us</Link>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <p className="text-white font-medium text-sm">Hours</p>
+                  <p>Mon – Fri | 9 AM – 6 PM</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Col 4 — Visit Us */}
+            <div className="flex flex-col gap-5 md:px-10 md:border-l border-dashed border-pink-500/40 mt-10 md:mt-0">
+              <h4 className="text-white font-medium tracking-widest text-[1rem] uppercase">Visit Us</h4>
+              <div className="flex flex-col gap-2 text-white/60">
+                <p className="text-white font-medium text-sm">Address</p>
+                <p className="leading-relaxed">
+                  123 Hair Street,<br />
+                  Lagos, Nigeria
+                </p>
+              </div>
+            </div>
+
           </div>
-        </div>
 
-        {/* Col 2 */}
-        <div className="flex flex-col gap-5">
-          <h3 className="!text-[1rem] sm:!text-[1.1rem] text-white uppercase tracking-wide">
-            Navigation
-          </h3>
+          {/* Dashed bottom border */}
+          <div className="border-t border-dashed border-pink-500/40 mt-16" />
 
-          <div className="flex flex-col gap-3">
-            {[
-              { title: "Home", href: "/" },
-              { title: "Work", href: "/works" },
-              { title: "About", href: "/about" },
-              { title: "Contact", href: "/contact" },
-            ].map((link) => (
-              <Link
-                key={link.title}
-                href={link.href}
-                className="
-                  hover:text-orange-400
-                  text-[1rem] sm:text-[1.05rem]
-                  transition-colors
-                  w-fit
-                "
-              >
-                {link.title}
-              </Link>
-            ))}
+          {/* Bottom Bar */}
+          <div className="flex flex-col md:flex-row justify-between gap-6 pt-10 text-white/50 text-sm">
+            <p>© 2026 Loisbanks Beauty. All rights reserved.</p>
+            <div className="flex gap-6">
+              <Link href="#" className="hover:text-white transition">Privacy Policy</Link>
+              <Link href="#" className="hover:text-white transition">Terms of Service</Link>
+            </div>
           </div>
-        </div>
 
-        {/* Col 3 */}
-        <div className="flex flex-col gap-5">
-          <h3 className="!text-[1rem] sm:!text-[1.1rem] text-white uppercase tracking-wide">
-            Contact
-          </h3>
-
-          <div className="flex flex-col gap-3">
-            {[
-              {
-                title: "+2349016990307",
-                href: "tel:+2349016990307",
-              },
-              {
-                title: "realkareembrai222@gmail.com",
-                href: "mailto:realkareembrai222@gmail.com",
-              },
-              {
-                title: "WhatsApp",
-                href: "https://wa.link/11epdm",
-              },
-            ].map((link) => (
-              <Link
-                key={link.title}
-                href={link.href}
-                className="
-                  hover:text-orange-400
-                  text-[1rem] sm:text-[1.05rem]
-                  transition-colors
-                  w-fit
-                  break-all sm:break-normal
-                "
-              >
-                {link.title}
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Col 4 */}
-        <div className="flex flex-col gap-5">
-          <h3 className="!text-[1rem] sm:!text-[1.1rem] text-white uppercase tracking-wide">
-            Get Started
-          </h3>
-
-          <div className="flex flex-col gap-4 w-full sm:max-w-[260px]">
-            <Link
-              href="https://wa.link/11epdm"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-primary w-full text-center"
-            >
-              Let's Talk
-            </Link>
-
-            <Link
-              href="/works"
-              className="btn-secondary w-full text-center"
-            >
-              See My Works
-            </Link>
-          </div>
-        </div>
+        </footer>
       </div>
-
-      {/* Bottom Bar */}
-      <div
-        className="
-          border-t border-white/10
-          mt-6 sm:mt-10
-          px-5 sm:px-8 md:px-14
-          py-6
-          flex flex-col lg:flex-row
-          items-center justify-between
-          gap-5
-          text-white/45
-          text-sm
-        "
-      >
-        <p className="text-[0.95rem] sm:text-[1rem] text-center lg:text-left">
-          © 2026 sitesbykareem. All rights reserved.
-        </p>
-
-        <div className="flex items-center flex-wrap justify-center gap-5">
-          <Link
-            href="/privacy-policy"
-            className="hover:text-orange-400 transition-colors text-[0.95rem] sm:text-[1rem]"
-          >
-            Privacy Policy
-          </Link>
-
-          <Link
-            href="/terms"
-            className="hover:text-orange-400 transition-colors text-[0.95rem] sm:text-[1rem]"
-          >
-            Terms of Service
-          </Link>
-        </div>
-      </div>
-    </footer>
+    </>
   );
 };
 

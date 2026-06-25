@@ -15,9 +15,9 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "SitesByKareem — High-Converting Websites For Service Businesses",
+  title: "LoisBanks Beauty — Web Design & Development",
   description:
-    "I help businesses scale with high-converting websites built for performance, trust, and growth.",
+    "LoisBanks Beauty is a web design and development agency that creates beautiful, functional websites for businesses of all sizes. We specialize in creating custom websites that are tailored to your brand and your goals.",
 };
 
 export default function RootLayout({
@@ -27,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={geist.variable}>
-      <body className="antialiased bg-[#0c0909] text-white">
+      <body className="antialiased bg-[#fff] text-black">
         <svg className="pointer-events-none absolute cursor-none">
           <filter id="grainy">
             <feTurbulence
@@ -43,8 +43,8 @@ export default function RootLayout({
 
         <Navbar />
         {children}
-        <CTA />
-        <Footer />
+        {/* <CTA /> */}
+        {/* <Footer /> */}
       </body>
     </html>
   );
