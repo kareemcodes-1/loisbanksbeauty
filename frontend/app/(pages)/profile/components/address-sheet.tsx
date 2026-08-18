@@ -1,0 +1,343 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import { X } from "lucide-react";
+import toast from "react-hot-toast";
+import { Country, State } from "country-state-city";
+
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { ProfileAddress } from "@/actions/profile.actions";
+
+type Props = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  address: ProfileAddress | null;
+  onSaved: (address: ProfileAddress, mode: "create" | "edit") => void;
+};
+
+const emptyForm = {
+  firstName: "",
+  lastName: "",
+  address: "",
+  apartment: "",
+  city: "",
+  state: "",
+  postalCode: "",
+  country: "",
+  isDefault: false,
+};
+
+export default function AddressSheet({
+  open,
+  onOpenChange,
+  address,
+  onSaved,
+}: Props) {
+  const [form, setForm] = useState(emptyForm);
+  const [saving, setSaving] = useState(false);
+  const isEdit = Boolean(address);
+
+  const countries = useMemo(() => Country.getAllCountries(), []);
+
+  const states = useMemo(() => {
+    if (!form.country) return [];
+    return State.getStatesOfCountry(form.country);
+  }, [form.country]);
+
+  const regionLabel =
+    form.country === "AE"
+      ? "Emirate"
+      : form.country === "GB"
+        ? "Country / Region"
+        : "State / Province";
+
+  useEffect(() => {
+    if (open) {
+      setForm(
+        address
+          ? {
+              firstName: address.firstName,
+              lastName: address.lastName,
+              address: address.address,
+              apartment: address.apartment ?? "",
+              city: address.city,
+              state: address.state,
+              postalCode: address.postalCode,
+              country: address.country,
+              isDefault: address.isDefault,
+            }
+          : emptyForm
+      );
+    }
+  }, [open, address]);
+
+  const setField = (key: keyof typeof form, value: string | boolean) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+
+    try {
+      const url = isEdit
+        ? `/api/profile/addresses/${address!._id}`
+        : "/api/profile/addresses";
+      const method = isEdit ? "PATCH" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.message || "Failed to save address.");
+        return;
+      }
+
+      toast.success(data.message || "Address saved.");
+      onSaved(data.address, isEdit ? "edit" : "create");
+      onOpenChange(false);
+    } catch {
+      toast.error("Something went wrong.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="right"
+        className="z-[350] flex w-full max-w-[32rem] flex-col gap-0 border-none bg-white p-0 [&>button]:hidden"
+      >
+        <SheetHeader className="flex flex-row items-center justify-between space-y-0 border-b border-dashed border-[#FD3F92]/40 px-6 py-5">
+          <SheetTitle className="heading-3 text-left">
+            {isEdit ? "Edit address" : "Add address"}
+          </SheetTitle>
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-dashed border-[#FD3F92]/40 transition-colors hover:bg-[#FD3F92] hover:text-white"
+          >
+            <X size={20} strokeWidth={1.5} />
+          </button>
+        </SheetHeader>
+
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-1 flex-col overflow-hidden"
+        >
+          <div className="flex-1 space-y-4 overflow-y-auto px-6 py-6">
+            {/* Country */}
+            <div className="space-y-2">
+              <Label className="text-[0.7rem] font-medium uppercase tracking-[0.05em] text-black/80">
+                Country / Region
+              </Label>
+              <Select
+                value={form.country || undefined}
+                onValueChange={(value) => {
+                  setField("country", value);
+                  setField("state", "");
+                }}
+              >
+                <SelectTrigger className="!h-11 w-full !rounded-xl border-black/10">
+                  <SelectValue placeholder="Select country">
+                    {form.country && (
+                      <div className="flex items-center gap-2">
+                        <Image
+                          src={`https://flagcdn.com/w20/${form.country.toLowerCase()}.png`}
+                          alt=""
+                          width={18}
+                          height={13}
+                          className="rounded-[2px]"
+                        />
+                        {
+                          countries.find((c) => c.isoCode === form.country)
+                            ?.name
+                        }
+                      </div>
+                    )}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="z-[350] max-h-72">
+                  {countries.map((c) => (
+                    <SelectItem key={c.isoCode} value={c.isoCode}>
+                      <div className="flex items-center gap-2">
+                        <Image
+                          src={`https://flagcdn.com/w20/${c.isoCode.toLowerCase()}.png`}
+                          alt=""
+                          width={18}
+                          height={13}
+                          className="rounded-[2px]"
+                        />
+                        {c.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Name */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label className="text-[0.7rem] font-medium uppercase tracking-[0.05em] text-black/80">
+                  First name
+                </Label>
+                <Input
+                  value={form.firstName}
+                  onChange={(e) => setField("firstName", e.target.value)}
+                  className="h-11 rounded-xl border-black/10"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[0.7rem] font-medium uppercase tracking-[0.05em] text-black/80">
+                  Last name
+                </Label>
+                <Input
+                  value={form.lastName}
+                  onChange={(e) => setField("lastName", e.target.value)}
+                  className="h-11 rounded-xl border-black/10"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Address */}
+            <div className="space-y-2">
+              <Label className="text-[0.7rem] font-medium uppercase tracking-[0.05em] text-black/80">
+                Address
+              </Label>
+              <Input
+                value={form.address}
+                onChange={(e) => setField("address", e.target.value)}
+                className="h-11 rounded-xl border-black/10"
+                required
+              />
+            </div>
+
+            {/* Apartment */}
+            <div className="space-y-2">
+              <Label className="text-[0.7rem] font-medium uppercase tracking-[0.05em] text-black/80">
+                Apartment{" "}
+                <span className="text-black/40">(optional)</span>
+              </Label>
+              <Input
+                value={form.apartment}
+                onChange={(e) => setField("apartment", e.target.value)}
+                className="h-11 rounded-xl border-black/10"
+              />
+            </div>
+
+            {/* City + State + Postal */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label className="text-[0.7rem] font-medium uppercase tracking-[0.05em] text-black/80">
+                  City
+                </Label>
+                <Input
+                  value={form.city}
+                  onChange={(e) => setField("city", e.target.value)}
+                  className="h-11 rounded-xl border-black/10"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[0.7rem] font-medium uppercase tracking-[0.05em] text-black/80">
+                  {regionLabel}
+                </Label>
+                {states.length > 0 ? (
+                  <Select
+                    value={form.state || undefined}
+                    onValueChange={(value) => setField("state", value)}
+                  >
+                    <SelectTrigger className="!h-11 w-full !rounded-xl border-black/10">
+                      <SelectValue
+                        placeholder={`Select ${regionLabel.toLowerCase()}`}
+                      />
+                    </SelectTrigger>
+                    <SelectContent className="z-[350] max-h-60">
+                      {states.map((s) => (
+                        <SelectItem key={s.isoCode} value={s.isoCode}>
+                          {s.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    value={form.state}
+                    onChange={(e) => setField("state", e.target.value)}
+                    className="h-11 rounded-xl border-black/10"
+                    placeholder="State / Province"
+                    required
+                  />
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-[0.7rem] font-medium uppercase tracking-[0.05em] text-black/80">
+                Postal code
+              </Label>
+              <Input
+                value={form.postalCode}
+                onChange={(e) => setField("postalCode", e.target.value)}
+                className="h-11 rounded-xl border-black/10"
+                required
+              />
+            </div>
+
+            <label className="flex cursor-pointer items-center gap-3 pt-2">
+              <Checkbox
+                checked={form.isDefault}
+                onCheckedChange={(checked) =>
+                  setField("isDefault", checked === true)
+                }
+                className="border-black/25 data-[state=checked]:border-[#FD3F92] data-[state=checked]:bg-[#FD3F92]"
+              />
+              <span className="text-sm font-medium text-black/70">
+                Set as default address
+              </span>
+            </label>
+          </div>
+
+          <div className="border-t border-black/10 px-6 py-5">
+            <button
+              type="submit"
+              disabled={saving}
+              className="btn-primary w-full disabled:opacity-50"
+            >
+              {saving
+                ? "Saving..."
+                : isEdit
+                  ? "Update address"
+                  : "Save address"}
+            </button>
+          </div>
+        </form>
+      </SheetContent>
+    </Sheet>
+  );
+}

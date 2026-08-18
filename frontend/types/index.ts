@@ -1,0 +1,220 @@
+export type HeroBannerMediaType = "image" | "video";
+
+export interface HeroBanner {
+  _id: string;
+  title: string;
+  description: string;
+  media: string;
+  mediaType: HeroBannerMediaType;
+  buttonText: string;
+  buttonLink: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Collection {
+  _id: string;
+  name: string;
+  slug: string;
+  description: string;
+  image: string;
+  featured: boolean;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type UserRole = "user" | "admin";
+
+export interface Address {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  address: string;
+  apartment?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  phone?: string;
+  isDefault: boolean;
+}
+
+export interface User {
+  _id: string;
+  name: string;
+  email: string;
+  password?: string;
+  phone: string;
+  role: UserRole;
+  addresses: Address[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ProductMediaType = "image" | "video";
+
+export interface ProductMedia {
+  _id: string;
+  url: string;
+  type: ProductMediaType;
+}
+
+export interface Product {
+  _id: string;
+  name: string;
+  slug: string;
+  collectionId: Collection;
+  description: string;
+  price: number;
+
+  discount?: {
+    discountType: "percentage" | "fixed";
+    discountValue: number;
+    title?: string;
+    maxDiscount?: number;
+  } | null;
+
+  media: ProductMedia[];
+
+  featured: boolean;
+
+  trackInventory: boolean;
+  stock: number;
+  lowStockThreshold: number;
+  isActive: boolean;
+
+  sizes: string[];
+
+  averageRating: number;
+  reviewCount: number;
+
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type DiscountType = "percentage" | "fixed";
+
+export interface Discount {
+  _id: string;
+  title: string;
+  description: string;
+  discountType: DiscountType;
+  discountValue: number;
+  productIds: string[] | { _id: string; name: string; slug?: string }[];
+  minimumAmount: number;
+  maxDiscount: number;
+  startsAt: string | Date;
+  expiresAt: string | Date;
+  isActive: boolean;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
+
+export type OrderMediaType = "image" | "video";
+
+export interface OrderMedia {
+  _id: string;
+  url: string;
+  type: OrderMediaType;
+}
+
+export interface OrderItem {
+  _id: string;
+  productId: string;
+  name: string;
+  media: OrderMedia[];
+  price: number;
+  quantity: number;
+  size?: string | null;
+}
+
+export interface ShippingAddress {
+  firstName: string;
+  lastName: string;
+  address: string;
+  apartment?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  phone?: string;
+}
+
+export type PaymentGateway = "paystack";
+
+export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
+
+export interface PaymentInfo {
+  transactionId: string;
+  gateway: PaymentGateway;
+  paymentStatus: PaymentStatus;
+  channel: string | null;
+  paidAt: string | null;
+}
+
+export type OrderStatus =
+  | "processing"
+  | "confirmed"
+  | "shipped"
+  | "ready_for_pickup"
+  | "delivered"
+  | "cancelled";
+
+export type ShippingMethod = "pickup" | "delivery";
+
+export interface Order {
+  _id: string;
+  userId: string | {
+    _id: string;
+    name?: string;
+    email?: string;
+    phone?: string;
+  };
+  items: OrderItem[];
+  shippingAddress: ShippingAddress;
+  paymentInfo: PaymentInfo;
+  orderStatus: OrderStatus;
+  shippingMethod: ShippingMethod;
+  trackingNumber: string | null;
+  subtotal: number;
+  shippingFee: number;
+  tax: number;
+  totalAmount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Review {
+  _id: string;
+  productId:
+    | string
+    | {
+        _id: string;
+        name: string;
+        slug: string;
+      };
+  userId:
+    | string
+    | {
+        _id: string;
+        name: string;
+        email: string;
+      };
+  rating: number;
+  title: string;
+  comment: string;
+  isVerifiedPurchase: boolean;
+  isApproved: boolean;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
+
+export interface Subscriber {
+  _id: string;
+  email: string;
+  isActive: boolean;
+  source?: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
