@@ -138,7 +138,6 @@ export async function PUT(
     collection.description = description;
     collection.image = image;
     collection.featured = featured ?? false;
-    collection.order = order ?? 0;
 
     await collection.save();
 

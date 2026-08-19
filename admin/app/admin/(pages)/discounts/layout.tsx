@@ -6,7 +6,7 @@ export const metadata: Metadata = {
     "Manage discounts, and promotional offers.",
 };
 
-export default function CouponsLayout({
+export default function DiscountLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
