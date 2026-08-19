@@ -11,6 +11,7 @@ import OrderReadyForPickupEmail from "@/app/components/emails/order-ready-for-pi
 import OrderDeliveredEmail from "@/app/components/emails/order-delivered-email";
 import NewProductEmail from "@/app/components/emails/new-product";
 import NewDiscountEmail from "@/app/components/emails/new-discount";
+import ContactEnquiryEmail from "@/app/components/emails/contact-enquiry";
 
 export async function sendWelcomeEmail(to: string, name: string) {
   const html = await render(<WelcomeEmail name={name} />);
@@ -132,5 +133,32 @@ export async function sendNewDiscountEmail(
     to,
     subject: `${props.discountLabel} — ${props.title}`,
     html,
+  });
+}
+
+export async function sendContactEnquiryEmail(props: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}) {
+  const html = await render(
+    <ContactEnquiryEmail
+      name={props.name}
+      email={props.email}
+      subject={props.subject}
+      message={props.message}
+    />
+  );
+
+  const receiver =
+    process.env.CONTACT_RECEIVER_EMAIL || "lbanksluxuryhairs@gmail.com";
+
+  await sendEmail({
+    to: receiver,
+    subject: `New enquiry: ${props.subject}`,
+    html,
+    replyTo: props.email,
+    // If your sendEmail supports reply-to, pass props.email here
   });
 }
