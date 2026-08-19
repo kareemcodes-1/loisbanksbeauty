@@ -176,7 +176,6 @@ export async function listCollections() {
   }));
 }
 
-/** Active product discounts (replaces coupons) */
 export async function listActiveDiscounts() {
   await connectDB();
   const now = new Date();

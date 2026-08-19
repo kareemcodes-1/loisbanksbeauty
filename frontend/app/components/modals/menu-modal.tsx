@@ -197,14 +197,6 @@ const MenuModal = ({ openMenuModal, setOpenMenuModal }: MenuModalProps) => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => go("/coupons")}
-                  className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-colors hover:bg-black/5"
-                >
-                  <Ticket size={16} strokeWidth={1.8} className="text-black/50" />
-                  Coupons
-                </button>
-                <button
-                  type="button"
                   onClick={() => go("/reviews/pending")}
                   className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-colors hover:bg-black/5"
                 >
