@@ -25,7 +25,6 @@ function formatOrder(order: any): OrderType {
       price: item.price,
       quantity: item.quantity,
       size: item.size ?? null,
-      color: item.color ?? null,
     })),
     shippingAddress: {
       firstName: order.shippingAddress.firstName,
@@ -48,6 +47,8 @@ function formatOrder(order: any): OrderType {
         : null,
     },
     orderStatus: order.orderStatus,
+    shippingMethod: order.shippingMethod ?? "delivery", // or "pickup"
+    trackingNumber: order.trackingNumber ?? null,
     subtotal: order.subtotal,
     shippingFee: order.shippingFee,
     tax: order.tax,
