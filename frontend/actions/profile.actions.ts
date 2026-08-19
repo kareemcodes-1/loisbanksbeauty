@@ -42,7 +42,7 @@ export async function getProfile(): Promise<ProfileUser | null> {
     _id: String(user._id),
     name: user.name,
     email: user.email,
-    phone: user.phone,
+    phone: user.phone ?? "",
     addresses: (user.addresses ?? []).map((a) => ({
       _id: String(a._id),
       firstName: a.firstName,
