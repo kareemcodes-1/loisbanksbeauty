@@ -364,10 +364,11 @@ export function HeroBannerDialog({
           </div>
         </form>
 
-        <DialogFooter className="shrink-0 items-center gap-2 border-t px-6 pb-[1.5rem] sm:gap-2">
+        <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-end p-[1rem] lg:p-[1rem]">
           <Button
             type="button"
             variant="outline"
+               className="w-full sm:w-auto"
             size="lg"
             disabled={isBusy}
             onClick={() => onOpenChange(false)}
@@ -378,6 +379,7 @@ export function HeroBannerDialog({
           <Button
             type="submit"
             form="hero-banner-form"
+               className="w-full sm:w-auto"
             size="lg"
             disabled={isBusy}
           >

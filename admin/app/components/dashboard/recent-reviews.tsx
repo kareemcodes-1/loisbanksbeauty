@@ -12,7 +12,7 @@ import {
   MessageSquareTextIcon,
 } from "lucide-react";
 
-import type { Review } from "@/types"; // ← use the shared type
+import type { Review } from "@/types";
 
 interface RecentReviewsProps {
   reviews: Review[];
@@ -38,74 +38,84 @@ function getUserName(userId: Review["userId"]) {
 export function RecentReviews({ reviews }: RecentReviewsProps) {
   return (
     <Card className="h-full">
-      <CardHeader className="flex flex-row items-center justify-between pb-3">
-        <div>
-          <CardTitle className="text-base">Recent Reviews</CardTitle>
+      <CardHeader className="flex flex-row items-start justify-between gap-3 pb-3">
+        <div className="min-w-0">
+          <CardTitle className="text-base">
+            Recent Reviews
+          </CardTitle>
+
           <p className="text-sm text-muted-foreground">
             Latest customer feedback
           </p>
         </div>
-        <MessageSquareTextIcon className="size-5 text-muted-foreground" />
+
+        <MessageSquareTextIcon className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
       </CardHeader>
 
       <CardContent>
         {reviews.length === 0 ? (
-          <div className="flex min-h-[160px] items-center justify-center text-sm text-muted-foreground">
+          <div className="flex min-h-[160px] items-center justify-center text-center text-sm text-muted-foreground">
             No reviews yet.
           </div>
         ) : (
           <div className="divide-y">
-            {reviews.map((review) => (
-              <div
-                key={review._id}
-                className="flex gap-3 py-3 first:pt-0 last:pb-0"
-              >
-                {/* Avatar */}
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-medium">
-                  {getInitial(getUserName(review.userId))}
-                </div>
+            {reviews.map((review) => {
+              const userName = getUserName(review.userId);
 
-                {/* Review content */}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    {/* Stars */}
-                    <div className="flex items-center gap-0.5">
-                      {Array.from({ length: 5 }).map((_, index) => (
-                        <StarIcon
-                          key={index}
-                          className={`size-3 ${
-                            index < review.rating
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "text-muted-foreground/30"
-                          }`}
-                        />
-                      ))}
+              return (
+                <div
+                  key={review._id}
+                  className="flex gap-3 py-3 first:pt-0 last:pb-0"
+                >
+                  {/* Avatar */}
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-medium">
+                    {getInitial(userName)}
+                  </div>
+
+                  {/* Review content */}
+                  <div className="min-w-0 flex-1">
+                    {/* Rating + Date */}
+                    <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                      <div className="flex items-center gap-0.5">
+                        {Array.from({ length: 5 }).map((_, index) => (
+                          <StarIcon
+                            key={index}
+                            className={`size-3 ${
+                              index < review.rating
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "text-muted-foreground/30"
+                            }`}
+                          />
+                        ))}
+                      </div>
+
+                      <span className="shrink-0 text-xs text-muted-foreground">
+                        {formatDate(review.createdAt)}
+                      </span>
                     </div>
 
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      {formatDate(review.createdAt)}
-                    </span>
-                  </div>
+                    {/* Review */}
+                    <p className="mt-1 line-clamp-2 text-sm leading-5 text-muted-foreground">
+                      {review.comment}
+                    </p>
 
-                  <p className="mt-1 line-clamp-2 text-sm leading-5 text-muted-foreground">
-                    {review.comment}
-                  </p>
-
-                  <div className="mt-1.5">
-                    <Badge
-                      variant="outline"
-                      className={`h-5 px-1.5 text-[10px] ${
-                        review.isApproved
-                          ? "border-green-200 bg-green-100 text-green-700 hover:bg-green-100 dark:border-green-900 dark:bg-green-950 dark:text-green-400"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      {review.isApproved ? "Approved" : "Pending"}
-                    </Badge>
+                    {/* Status */}
+                    <div className="mt-1.5">
+                      <Badge
+                        variant="outline"
+                        className={`h-5 px-1.5 text-[10px] ${
+                          review.isApproved
+                            ? "border-green-200 bg-green-100 text-green-700 hover:bg-green-100 dark:border-green-900 dark:bg-green-950 dark:text-green-400"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {review.isApproved ? "Approved" : "Pending"}
+                      </Badge>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </CardContent>

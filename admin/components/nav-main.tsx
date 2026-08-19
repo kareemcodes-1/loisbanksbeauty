@@ -8,6 +8,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 export function NavMain({
@@ -19,6 +20,8 @@ export function NavMain({
     icon?: React.ReactNode;
   }[];
 }) {
+  const { setOpenMobile } = useSidebar();
+
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
@@ -30,7 +33,10 @@ export function NavMain({
                 tooltip={item.title}
                 className="h-11 px-3 text-[0.9rem]"
               >
-                <Link href={item.url}>
+                <Link
+                  href={item.url}
+                  onClick={() => setOpenMobile(false)}
+                >
                   <span className="[&_svg]:size-4">
                     {item.icon}
                   </span>

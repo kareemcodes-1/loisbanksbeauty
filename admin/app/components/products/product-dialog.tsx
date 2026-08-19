@@ -767,11 +767,12 @@ const handleRemoveSize = (size: string) => {
                     </div>
                 </form>
 
-                <DialogFooter className="shrink-0 items-center gap-2 border-t px-6 pb-[1.5rem] sm:gap-2">
+                <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-end p-[1rem] lg:p-[1rem]">
                     <Button
                         type="button"
                         variant="outline"
                         size={"lg"}
+                        className="w-full sm:w-auto"
                         disabled={isBusy}
                         onClick={() => onOpenChange(false)}
                     >
@@ -781,6 +782,7 @@ const handleRemoveSize = (size: string) => {
                     <Button
                         type="submit"
                         form="product-form"
+                        className="w-full sm:w-auto"
                         size={"lg"}
                         disabled={isBusy}
                     >

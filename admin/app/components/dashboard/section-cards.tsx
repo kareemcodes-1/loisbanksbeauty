@@ -31,26 +31,25 @@ export function SectionCards({
   revenue = 0,
 }: SectionCardsProps) {
   return (
-    <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
-      
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {/* Revenue */}
-      <Card className="@container/card">
+      <Card>
         <CardHeader>
           <CardDescription>Total Revenue</CardDescription>
 
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+          <CardTitle className="text-2xl font-semibold tabular-nums sm:text-3xl">
             {priceFormatter(revenue)}
           </CardTitle>
 
           <CardAction>
-            <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10">
-              <BanknoteIcon className="size-6 text-primary" />
+            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 sm:size-11">
+              <BanknoteIcon className="size-5 text-primary sm:size-6" />
             </div>
           </CardAction>
         </CardHeader>
 
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
+          <div className="line-clamp-1 font-medium">
             Total revenue generated
           </div>
 
@@ -61,23 +60,23 @@ export function SectionCards({
       </Card>
 
       {/* Products */}
-      <Card className="@container/card">
+      <Card>
         <CardHeader>
           <CardDescription>Total Products</CardDescription>
 
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+          <CardTitle className="text-2xl font-semibold tabular-nums sm:text-3xl">
             {totalProducts.toLocaleString()}
           </CardTitle>
 
           <CardAction>
-            <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10">
-              <PackageIcon className="size-6 text-primary" />
+            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 sm:size-11">
+              <PackageIcon className="size-5 text-primary sm:size-6" />
             </div>
           </CardAction>
         </CardHeader>
 
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
+          <div className="line-clamp-1 font-medium">
             Products in your store
           </div>
 
@@ -88,23 +87,23 @@ export function SectionCards({
       </Card>
 
       {/* Orders */}
-      <Card className="@container/card">
+      <Card>
         <CardHeader>
           <CardDescription>Total Orders</CardDescription>
 
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+          <CardTitle className="text-2xl font-semibold tabular-nums sm:text-3xl">
             {totalOrders.toLocaleString()}
           </CardTitle>
 
           <CardAction>
-            <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10">
-              <ShoppingCartIcon className="size-6 text-primary" />
+            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 sm:size-11">
+              <ShoppingCartIcon className="size-5 text-primary sm:size-6" />
             </div>
           </CardAction>
         </CardHeader>
 
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
+          <div className="line-clamp-1 font-medium">
             Orders placed
           </div>
 
@@ -115,23 +114,23 @@ export function SectionCards({
       </Card>
 
       {/* Users */}
-      <Card className="@container/card">
+      <Card>
         <CardHeader>
           <CardDescription>Total Users</CardDescription>
 
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+          <CardTitle className="text-2xl font-semibold tabular-nums sm:text-3xl">
             {totalUsers.toLocaleString()}
           </CardTitle>
 
           <CardAction>
-            <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10">
-              <UsersIcon className="size-6 text-primary" />
+            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 sm:size-11">
+              <UsersIcon className="size-5 text-primary sm:size-6" />
             </div>
           </CardAction>
         </CardHeader>
 
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
+          <div className="line-clamp-1 font-medium">
             Registered customers
           </div>
 

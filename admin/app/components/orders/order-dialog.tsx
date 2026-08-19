@@ -204,9 +204,10 @@ export function OrderStatusDialog({
           )}
         </form>
 
-        <DialogFooter>
+         <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-end p-[1rem] lg:p-[1rem]">
           <Button
             type="button"
+               className="w-full sm:w-auto"
             variant="outline"
             disabled={isBusy}
             onClick={() => onOpenChange(false)}
@@ -216,6 +217,7 @@ export function OrderStatusDialog({
 
           <Button
             type="submit"
+               className="w-full sm:w-auto"
             form="order-status-form"
             disabled={isBusy}
           >

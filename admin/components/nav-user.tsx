@@ -41,6 +41,7 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
+  const { setOpenMobile } = useSidebar();
 
   return (
     <SidebarMenu>
@@ -104,21 +105,21 @@ export function NavUser({
 
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link href="/admin/account">
+                <Link href="/admin/account"  onClick={() => setOpenMobile(false)}>
                   <CircleUserRoundIcon />
                   Account
                 </Link>
               </DropdownMenuItem>
 
               <DropdownMenuItem asChild>
-                <Link href="/admin/ai-assistant">
+                <Link href="/admin/ai-assistant"  onClick={() => setOpenMobile(false)}>
                   <BotIcon />
                   AI Assistant
                 </Link>
               </DropdownMenuItem>
 
               <DropdownMenuItem asChild>
-                <Link href="/admin/preferences">
+                <Link href="/admin/preferences"  onClick={() => setOpenMobile(false)}>
                   <Settings2Icon />
                   Preferences
                 </Link>
