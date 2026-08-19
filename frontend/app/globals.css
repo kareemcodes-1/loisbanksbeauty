@@ -90,6 +90,7 @@ p {
 .heading-hero {
   font-size: clamp(2rem, 1.5rem + 2.5vw, 4rem);
   line-height: 1.1;
+  text-wrap: balance;
 }
 
 .heading-1 {

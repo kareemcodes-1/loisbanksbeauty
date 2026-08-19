@@ -54,7 +54,7 @@ export default function OrderCard({ order }: Props) {
         <p className="text-[13px] text-black/40">{formattedDate}</p>
 
         <span
-          className={`rounded-full border px-2.5 py-1 text-[11px] font-medium tracking-wide ${
+          className={`rounded-full border px-2.5 py-1 font-medium text-[.6rem] lg:text-[.7rem] uppercase tracking-wide ${
             statusStyles[order.orderStatus] || "bg-gray-50 text-gray-600"
           }`}
         >

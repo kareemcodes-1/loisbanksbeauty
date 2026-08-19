@@ -3,7 +3,7 @@ import { SplitLines } from "@/components/animations/SplitLines";
 
 export default function AboutHero() {
   return (
-    <section className="relative flex min-h-[70svh] w-full items-center justify-center overflow-hidden sm:min-h-[75svh] lg:min-h-[100svh]">
+    <section className="relative flex min-h-[85svh] w-full items-center justify-center overflow-hidden sm:min-h-[85svh] lg:min-h-[100svh]">
       <video
         autoPlay
         muted

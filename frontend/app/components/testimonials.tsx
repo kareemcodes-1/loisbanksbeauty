@@ -87,7 +87,7 @@ const Testimonials = () => {
         </div>
 
         {/* Mobile: grid (3 cards) */}
-        <div className="grid grid-cols-1 gap-4 px-6 sm:grid-cols-2 sm:gap-5 md:hidden">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 md:hidden">
           {mobileTestimonials.map((t, i) => (
             <TestimonialCard key={i} t={t} />
           ))}

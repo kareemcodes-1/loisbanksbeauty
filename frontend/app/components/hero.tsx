@@ -35,14 +35,14 @@ export default function Hero({ heroBanner }: HeroProps) {
       {/* Content */}
       <div className="absolute inset-x-0 bottom-0 z-20 flex w-full flex-col items-start gap-4 px-5 pb-10 pt-[7.5rem] text-left sm:gap-5 sm:px-8 sm:pb-14 md:px-12 md:pb-20">
         <SplitLines
-          tag="h1"
-          text={heroBanner.title}
-          className="heading-hero w-full max-w-[min(500px,90vw)] text-white"
-          duration={1}
-          stagger={0.025}
-          yPercent={100}
-          ease="power4.out"
-        />
+  tag="h1"
+  text={heroBanner.title}
+  className="heading-hero w-full max-w-[20rem] text-white sm:max-w-[16rem] md:max-w-[min(500px,90vw)]"
+  duration={1}
+  stagger={0.025}
+  yPercent={100}
+  ease="power4.out"
+/>
 
         <SplitLines
           tag="p"
@@ -56,7 +56,7 @@ export default function Hero({ heroBanner }: HeroProps) {
 
         <Link
           href={heroBanner.buttonLink || "/shop"}
-          className="btn-primary w-full max-w-[12rem] sm:w-auto lg:w-[10rem]"
+          className="btn-primary w-full max-w-[10rem] sm:w-auto lg:w-[10rem]"
         >
           {heroBanner.buttonText || "Shop Now"}
         </Link>

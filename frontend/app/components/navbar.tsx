@@ -34,6 +34,7 @@ import {
 
 import { CURRENCIES, flagUrl, type CurrencyCode } from "@/lib/currency";
 import { useCurrencyStore } from "@/store/currency";
+import { useCartStore } from "@/store/cart";
 
 
 const Navbar: React.FC = () => {
@@ -47,21 +48,24 @@ const Navbar: React.FC = () => {
   const router = useRouter();
 
   const currency = useCurrencyStore((s) => s.currency);
-const isAuto = useCurrencyStore((s) => s.isAuto);
-const setCurrency = useCurrencyStore((s) => s.setCurrency);
-const setAutoLocation = useCurrencyStore((s) => s.setAutoLocation);
-const active = CURRENCIES.find((c) => c.code === currency);
+  const isAuto = useCurrencyStore((s) => s.isAuto);
+  const setCurrency = useCurrencyStore((s) => s.setCurrency);
+  const setAutoLocation = useCurrencyStore((s) => s.setAutoLocation);
+  const active = CURRENCIES.find((c) => c.code === currency);
 
-useEffect(() => {
-  const hasPreference =
-    typeof window !== "undefined" &&
-    localStorage.getItem("currency-preference");
+  const totalItems = useCartStore((s) => s.getTotalItems());
+  const hasHydrated = useCartStore((s) => s._hasHydrated);
 
-  if (!hasPreference) {
-    void setAutoLocation();
-  }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
+  useEffect(() => {
+    const hasPreference =
+      typeof window !== "undefined" &&
+      localStorage.getItem("currency-preference");
+
+    if (!hasPreference) {
+      void setAutoLocation();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -101,9 +105,8 @@ useEffect(() => {
   return (
     <>
       <header
-        className={`fixed left-4 right-4 top-4 z-[300] transition-all duration-500 lg:left-6 lg:right-6 ${
-          scrolled ? "translate-y-0" : ""
-        }`}
+        className={`fixed left-4 right-4 top-4 z-[300] transition-all duration-500 lg:left-6 lg:right-6 ${scrolled ? "translate-y-0" : ""
+          }`}
       >
         <nav className="flex h-[4.4rem] items-center justify-between rounded-full border border-black/10 bg-white px-3 shadow-sm backdrop-blur-md sm:h-[4.7rem] sm:px-4 lg:h-[5rem] lg:px-6">
           <Link
@@ -136,84 +139,83 @@ useEffect(() => {
           {/* Actions */}
           <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Currency */}
-{/* Currency */}
-<div className="hidden lg:block">
-  <DropdownMenu>
-    <DropdownMenuTrigger asChild>
-      <button
-        type="button"
-        className="group flex h-11 items-center gap-2 rounded-full border border-black/15 bg-transparent px-3 transition-all duration-300 hover:border-[#FD3F92] hover:bg-[#FD3F92]/10"
-      >
-        {isAuto ? (
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-black/5">
-            <LocateFixed size={13} strokeWidth={2} className="text-black/60" />
-          </span>
-        ) : (
-          <Image
-            src={flagUrl(active?.countryCode ?? "us", 40)}
-            alt={active?.code ?? "USD"}
-            quality={75}
-            width={20}
-            height={14}
-            className="h-[14px] w-5 rounded-[2px] object-cover shadow-sm"
-          />
-        )}
+            {/* Currency */}
+            <div className="hidden lg:block">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="group flex h-11 items-center gap-2 rounded-full border border-black/15 bg-transparent px-3 transition-all duration-300 hover:border-[#FD3F92] hover:bg-[#FD3F92]/10"
+                  >
+                    {isAuto ? (
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-black/5">
+                        <LocateFixed size={13} strokeWidth={2} className="text-black/60" />
+                      </span>
+                    ) : (
+                      <Image
+                        src={flagUrl(active?.countryCode ?? "us", 40)}
+                        alt={active?.code ?? "USD"}
+                        quality={75}
+                        width={20}
+                        height={14}
+                        className="h-[14px] w-5 rounded-[2px] object-cover shadow-sm"
+                      />
+                    )}
 
-        <span className="text-[0.75rem] font-medium uppercase tracking-wide text-black">
-          {isAuto ? "AUTO" : currency}
-        </span>
+                    <span className="text-[0.75rem] font-medium uppercase tracking-wide text-black">
+                      {isAuto ? "AUTO" : currency}
+                    </span>
 
-        <ChevronDown
-          size={14}
-          strokeWidth={1.8}
-          className="text-black/40 transition-colors group-hover:text-[#FD3F92]"
-        />
-      </button>
-    </DropdownMenuTrigger>
+                    <ChevronDown
+                      size={14}
+                      strokeWidth={1.8}
+                      className="text-black/40 transition-colors group-hover:text-[#FD3F92]"
+                    />
+                  </button>
+                </DropdownMenuTrigger>
 
-    <DropdownMenuContent
-      align="end"
-      sideOffset={16}
-      className="w-56 rounded-2xl border border-black/10 p-1.5 shadow-lg"
-    >
-      <DropdownMenuItem
-        onClick={() => void setAutoLocation()}
-        className="cursor-pointer gap-3 rounded-xl px-3 py-2.5 text-[0.875rem] font-medium"
-      >
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-black/5">
-          <LocateFixed size={13} strokeWidth={2} className="text-black/60" />
-        </span>
-        Auto location
-      </DropdownMenuItem>
+                <DropdownMenuContent
+                  align="end"
+                  sideOffset={16}
+                  className="w-56 rounded-2xl border border-black/10 p-1.5 shadow-lg"
+                >
+                  <DropdownMenuItem
+                    onClick={() => void setAutoLocation()}
+                    className="cursor-pointer gap-3 rounded-xl px-3 py-2.5 text-[0.875rem] font-medium"
+                  >
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-black/5">
+                      <LocateFixed size={13} strokeWidth={2} className="text-black/60" />
+                    </span>
+                    Auto location
+                  </DropdownMenuItem>
 
-      <DropdownMenuSeparator className="my-1.5" />
+                  <DropdownMenuSeparator className="my-1.5" />
 
-      {CURRENCIES.map((c) => (
-        <DropdownMenuItem
-          key={c.code}
-          onClick={() => setCurrency(c.code)}
-          className={`cursor-pointer gap-3 rounded-xl px-3 py-2.5 text-[0.875rem] font-medium ${
-            !isAuto && currency === c.code
-              ? "bg-[#FD3F92]/10 text-[#FD3F92]"
-              : ""
-          }`}
-        >
-          <img
-            src={flagUrl(c.countryCode, 40)}
-            alt={c.code}
-            width={20}
-            height={14}
-            className="h-[14px] w-5 shrink-0 rounded-[2px] object-cover shadow-sm"
-          />
-          <span className="flex-1">{c.label}</span>
-          <span className="text-[0.7rem] uppercase tracking-wide text-black/40">
-            {c.code}
-          </span>
-        </DropdownMenuItem>
-      ))}
-    </DropdownMenuContent>
-  </DropdownMenu>
-</div>
+                  {CURRENCIES.map((c) => (
+                    <DropdownMenuItem
+                      key={c.code}
+                      onClick={() => setCurrency(c.code)}
+                      className={`cursor-pointer gap-3 rounded-xl px-3 py-2.5 text-[0.875rem] font-medium ${!isAuto && currency === c.code
+                          ? "bg-[#FD3F92]/10 text-[#FD3F92]"
+                          : ""
+                        }`}
+                    >
+                      <img
+                        src={flagUrl(c.countryCode, 40)}
+                        alt={c.code}
+                        width={20}
+                        height={14}
+                        className="h-[14px] w-5 shrink-0 rounded-[2px] object-cover shadow-sm"
+                      />
+                      <span className="flex-1">{c.label}</span>
+                      <span className="text-[0.7rem] uppercase tracking-wide text-black/40">
+                        {c.code}
+                      </span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
 
             {/* Search */}
             <button
@@ -247,69 +249,73 @@ useEffect(() => {
                 className="hidden transition-colors duration-300 group-hover:text-[#FD3F92] sm:block"
               />
 
-              {/* Cart Count */}
-              {/* We can connect this to Zustand next */}
+              {/* Cart count badge */}
+              {hasHydrated && totalItems > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#FD3F92] px-1 text-[0.65rem] font-semibold leading-none text-white">
+                  {totalItems > 99 ? "99+" : totalItems}
+                </span>
+              )}
             </button>
 
             {/* Profile */}
             {session?.user ? (
-  <DropdownMenu>
-    <DropdownMenuTrigger asChild>
-      <button
-        type="button"
-        aria-label="Open profile menu"
-        className="group hidden h-11 w-11 items-center justify-center rounded-full border border-black/15 bg-transparent transition-all duration-300 hover:border-[#FD3F92] hover:bg-[#FD3F92]/10 lg:flex"
-      >
-        <User
-          size={20}
-          strokeWidth={1.8}
-          className="transition-colors duration-300 group-hover:text-[#FD3F92]"
-        />
-      </button>
-    </DropdownMenuTrigger>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Open profile menu"
+                    className="group hidden h-11 w-11 items-center justify-center rounded-full border border-black/15 bg-transparent transition-all duration-300 hover:border-[#FD3F92] hover:bg-[#FD3F92]/10 lg:flex"
+                  >
+                    <User
+                      size={20}
+                      strokeWidth={1.8}
+                      className="transition-colors duration-300 group-hover:text-[#FD3F92]"
+                    />
+                  </button>
+                </DropdownMenuTrigger>
 
-    <DropdownMenuContent
-      align="center"
-      sideOffset={20}
-      className="w-56 rounded-xl p-1.5"
-    >
-      <DropdownMenuItem
-        onClick={() => router.push("/profile")}
-        className="cursor-pointer gap-3 rounded-lg px-3 py-2.5 text-[0.9rem] font-medium"
-      >
-        <User size={16} strokeWidth={1.8} className="text-black/50" />
-        Profile
-      </DropdownMenuItem>
+                <DropdownMenuContent
+                  align="center"
+                  sideOffset={20}
+                  className="w-56 rounded-xl p-1.5"
+                >
+                  <DropdownMenuItem
+                    onClick={() => router.push("/profile")}
+                    className="cursor-pointer gap-3 rounded-lg px-3 py-2.5 text-[0.9rem] font-medium"
+                  >
+                    <User size={16} strokeWidth={1.8} className="text-black/50" />
+                    Profile
+                  </DropdownMenuItem>
 
-      <DropdownMenuItem
-        onClick={() => router.push("/orders")}
-        className="cursor-pointer gap-3 rounded-lg px-3 py-2.5 text-[0.9rem] font-medium"
-      >
-        <Package size={16} strokeWidth={1.8} className="text-black/50" />
-        Orders
-      </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => router.push("/orders")}
+                    className="cursor-pointer gap-3 rounded-lg px-3 py-2.5 text-[0.9rem] font-medium"
+                  >
+                    <Package size={16} strokeWidth={1.8} className="text-black/50" />
+                    Orders
+                  </DropdownMenuItem>
 
-      <DropdownMenuItem
-        onClick={() => router.push("/reviews/pending")}
-        className="cursor-pointer gap-3 rounded-lg px-3 py-2.5 text-[0.9rem] font-medium"
-      >
-        <Star size={16} strokeWidth={1.8} className="text-black/50" />
-        Pending Reviews
-      </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => router.push("/reviews/pending")}
+                    className="cursor-pointer gap-3 rounded-lg px-3 py-2.5 text-[0.9rem] font-medium"
+                  >
+                    <Star size={16} strokeWidth={1.8} className="text-black/50" />
+                    Pending Reviews
+                  </DropdownMenuItem>
 
-      <DropdownMenuSeparator className="my-1.5" />
+                  <DropdownMenuSeparator className="my-1.5" />
 
-      <DropdownMenuItem
-        onClick={() => signOut()}
-        className="cursor-pointer gap-3 rounded-lg px-3 py-2.5 text-[0.9rem] font-medium text-red-600 focus:text-red-600"
-      >
-        <LogOut size={16} strokeWidth={1.8} />
-        Logout
-      </DropdownMenuItem>
-    </DropdownMenuContent>
-  </DropdownMenu>
-) : (
-           <button
+                  <DropdownMenuItem
+                    onClick={() => signOut()}
+                    className="cursor-pointer gap-3 rounded-lg px-3 py-2.5 text-[0.9rem] font-medium text-red-600 focus:text-red-600"
+                  >
+                    <LogOut size={16} strokeWidth={1.8} />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <button
                 type="button"
                 onClick={() => router.push("/login")}
                 aria-label="Login"
@@ -360,7 +366,7 @@ useEffect(() => {
         />
       )}
 
-       {openMenuModal && (
+      {openMenuModal && (
         <MenuModal
           openMenuModal={openMenuModal}
           setOpenMenuModal={setOpenMenuModal}

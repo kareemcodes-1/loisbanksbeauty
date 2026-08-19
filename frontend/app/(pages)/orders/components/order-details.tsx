@@ -69,7 +69,7 @@ export default function OrderDetails({ order }: Props) {
 
         <div className="flex flex-wrap items-center gap-2">
           <span
-            className={`inline-flex w-fit items-center rounded-full border px-4 py-1.5 text-sm font-medium ${
+            className={`inline-flex w-fit items-center rounded-full border px-4 py-1.5 text-[.7rem] lg:text-[.8rem] font-medium uppercase ${
               statusStyles[order.orderStatus] ||
               "border-gray-200 bg-gray-50 text-gray-700"
             }`}
@@ -78,7 +78,7 @@ export default function OrderDetails({ order }: Props) {
           </span>
 
           {order.shippingMethod && (
-            <span className="inline-flex w-fit items-center rounded-full border border-black/10 bg-black/5 px-4 py-1.5 text-sm font-medium text-black/70">
+            <span className="inline-flex w-fit items-center rounded-full border border-black/10 bg-black/5 px-4 py-1.5 text-[.7rem] lg:text-[.8rem] font-medium uppercase text-black/70">
               {order.shippingMethod === "pickup"
                 ? "Store pickup"
                 : "Door delivery"}

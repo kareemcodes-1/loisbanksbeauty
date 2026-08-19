@@ -1,62 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion, Variants } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { usePathname } from "next/navigation";
 
-const curve = (initialPath: string, targetPath: string): Variants => ({
-  initial: {
-    d: initialPath,
-  },
-  enter: {
-    d: targetPath,
-    transition: {
-      duration: 0.75,
-      delay: 0.35,
-      ease: [0.76, 0, 0.24, 1],
-    },
-  },
-  exit: {
-    d: initialPath,
-    transition: {
-      duration: 0.75,
-      ease: [0.76, 0, 0.24, 1],
-    },
-  },
-});
+const EASE = [0.76, 0, 0.24, 1] as const;
 
-const translate = (offset: number): Variants => ({
-  initial: {
-    top: `-${offset}px`,
-  },
-  enter: {
-    top: "-100vh",
-    transition: {
-      duration: 0.75,
-      delay: 0.35,
-      ease: [0.76, 0, 0.24, 1],
-    },
-    transitionEnd: {
-      top: "100vh",
-    },
-  },
-  exit: {
-    top: `-${offset}px`,
-    transition: {
-      duration: 0.75,
-      ease: [0.76, 0, 0.24, 1],
-    },
-  },
-});
-
-export default function RouteTransition() {
+export default function Curve() {
   const pathname = usePathname();
-
-  const [dimensions, setDimensions] = useState({
-    width: 0,
-    height: 0,
-  });
-
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -79,13 +31,10 @@ export default function RouteTransition() {
   }
 
   const { width, height } = dimensions;
-
-  // Smaller curve on mobile, fuller on desktop
   const isMobile = width < 768;
   const curveDepth = isMobile
     ? Math.round(Math.min(width * 0.28, 120))
     : Math.round(Math.min(width * 0.18, 300));
-
   const extra = curveDepth * 2;
 
   const initialPath = `
@@ -104,6 +53,35 @@ export default function RouteTransition() {
     L0 0
   `;
 
+  // Start fully on screen (covering), then slide up off screen
+  const slide: Variants = {
+    initial: {
+      top: 0,
+    },
+    enter: {
+      top: "-100vh",
+      transition: {
+        duration: 0.8,
+        delay: 0.15,
+        ease: EASE,
+      },
+    },
+  };
+
+  const pathVariants: Variants = {
+    initial: {
+      d: initialPath,
+    },
+    enter: {
+      d: targetPath,
+      transition: {
+        duration: 0.8,
+        delay: 0.15,
+        ease: EASE,
+      },
+    },
+  };
+
   return (
     <AnimatePresence mode="wait">
       <motion.div
@@ -115,17 +93,15 @@ export default function RouteTransition() {
           style={{ height: `calc(100vh + ${extra}px)` }}
           viewBox={`0 0 ${width} ${height + extra}`}
           preserveAspectRatio="none"
-          variants={translate(curveDepth)}
+          variants={slide}
           initial="initial"
           animate="enter"
-          exit="exit"
         >
           <motion.path
             fill="#FD3F92"
-            variants={curve(initialPath, targetPath)}
+            variants={pathVariants}
             initial="initial"
             animate="enter"
-            exit="exit"
           />
         </motion.svg>
       </motion.div>

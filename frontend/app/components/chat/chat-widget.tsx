@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import { useCartStore } from "@/store/cart";
 import ChatMessages from "./chat-messages";
 import ChatInput from "./chat-input";
+import { usePathname } from "next/navigation";
 
 type ChatProduct = {
     id: string;
@@ -39,6 +40,7 @@ const SUGGESTIONS = [
 export default function ChatWidget() {
     const { data: session, status } = useSession();
     const addItem = useCartStore((s) => s.addItem);
+    const pathname = usePathname();
 
     const userName = session?.user?.name?.trim() || null;
     const displayName = userName?.split(" ")[0] || "Unknown";
@@ -47,6 +49,10 @@ export default function ChatWidget() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [loading, setLoading] = useState(false);
     const [ready, setReady] = useState(false);
+
+    useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
     // Wait for session, then set welcome or load history
     useEffect(() => {
