@@ -25,7 +25,7 @@ export default function Hero({ heroBanner }: HeroProps) {
           muted
           loop
           playsInline
-          preload="metadata"
+         preload="auto"
         />
       )}
 

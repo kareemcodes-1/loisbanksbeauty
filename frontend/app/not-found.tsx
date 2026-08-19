@@ -5,14 +5,14 @@ export default function NotFound() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center overflow-x-hidden px-5 pt-20 text-center sm:px-6 sm:pt-[5rem]">
       <p className="mb-3 text-[0.7rem] font-medium uppercase tracking-[0.2em] text-[#FD3F92]">
-        Error 404
+        Oops
       </p>
 
-      <h1 className="heading-1 mb-4">Page not found</h1>
+      <h1 className="heading-1 mb-4">We can&apos;t find that page</h1>
 
       <p className="mx-auto mb-8 max-w-[22rem] text-[0.95rem] leading-relaxed text-black/50 sm:mb-10 sm:max-w-[28rem]">
-        The page you&apos;re looking for doesn&apos;t exist or may have been
-        moved. Check the URL, or head back home.
+        It may have been moved, renamed, or never existed. No worries — you can
+        head home or keep shopping.
       </p>
 
       <div className="flex flex-wrap items-center justify-center gap-3">
