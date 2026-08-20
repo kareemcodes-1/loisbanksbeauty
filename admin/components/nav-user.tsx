@@ -28,6 +28,7 @@ import {
   Settings2Icon,
   LogOutIcon,
   BotIcon,
+  BookOpenIcon,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -108,6 +109,13 @@ export function NavUser({
                 <Link href="/admin/account"  onClick={() => setOpenMobile(false)}>
                   <CircleUserRoundIcon />
                   Account
+                </Link>
+              </DropdownMenuItem>
+
+               <DropdownMenuItem asChild>
+                <Link href="/admin/docs"  onClick={() => setOpenMobile(false)}>
+                  <BookOpenIcon />
+                  Documentation
                 </Link>
               </DropdownMenuItem>
 

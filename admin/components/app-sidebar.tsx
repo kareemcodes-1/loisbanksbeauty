@@ -27,6 +27,7 @@ import {
   StarIcon,
   Percent,
   MailIcon,
+  BookOpenIcon,
 } from "lucide-react";
 
 const navMain = [
@@ -76,6 +77,7 @@ const navMain = [
   url: "/admin/subscribers",
   icon: <MailIcon />,
 },
+
 ];
 
 export function AppSidebar({
