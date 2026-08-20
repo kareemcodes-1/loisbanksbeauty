@@ -30,8 +30,8 @@ const Collections = async () => {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
           {collections.map((item) => (
+            <FadeContent key={item._id} blur={true} duration={1000} initialOpacity={0}>
             <div
-              key={item._id}
               className="relative h-[18rem] w-full overflow-hidden rounded-lg sm:h-[22rem] md:h-[25rem]"
             >
               <Image
@@ -56,6 +56,7 @@ const Collections = async () => {
                 </div>
               </div>
             </div>
+            </FadeContent>
           ))}
         </div>
       </div>

@@ -7,6 +7,7 @@ import { priceFormatter } from "@/lib/priceFormatter";
 import { getProductPricing } from "@/lib/product-pricing";
 import type { Product } from "@/types";
 import { useCurrencyStore } from "@/store/currency";
+import FadeContent from "@/components/animations/fade-content";
 
 const ProductCard = ({ item }: { item: Product }) => {
   const currency = useCurrencyStore((s) => s.currency);
@@ -23,6 +24,7 @@ const ProductCard = ({ item }: { item: Product }) => {
 
   return (
     <Link href={`/shop/p/${item.slug}`} className="group flex h-full flex-col">
+    <FadeContent key={item._id} blur={true} duration={1000} initialOpacity={0}>
       <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-neutral-100">
         <Image
           src={fallbackImage}
@@ -85,6 +87,7 @@ const ProductCard = ({ item }: { item: Product }) => {
           )}
         </div>
       </div>
+      </FadeContent>
     </Link>
   );
 };

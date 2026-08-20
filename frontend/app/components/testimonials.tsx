@@ -89,7 +89,9 @@ const Testimonials = () => {
         {/* Mobile: grid (3 cards) */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 md:hidden">
           {mobileTestimonials.map((t, i) => (
-            <TestimonialCard key={i} t={t} />
+            <FadeContent blur={true} key={i} duration={1000} initialOpacity={0}>
+              <TestimonialCard t={t} />
+            </FadeContent>
           ))}
         </div>
 
@@ -106,12 +108,13 @@ const Testimonials = () => {
             className="py-2"
           >
             {testimonials.map((t, i) => (
+               <FadeContent blur={true} key={i} duration={1000} initialOpacity={0}>
               <div
-                key={i}
                 className="mx-2 w-[min(18rem,85vw)] sm:mx-3 sm:w-[20rem] md:w-[22.5rem] lg:w-[25rem]"
               >
                 <TestimonialCard t={t} />
               </div>
+              </FadeContent>
             ))}
           </Marquee>
         </div>
