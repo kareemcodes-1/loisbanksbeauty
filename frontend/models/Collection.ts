@@ -6,7 +6,6 @@ export interface ICollectionDocument extends Document {
   description: string;
   image: string;
   featured: boolean;
-  order: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -42,11 +41,6 @@ const collectionSchema = new Schema<ICollectionDocument>(
     featured: {
       type: Boolean,
       default: false,
-    },
-
-    order: {
-      type: Number,
-      default: 0,
     },
   },
   {

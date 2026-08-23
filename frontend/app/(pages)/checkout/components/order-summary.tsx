@@ -36,7 +36,7 @@ export default function OrderSummary({ shippingFee }: Props) {
               key={`${item.productId}-${item.size ?? "default"}`}
               className="flex gap-3 sm:gap-4"
             >
-              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-neutral-100 sm:h-16 sm:w-16">
+              <div className="relative h-14 w-14 shrink-0 rounded-lg bg-neutral-100 sm:h-16 sm:w-16">
                 {image && (
                   <Image
                     src={image}

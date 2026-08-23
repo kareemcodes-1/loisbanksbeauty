@@ -10,7 +10,7 @@ export async function GET() {
     const collections = await Collection.find({
       featured: true,
     })
-      .sort({ order: 1 })
+      .sort({ createdAt: -1 })
       .lean();
 
     return NextResponse.json(collections, {

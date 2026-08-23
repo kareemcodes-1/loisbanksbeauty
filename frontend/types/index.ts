@@ -19,7 +19,6 @@ export interface Collection {
   description: string;
   image: string;
   featured: boolean;
-  order: number;
   createdAt: string;
   updatedAt: string;
 }
