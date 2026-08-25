@@ -15,8 +15,6 @@ export interface DiscountPayload {
   discountType: "percentage" | "fixed";
   discountValue: number;
   productIds: string[];
-  minimumAmount: number;
-  maxDiscount: number;
   startsAt: string; // ISO
   expiresAt: string; // ISO
   isActive: boolean;

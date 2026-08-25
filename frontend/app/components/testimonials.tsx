@@ -44,12 +44,19 @@ function TestimonialCard({
 }) {
   return (
     <div className="flex min-h-[14rem] w-full flex-col gap-3 rounded-2xl border border-black/5 bg-white p-5 shadow-sm sm:min-h-[16rem] sm:gap-4 sm:p-6">
-      <div className="flex gap-0.5">
-        {Array.from({ length: 5 }).map((_, s) => (
-          <span key={s} className="text-base text-[#FD3F92] sm:text-lg">
-            ★
-          </span>
-        ))}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex gap-0.5">
+          {Array.from({ length: 5 }).map((_, s) => (
+            <span key={s} className="text-base text-[#FD3F92] sm:text-lg">
+              ★
+            </span>
+          ))}
+        </div>
+
+        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-medium text-emerald-700 sm:text-[0.7rem]">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          Verified Purchase
+        </span>
       </div>
 
       <p className="flex-1 text-[0.875rem] leading-6 text-black/70 sm:text-sm sm:leading-7">

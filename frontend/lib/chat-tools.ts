@@ -172,7 +172,6 @@ export async function listCollections() {
     id: c._id.toString(),
     name: c.name,
     slug: c.slug,
-    description: c.description,
   }));
 }
 
@@ -186,7 +185,7 @@ export async function listActiveDiscounts() {
     expiresAt: { $gte: now },
   })
     .select(
-      "title description discountType discountValue minimumAmount maxDiscount productIds"
+      "title description discountType discountValue productIds"
     )
     .lean();
 
@@ -195,8 +194,6 @@ export async function listActiveDiscounts() {
     description: d.description,
     discountType: d.discountType,
     discountValue: d.discountValue,
-    minimumAmount: d.minimumAmount,
-    maxDiscount: d.maxDiscount,
   }));
 }
 

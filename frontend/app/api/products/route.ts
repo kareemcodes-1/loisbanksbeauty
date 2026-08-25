@@ -41,7 +41,6 @@ export async function GET(request: NextRequest) {
         discountType: "percentage" | "fixed";
         discountValue: number;
         title: string;
-        maxDiscount: number;
       }
     >();
 
@@ -56,7 +55,6 @@ export async function GET(request: NextRequest) {
             discountType: discount.discountType,
             discountValue: discount.discountValue,
             title: discount.title,
-            maxDiscount: discount.maxDiscount,
           });
         }
       }

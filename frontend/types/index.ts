@@ -16,7 +16,6 @@ export interface Collection {
   _id: string;
   name: string;
   slug: string;
-  description: string;
   image: string;
   featured: boolean;
   createdAt: string;
@@ -71,7 +70,6 @@ export interface Product {
     discountType: "percentage" | "fixed";
     discountValue: number;
     title?: string;
-    maxDiscount?: number;
   } | null;
 
   media: ProductMedia[];
@@ -101,8 +99,6 @@ export interface Discount {
   discountType: DiscountType;
   discountValue: number;
   productIds: string[] | { _id: string; name: string; slug?: string }[];
-  minimumAmount: number;
-  maxDiscount: number;
   startsAt: string | Date;
   expiresAt: string | Date;
   isActive: boolean;

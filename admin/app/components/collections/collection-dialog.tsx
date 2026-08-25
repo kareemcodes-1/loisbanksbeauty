@@ -79,7 +79,6 @@ export function CollectionDialog({
 
   const [name, setName] = React.useState("");
   const [slug, setSlug] = React.useState("");
-  const [description, setDescription] = React.useState("");
   const [featured, setFeatured] = React.useState(false);
 
   // Image state
@@ -134,7 +133,6 @@ export function CollectionDialog({
     if (collection) {
       setName(collection.name);
       setSlug(collection.slug);
-      setDescription(collection.description ?? "");
       setFeatured(collection.featured ?? false);
       setExistingImage(collection.image ?? null);
       setNewImageFile(null);
@@ -142,7 +140,6 @@ export function CollectionDialog({
     } else {
       setName("");
       setSlug("");
-      setDescription("");
       setFeatured(false);
       setExistingImage(null);
       setNewImageFile(null);
@@ -212,7 +209,6 @@ export function CollectionDialog({
       const payload: CollectionPayload = {
         name,
         slug,
-        description,
         image: imageUrl!,
         featured,
       };
@@ -326,19 +322,6 @@ export function CollectionDialog({
               placeholder="collection-slug"
               required
               className="font-mono text-sm"
-            />
-          </div>
-
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe this collection..."
-              className="min-h-28 resize-none"
-              required
             />
           </div>
 

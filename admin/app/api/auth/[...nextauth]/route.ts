@@ -80,36 +80,46 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = user.role;
-      }
+  async jwt({ token, user, trigger, session }) {
+    if (user) {
+      token.id = user.id;
+      token.role = user.role;
+      token.name = user.name;
+      token.email = user.email;
+    }
 
-      return token;
-    },
+    // When client calls update()
+    if (trigger === "update" && session) {
+      if (session.name) token.name = session.name;
+      if (session.email) token.email = session.email;
+    }
 
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as "user" | "admin";
-      }
-
-      return session;
-    },
-
-    async redirect({ url, baseUrl }) {
-      if (url.startsWith("/")) {
-        return `${baseUrl}${url}`;
-      }
-
-      if (new URL(url).origin === baseUrl) {
-        return url;
-      }
-
-      return baseUrl;
-    },
+    return token;
   },
+
+  async session({ session, token }) {
+    if (session.user) {
+      session.user.id = token.id as string;
+      session.user.role = token.role as "user" | "admin";
+      session.user.name = token.name as string;
+      session.user.email = token.email as string;
+    }
+
+    return session;
+  },
+
+  async redirect({ url, baseUrl }) {
+    if (url.startsWith("/")) {
+      return `${baseUrl}${url}`;
+    }
+
+    if (new URL(url).origin === baseUrl) {
+      return url;
+    }
+
+    return baseUrl;
+  },
+},
 
   secret: process.env.NEXTAUTH_SECRET,
 

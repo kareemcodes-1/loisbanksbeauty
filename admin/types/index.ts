@@ -16,10 +16,8 @@ export interface Collection {
   _id: string;
   name: string;
   slug: string;
-  description: string;
   image: string;
   featured: boolean;
-  order: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -103,8 +101,6 @@ export interface Discount {
   discountType: DiscountType;
   discountValue: number;
   productIds: string[] | { _id: string; name: string; slug?: string }[];
-  minimumAmount: number;
-  maxDiscount: number;
   startsAt: string | Date;
   expiresAt: string | Date;
   isActive: boolean;

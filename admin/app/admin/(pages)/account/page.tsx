@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 
 import { PageHeader } from "@/app/components/page-header";
@@ -38,7 +38,7 @@ import {
 } from "@/actions/admin/profile.actions";
 
 export default function AccountPage() {
-  const router = useRouter();
+  const { update } = useSession();
   const queryClient = useQueryClient();
 
   const { data: profile, isLoading } = useQuery({
@@ -60,7 +60,11 @@ export default function AccountPage() {
 
   const updateMutation = useMutation({
     mutationFn: (data: UpdateProfilePayload) => updateAdminProfile(data),
-    onSuccess: () => {
+    onSuccess: async (data) => {
+      await update({
+        name: data?.name ?? name,
+        email: data?.email ?? email,
+      });
       queryClient.invalidateQueries({ queryKey: ["admin-profile"] });
       toast.success("Profile updated successfully");
     },

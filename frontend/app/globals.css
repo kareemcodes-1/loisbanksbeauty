@@ -78,6 +78,10 @@ p {
   line-height: 1.7;
 }
 
+button:disabled{
+  cursor: not-allowed !important;
+}
+
 /* Base = mobile */
 .subtitle {
   font-size: clamp(1rem, 0.9rem + 0.4vw, 1.2rem);

@@ -7,6 +7,16 @@ import toast from "react-hot-toast";
 import type { ProfileAddress } from "@/actions/profile.actions";
 import AddressSheet from "./address-sheet";
 import EmptyState from "@/app/components/empty-state";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type Props = {
   addresses: ProfileAddress[];
@@ -18,6 +28,11 @@ export default function AddressList({ addresses: initial }: Props) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState<ProfileAddress | null>(null);
 
+  // Delete dialog state
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
   const openCreate = () => {
     setEditing(null);
     setSheetOpen(true);
@@ -28,23 +43,35 @@ export default function AddressList({ addresses: initial }: Props) {
     setSheetOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Delete this address?")) return;
+  const openDelete = (id: string) => {
+    setDeletingId(id);
+    setDeleteOpen(true);
+  };
 
+  const handleDelete = async () => {
+    if (!deletingId) return;
+
+    setDeleting(true);
     try {
-      const res = await fetch(`/api/profile/addresses/${id}`, {
+      const res = await fetch(`/api/profile/addresses/${deletingId}`, {
         method: "DELETE",
       });
       const data = await res.json();
+
       if (!res.ok) {
         toast.error(data.message || "Failed to delete.");
         return;
       }
+
       toast.success("Address deleted.");
-      setAddresses((prev) => prev.filter((a) => a._id !== id));
+      setAddresses((prev) => prev.filter((a) => a._id !== deletingId));
+      setDeleteOpen(false);
+      setDeletingId(null);
       router.refresh();
     } catch {
       toast.error("Something went wrong.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -72,7 +99,9 @@ export default function AddressList({ addresses: initial }: Props) {
     <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 lg:p-8">
       <div className="mb-5 flex items-center justify-between gap-3 sm:mb-6">
         <div>
-            <h2 className="text-[1.1rem] font-medium sm:text-[1.2rem]">Shipping addresses</h2>
+          <h2 className="text-[1.1rem] font-medium sm:text-[1.2rem]">
+            Shipping addresses
+          </h2>
         </div>
         <button
           type="button"
@@ -120,7 +149,7 @@ export default function AddressList({ addresses: initial }: Props) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleDelete(addr._id)}
+                    onClick={() => openDelete(addr._id)}
                     className="rounded-full p-2 text-black/40 transition-colors hover:bg-red-50 hover:text-red-600"
                     aria-label="Delete address"
                   >
@@ -147,6 +176,34 @@ export default function AddressList({ addresses: initial }: Props) {
         address={editing}
         onSaved={handleSaved}
       />
+
+      {/* Delete confirmation */}
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent className="rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete address?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This address will be permanently
+              removed from your account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              disabled={deleting}
+              className="rounded-full"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleting}
+              className="rounded-full bg-red-600 text-white hover:bg-red-700"
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   );
 }

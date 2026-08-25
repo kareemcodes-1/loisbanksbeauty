@@ -125,7 +125,6 @@ export async function POST(request: NextRequest) {
     const collection = await Collection.create({
       ...body,
       featured: body.featured ?? false,
-      order: body.order ?? 0,
     });
 
     return NextResponse.json(collection, {

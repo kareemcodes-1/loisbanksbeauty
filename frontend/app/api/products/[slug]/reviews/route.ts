@@ -88,10 +88,10 @@ export async function POST(
 
     // Must have purchased this product (adjust statuses to match your Order model)
     const hasPurchased = await Order.exists({
-      userId,
-      status: { $in: ["delivered", "completed"] },
-      "items.productId": product._id,
-    });
+    userId: new Types.ObjectId(userId),
+    orderStatus: "delivered",
+    "items.productId": product._id,
+  });
 
     if (!hasPurchased) {
       return NextResponse.json(

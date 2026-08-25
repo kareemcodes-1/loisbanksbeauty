@@ -12,7 +12,6 @@ export interface PaginationMeta {
 export interface CollectionPayload {
   name: string;
   slug: string;
-  description: string;
   image: string;
   featured: boolean;
 }

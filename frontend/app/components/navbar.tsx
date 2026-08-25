@@ -279,6 +279,14 @@ const Navbar: React.FC = () => {
                   sideOffset={20}
                   className="w-56 rounded-xl p-1.5"
                 >
+                  <div className="border-b border-black/5 bg-black/[0.02] px-5 py-[.5rem]">
+                        <p className="truncate font-medium">
+                          {session.user.name}
+                        </p>
+                        <p className="mt-1 truncate text-[.78rem] text-black/50">
+                          {session.user.email}
+                        </p>
+                      </div>
                   <DropdownMenuItem
                     onClick={() => router.push("/profile")}
                     className="cursor-pointer gap-3 rounded-lg px-3 py-2.5 text-[0.9rem] font-medium"

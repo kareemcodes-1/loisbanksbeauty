@@ -61,8 +61,6 @@ export function DiscountDialog({
     React.useState<"percentage" | "fixed">("percentage");
   const [discountValue, setDiscountValue] = React.useState("");
   const [productIds, setProductIds] = React.useState<string[]>([]);
-  const [minimumAmount, setMinimumAmount] = React.useState("0");
-  const [maxDiscount, setMaxDiscount] = React.useState("0");
   const [startsAt, setStartsAt] = React.useState("");
   const [expiresAt, setExpiresAt] = React.useState("");
   const [isActive, setIsActive] = React.useState(true);
@@ -114,8 +112,6 @@ export function DiscountDialog({
       setDescription(discount.description);
       setDiscountType(discount.discountType);
       setDiscountValue(String(discount.discountValue));
-      setMinimumAmount(String(discount.minimumAmount ?? 0));
-      setMaxDiscount(String(discount.maxDiscount ?? 0));
       setIsActive(discount.isActive);
 
       // handle both populated and plain string ids
@@ -139,8 +135,6 @@ export function DiscountDialog({
       setDiscountType("percentage");
       setDiscountValue("");
       setProductIds([]);
-      setMinimumAmount("0");
-      setMaxDiscount("0");
       setStartsAt("");
       setExpiresAt("");
       setIsActive(true);
@@ -160,8 +154,6 @@ export function DiscountDialog({
         discountType,
         discountValue: Number(discountValue),
         productIds,
-        minimumAmount: Number(minimumAmount) || 0,
-        maxDiscount: Number(maxDiscount) || 0,
         startsAt: new Date(startsAt).toISOString(),
         expiresAt: new Date(expiresAt).toISOString(),
         isActive,
@@ -264,32 +256,6 @@ export function DiscountDialog({
                 onChange={(e) => setDiscountValue(e.target.value)}
                 placeholder={discountType === "percentage" ? "20" : "10.00"}
                 required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="minimumAmount">Minimum Amount</Label>
-              <Input
-                id="minimumAmount"
-                type="number"
-                min="0"
-                step="0.01"
-                value={minimumAmount}
-                onChange={(e) => setMinimumAmount(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="maxDiscount">Max Discount</Label>
-              <Input
-                id="maxDiscount"
-                type="number"
-                min="0"
-                step="0.01"
-                value={maxDiscount}
-                onChange={(e) => setMaxDiscount(e.target.value)}
               />
             </div>
           </div>
