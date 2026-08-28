@@ -92,7 +92,7 @@ const CTA = () => {
         </div>
 
         <SplitLines
-          text="Subscribe for early access to new arrivals, restocks, and members-only discounts. No spam, just the good stuff."
+          text="Subscribe for early access to new arrivals, restocks, and subscribers-only discounts."
           tag="p"
           className="max-w-[min(28rem,100%)] overflow-hidden text-[0.9rem] leading-relaxed text-white/80 sm:text-[1rem]"
           duration={1}

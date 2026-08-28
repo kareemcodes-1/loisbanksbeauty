@@ -1,4 +1,3 @@
-// components/checkout/delivery-section.tsx
 "use client";
 
 import { useMemo } from "react";
@@ -73,7 +72,7 @@ export default function DeliverySection({
 
   return (
     <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 lg:p-8">
-      <h2 className="mb-5 text-[1.1rem] font-medium sm:mb-6 sm:text-[1.2rem]">Delivery address</h2>
+      <h2 className="mb-5 text-[1.1rem] font-medium sm:mb-6 sm:text-[1.2rem]">Billing address</h2>
 
       {/* ===== Saved Addresses ===== */}
       {savedAddresses.length > 0 && (

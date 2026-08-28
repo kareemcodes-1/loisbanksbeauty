@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { useCartStore } from "@/store/cart";
 import { useCurrencyStore } from "@/store/currency";
 import { priceFormatter } from "@/lib/priceFormatter";
+import { getShippingFee } from "@/lib/shipping";
 
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -29,8 +30,6 @@ type UserData = {
 type Props = {
   user: UserData;
 };
-
-const DOOR_DELIVERY_FEE = 2000;
 
 export default function CheckoutForm({ user }: Props) {
   const { items, _hasHydrated } = useCartStore();
@@ -122,7 +121,11 @@ export default function CheckoutForm({ user }: Props) {
     });
   };
 
-  const shippingFee = shippingMethod === "delivery" ? DOOR_DELIVERY_FEE : 0;
+  // Pickup = 0 · Delivery = fee for selected country
+  const shippingFee = getShippingFee(shippingMethod, delivery.country);
+
+  // Fee shown on the delivery option (based on current country)
+  const deliveryOptionFee = getShippingFee("delivery", delivery.country);
 
   const handleContactChange = (
     field: keyof typeof contact,
@@ -138,83 +141,83 @@ export default function CheckoutForm({ user }: Props) {
     setDelivery((prev) => ({ ...prev, [field]: value }));
   };
 
-  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-
-  if (items.length === 0) {
-    toast.error("Your cart is empty.");
-    return;
-  }
-
-  if (!contact.email || !contact.phone) {
-    toast.error("Please fill in your contact details.");
-    return;
-  }
-
-  if (
-    !delivery.firstName ||
-    !delivery.lastName ||
-    !delivery.address ||
-    !delivery.city ||
-    !delivery.country ||
-    !delivery.postalCode
-  ) {
-    toast.error("Please complete your delivery address.");
-    return;
-  }
-
-  setIsSubmitting(true);
-
-  try {
-    // Base amounts (what is stored in the cart)
-    const subtotalBase = items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
-    const shippingFeeBase = shippingMethod === "delivery" ? DOOR_DELIVERY_FEE : 0;
-    const totalAmountBase = subtotalBase + shippingFeeBase;
-
-    const res = await fetch("/api/paystack/initialize", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        contact,
-        delivery,
-        shippingMethod,
-        shippingFee: shippingFeeBase,
-        selectedAddressId,
-        items,
-        subtotal: subtotalBase,
-        totalAmount: totalAmountBase,   // still base currency
-        currency,                       // ← important: current selected currency
-      }),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      toast.error(data.message || "Failed to initialize payment");
+    if (items.length === 0) {
+      toast.error("Your cart is empty.");
       return;
     }
 
-    window.location.href = data.authorization_url;
-  } catch (error) {
-    console.error(error);
-    toast.error("Something went wrong. Please try again.");
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+    if (!contact.email || !contact.phone) {
+      toast.error("Please fill in your contact details.");
+      return;
+    }
 
-  // 1. Wait for cart to rehydrate
+    if (
+      !delivery.firstName ||
+      !delivery.lastName ||
+      !delivery.address ||
+      !delivery.city ||
+      !delivery.country ||
+      !delivery.postalCode
+    ) {
+      toast.error("Please complete your delivery address.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const subtotalBase = items.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      );
+
+      // Recalculate from shared helper (same as UI)
+      const shippingFeeBase = getShippingFee(
+        shippingMethod,
+        delivery.country
+      );
+      const totalAmountBase = subtotalBase + shippingFeeBase;
+
+      const res = await fetch("/api/paystack/initialize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contact,
+          delivery,
+          shippingMethod,
+          shippingFee: shippingFeeBase,
+          selectedAddressId,
+          items,
+          subtotal: subtotalBase,
+          totalAmount: totalAmountBase,
+          currency,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.message || "Failed to initialize payment");
+        return;
+      }
+
+      window.location.href = data.authorization_url;
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (!_hasHydrated) {
     return (
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px] lg:gap-12">
-        {/* Left side skeletons */}
         <div className="space-y-5 sm:space-y-6">
           <Skeleton className="h-48 w-full rounded-2xl" />
           <Skeleton className="h-72 w-full rounded-2xl" />
@@ -222,8 +225,6 @@ const handleSubmit = async (e: React.FormEvent) => {
           <Skeleton className="h-32 w-full rounded-2xl" />
           <Skeleton className="h-12 w-full rounded-xl" />
         </div>
-
-        {/* Right side skeleton */}
         <div>
           <Skeleton className="h-96 w-full rounded-2xl" />
         </div>
@@ -231,7 +232,6 @@ const handleSubmit = async (e: React.FormEvent) => {
     );
   }
 
-  // 2. Only show empty state after hydration is complete
   if (items.length === 0) {
     return (
       <div className="py-20 text-center">
@@ -243,7 +243,6 @@ const handleSubmit = async (e: React.FormEvent) => {
   return (
     <form onSubmit={handleSubmit}>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px] lg:gap-12">
-        {/* Left side */}
         <div className="space-y-5 sm:space-y-6">
           <ContactSection data={contact} onChange={handleContactChange} />
 
@@ -258,9 +257,10 @@ const handleSubmit = async (e: React.FormEvent) => {
           <ShippingMethodSection
             method={shippingMethod}
             onChange={setShippingMethod}
-            shippingFee={DOOR_DELIVERY_FEE}
+            shippingFee={deliveryOptionFee}
             currency={currency}
             priceFormatter={priceFormatter}
+            countryCode={delivery.country}
           />
 
           <PaymentSection />
@@ -274,7 +274,6 @@ const handleSubmit = async (e: React.FormEvent) => {
           </button>
         </div>
 
-        {/* Right side */}
         <div>
           <OrderSummary shippingFee={shippingFee} />
         </div>

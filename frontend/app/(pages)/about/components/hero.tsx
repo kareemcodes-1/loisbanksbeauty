@@ -1,22 +1,19 @@
+import Image from "next/image";
 import BlurText from "@/components/animations/blur-text";
 import { SplitLines } from "@/components/animations/SplitLines";
 
 export default function AboutHero() {
   return (
     <section className="relative flex min-h-[85svh] w-full items-center justify-center overflow-hidden sm:min-h-[85svh] lg:min-h-[100svh]">
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        className="absolute inset-0 h-full w-full object-cover object-center"
-      >
-        <source
-          src="https://res.cloudinary.com/datpkisht/video/upload/v1786314979/gtcaqonk2w1ipou4hlp1.mp4"
-          type="video/mp4"
-        />
-      </video>
+      <Image
+        src="https://res.cloudinary.com/datpkisht/image/upload/v1785710850/g5yrwfeq0aeb7cfti39u.jpg"
+        alt="LoisBanks Beauty — About us"
+        fill
+        priority
+        quality={85}
+        sizes="100vw"
+        className="object-cover"
+      />
 
       <div className="absolute inset-0 z-10 bg-black/40" />
 

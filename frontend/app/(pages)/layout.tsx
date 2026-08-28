@@ -7,6 +7,7 @@ import ScrollToTop from "../components/scroll-to-top";
 import AuthProvider from "@/providers/session-provider";
 import ToastProvider from "@/providers/toast-provider";
 import NextTopLoader from "nextjs-toploader";
+import NewsletterModal from "../components/modals/newsletter-modal";
 
 export default function PageLayout({
   children,
@@ -39,6 +40,7 @@ export default function PageLayout({
       <Footer />
 
       <ChatWidget />
+      <NewsletterModal />
     </AuthProvider>
   );
 }
