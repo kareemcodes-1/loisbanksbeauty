@@ -99,17 +99,15 @@ export async function PUT(
     const {
       name,
       slug,
-      description,
       image,
       featured,
-      order,
     } = body;
 
-    if (!name || !slug || !description || !image) {
+    if (!name || !slug || !image) {
       return NextResponse.json(
         {
           message:
-            "Name, slug, description, and image are required",
+            "Name, slug, and image are required",
         },
         {
           status: 400,
@@ -135,7 +133,6 @@ export async function PUT(
 
     collection.name = name;
     collection.slug = slug;
-    collection.description = description;
     collection.image = image;
     collection.featured = featured ?? false;
 
