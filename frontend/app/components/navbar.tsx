@@ -218,18 +218,23 @@ const Navbar: React.FC = () => {
             </div>
 
             {/* Search */}
-            <button
-              type="button"
-              onClick={() => setOpenSearchModal(true)}
-              aria-label="Search"
-              className="group hidden h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-black/15 bg-transparent transition-all duration-300 hover:border-[#FD3F92] hover:bg-[#FD3F92]/10 lg:flex"
-            >
-              <Search
-                size={20}
-                strokeWidth={1.8}
-                className="transition-colors duration-300 group-hover:text-[#FD3F92]"
-              />
-            </button>
+<button
+  type="button"
+  onClick={() => setOpenSearchModal(true)}
+  aria-label="Search"
+  className="group flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-black/15 bg-transparent transition-all duration-300 hover:border-[#FD3F92] hover:bg-[#FD3F92]/10 sm:h-11 sm:w-11"
+>
+  <Search
+    size={19}
+    strokeWidth={1.8}
+    className="transition-colors duration-300 group-hover:text-[#FD3F92] sm:hidden"
+  />
+  <Search
+    size={20}
+    strokeWidth={1.8}
+    className="hidden transition-colors duration-300 group-hover:text-[#FD3F92] sm:block"
+  />
+</button>
 
             {/* Cart */}
             <button
