@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 
 import type { HeroBanner } from "@/types";
 import { SplitLines } from "@/components/animations/SplitLines";
@@ -16,8 +17,8 @@ export default function Hero({ heroBanner }: HeroProps) {
 
   return (
     <section className="relative h-[100svh] w-full overflow-hidden">
-      {/* Background Video */}
-      {heroBanner.mediaType === "video" && (
+      {/* Background media */}
+      {heroBanner.mediaType === "video" ? (
         <video
           className="absolute inset-0 h-full w-full object-cover"
           src={heroBanner.media}
@@ -25,7 +26,17 @@ export default function Hero({ heroBanner }: HeroProps) {
           muted
           loop
           playsInline
-         preload="auto"
+          preload="auto"
+        />
+      ) : (
+        <Image
+          src={heroBanner.media}
+          alt={heroBanner.title || "LoisBanks Beauty"}
+          fill
+          priority
+          quality={85}
+          sizes="100vw"
+          className="object-cover object-center"
         />
       )}
 
@@ -35,14 +46,14 @@ export default function Hero({ heroBanner }: HeroProps) {
       {/* Content */}
       <div className="absolute inset-x-0 bottom-0 z-20 flex w-full flex-col items-start gap-4 px-5 pb-10 pt-[7.5rem] text-left sm:gap-5 sm:px-8 sm:pb-14 md:px-12 md:pb-20">
         <SplitLines
-  tag="h1"
-  text={heroBanner.title}
-  className="heading-hero w-full max-w-[20rem] text-white sm:max-w-[16rem] md:max-w-[min(500px,90vw)]"
-  duration={1}
-  stagger={0.025}
-  yPercent={100}
-  ease="power4.out"
-/>
+          tag="h1"
+          text={heroBanner.title}
+          className="heading-hero w-full max-w-[20rem] text-white sm:max-w-[16rem] md:max-w-[min(500px,90vw)]"
+          duration={1}
+          stagger={0.025}
+          yPercent={100}
+          ease="power4.out"
+        />
 
         <SplitLines
           tag="p"
