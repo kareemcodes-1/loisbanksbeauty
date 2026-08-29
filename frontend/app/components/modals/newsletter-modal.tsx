@@ -142,24 +142,24 @@ export default function NewsletterModal() {
                 className="h-12 rounded-full border-white/30 bg-white/10 px-5 text-[0.9rem] text-white placeholder:text-white/60 focus-visible:border-white focus-visible:ring-white/30"
               />
 
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="h-12 flex-1 cursor-pointer rounded-full bg-white px-6 text-[0.8rem] font-medium uppercase tracking-wide text-black hover:bg-black hover:text-white disabled:opacity-60"
-                >
-                  {loading ? "Subscribing..." : "Subscribe"}
-                </Button>
+              <div className="flex w-full max-w-[22rem] flex-col gap-3 sm:flex-row sm:items-center">
+  <Button
+    type="submit"
+    disabled={loading}
+    className="h-12 w-full flex-1 cursor-pointer rounded-full bg-white px-8 py-3 text-[0.8rem] font-medium uppercase tracking-wide text-black hover:bg-black hover:text-white disabled:opacity-60 sm:px-6"
+  >
+    {loading ? "Subscribing..." : "Subscribe"}
+  </Button>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={dismiss}
-                  className="h-12 flex-1 cursor-pointer rounded-full border-white/50 bg-transparent px-6 text-[0.8rem] font-medium uppercase tracking-wide text-white hover:bg-white/15 hover:text-white"
-                >
-                  No thanks
-                </Button>
-              </div>
+  <Button
+    type="button"
+    variant="outline"
+    onClick={dismiss}
+    className="h-12 w-full flex-1 cursor-pointer rounded-full border-white/50 bg-transparent px-8 py-3 text-[0.8rem] font-medium uppercase tracking-wide text-white hover:bg-white/15 hover:text-white sm:px-6"
+  >
+    No thanks
+  </Button>
+</div>
             </form>
           </div>
         </div>
