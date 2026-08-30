@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 import { Geist } from "next/font/google";
+import OrganizationSchema from "./components/seo/organization-schema";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -11,7 +12,7 @@ const geist = Geist({
 
 const siteName = "LoisBanks Beauty";
 const siteUrl =
-  process.env.NEXT_PUBLIC_BASE_URL || "https://loisbanksbeauty.com";
+  process.env.NEXT_PUBLIC_APP_URL || "https://loisbanksbeauty.com";
 
 const title = `${siteName} — Premium Hair & Beauty`;
 const description =
@@ -88,7 +89,7 @@ export const metadata: Metadata = {
   },
 
   icons: {
-    icon: "/favicon.jpeg",
+    icon: "/favicon.ico",
     apple: "/favicon.jpeg",
   },
 };
@@ -100,7 +101,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={geist.variable}>
-      <body className="bg-white text-black antialiased">{children}</body>
+      <body className="bg-white text-black antialiased">
+         <OrganizationSchema />
+        {children}
+      </body>
     </html>
   );
 }
