@@ -7,6 +7,9 @@ export default function OrganizationSchema() {
     name: "LoisBanks Beauty",
     url: "https://loisbanksbeauty.com",
     logo: "https://res.cloudinary.com/datpkisht/image/upload/v1788105362/aduppkeags21kxmmmsbr.svg",
+    sameAs: [
+    "https://www.instagram.com/loisbanks_hair",
+  ],
   };
 
   return (
