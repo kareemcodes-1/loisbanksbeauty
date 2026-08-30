@@ -86,18 +86,26 @@ const FadeContent: React.FC<FadeContentProps> = ({
     });
 
     const st = ScrollTrigger.create({
-      trigger: el,
-      scroller: scrollerTarget || window,
-      start: `top ${startPct}%`,
-      once: true,
-      onEnter: () => tl.play()
-    });
+    trigger: el,
+    scroller: scrollerTarget || window,
+    start: `top ${startPct}%`,
+    once: true,
+    onEnter: () => tl.play()
+  });
+
+  // Force a refresh once the page has fully settled (images, fonts, etc.)
+  const handleLoad = () => ScrollTrigger.refresh();
+  window.addEventListener("load", handleLoad);
+
+  // Also refresh once web fonts are confirmed ready (fonts can shift layout too)
+  document.fonts?.ready.then(() => ScrollTrigger.refresh());
 
     return () => {
-      st.kill();
-      tl.kill();
-      gsap.killTweensOf(el);
-    };
+    st.kill();
+    tl.kill();
+    gsap.killTweensOf(el);
+    window.removeEventListener("load", handleLoad);
+  };
   }, []);
 
   return (

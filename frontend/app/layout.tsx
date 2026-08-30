@@ -3,6 +3,7 @@ import "./globals.css";
 
 import { Geist } from "next/font/google";
 import OrganizationSchema from "./components/seo/organization-schema";
+import WebsiteSchema from "./components/seo/website-schema";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -14,14 +15,13 @@ const siteName = "LoisBanks Beauty";
 const siteUrl =
   process.env.NEXT_PUBLIC_APP_URL || "https://loisbanksbeauty.com";
 
-const title = `${siteName} — Premium Hair & Beauty`;
+const title = "LoisBanks Beauty | Luxury Human Hair Wigs, Athleisure & Beauty Essentials";
 const description =
-  "Shop premium human hair wigs and beauty products at LoisBanks Beauty. Quality pieces, fast delivery across Nigeria and beyond, and verified customer reviews.";
+  "Shop luxury human hair wigs, athleisure wear and beauty essentials. Premium quality, flawless textures, effortless glam — worldwide delivery.";
 
 // Put og.jpg in /public, OR use a full CDN URL
-const ogImage = "https://res.cloudinary.com/datpkisht/image/upload/v1787147828/i1avstooywwwrsd0l99t.jpg";
-// Example CDN:
-// const ogImage = "https://res.cloudinary.com/your-cloud/image/upload/v123/loisbanks-og.jpg";
+const ogImage =
+  "https://res.cloudinary.com/datpkisht/image/upload/v1787147828/i1avstooywwwrsd0l99t.jpg";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -37,11 +37,13 @@ export const metadata: Metadata = {
 
   keywords: [
     "LoisBanks Beauty",
-    "human hair wigs",
-    "luxury wigs Nigeria",
-    "hair bundles",
-    "premium wigs Lagos",
-    "beauty products",
+    "luxury hair wigs Nigeria",
+    "human hair wigs Lagos",
+    "premium wigs Lekki",
+    "athleisure wear Nigeria",
+    "beauty essentials Lagos",
+    "hair bundles Nigeria",
+    "quality wigs Lagos",
   ],
 
   authors: [{ name: siteName }],
@@ -64,7 +66,7 @@ export const metadata: Metadata = {
         url: ogImage,
         width: 1200,
         height: 630,
-        alt: `${siteName} — Premium Hair & Beauty`,
+        alt: "LoisBanks Beauty — Luxury Hair Wigs, Athleisure & Beauty Essentials",
       },
     ],
   },
@@ -90,7 +92,8 @@ export const metadata: Metadata = {
 
   icons: {
     icon: "/favicon.ico",
-    apple: "/favicon.jpeg",
+    shortcut: "/favicon.ico",
+    apple: "/icon.png",
   },
 };
 
@@ -102,7 +105,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={geist.variable}>
       <body className="bg-white text-black antialiased">
-         <OrganizationSchema />
+        <WebsiteSchema />
+        <OrganizationSchema />
         {children}
       </body>
     </html>

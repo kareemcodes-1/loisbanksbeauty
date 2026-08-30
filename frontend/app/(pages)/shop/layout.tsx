@@ -3,8 +3,9 @@ import Testimonials from "@/app/components/testimonials";
 
 
 export const metadata: Metadata = {
-  title: "Shop",
-  description: "Browse our full collection of premium hair and beauty products.",
+  title: "Shop Luxury Human Hair Wigs, Athleisure & Beauty Essentials",
+  description:
+    "Shop luxury human hair wigs, athleisure wear and beauty essentials. Premium quality, flawless textures and effortless glam — affordable luxury delivered worldwide.",
 };
 
 export default function RootLayout({

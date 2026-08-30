@@ -33,32 +33,27 @@ export const SplitLines: React.FC<SplitLinesProps> = ({
   const containerRef = useRef<HTMLElement>(null);
 
   useGSAP(
-    () => {
-      const element = containerRef.current;
+  () => {
+    const element = containerRef.current;
+    if (!element) return;
 
-      if (!element) return;
+    let outerSplit: SplitText;
+    let innerSplit: SplitText;
+    let observer: IntersectionObserver;
 
-      // Create the line masks
-      const outerSplit = new SplitText(element, {
+    const setupSplit = () => {
+      outerSplit = new SplitText(element, {
         type: "lines",
         linesClass: "split-outer",
       });
 
-      // Create the animated lines
-      const innerSplit = new SplitText(outerSplit.lines, {
+      innerSplit = new SplitText(outerSplit.lines, {
         type: "lines",
         linesClass: "split-inner",
       });
 
-      // Hide anything outside each line
-      gsap.set(outerSplit.lines, {
-        overflow: "hidden",
-      });
-
-      // Start lines below their masks
-      gsap.set(innerSplit.lines, {
-        yPercent,
-      });
+      gsap.set(outerSplit.lines, { overflow: "hidden" });
+      gsap.set(innerSplit.lines, { yPercent });
 
       const animateIn = () => {
         gsap.to(innerSplit.lines, {
@@ -70,44 +65,37 @@ export const SplitLines: React.FC<SplitLinesProps> = ({
         });
       };
 
-      const observer = new IntersectionObserver(
+      observer = new IntersectionObserver(
         ([entry]) => {
           if (!entry.isIntersecting) return;
-
           animateIn();
-
           observer.disconnect();
         },
-        {
-          threshold,
-          rootMargin,
-        }
+        { threshold, rootMargin }
       );
 
       observer.observe(element);
+    };
 
-      return () => {
-        observer.disconnect();
-
-        gsap.killTweensOf(innerSplit.lines);
-
-        innerSplit.revert();
-        outerSplit.revert();
-      };
-    },
-    {
-      scope: containerRef,
-      dependencies: [
-        text,
-        duration,
-        stagger,
-        ease,
-        yPercent,
-        threshold,
-        rootMargin,
-      ],
+    // Wait for fonts to be ready before measuring/splitting text
+    if (document.fonts?.status === "loaded") {
+      setupSplit();
+    } else {
+      document.fonts?.ready.then(setupSplit);
     }
-  );
+
+    return () => {
+      observer?.disconnect();
+      if (innerSplit) gsap.killTweensOf(innerSplit.lines);
+      innerSplit?.revert();
+      outerSplit?.revert();
+    };
+  },
+  {
+    scope: containerRef,
+    dependencies: [text, duration, stagger, ease, yPercent, threshold, rootMargin],
+  }
+);
 
   const Component = Tag as React.ElementType;
 

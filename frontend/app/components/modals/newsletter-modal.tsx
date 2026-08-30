@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { X } from "lucide-react";
-import gsap from "gsap";
 
 import {
   Dialog,
@@ -12,7 +11,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 
 const STORAGE_KEY = "lb-newsletter-dismissed";
 
@@ -31,7 +29,6 @@ export default function NewsletterModal() {
     const timer = setTimeout(() => setOpen(true), 1500);
     return () => clearTimeout(timer);
   }, []);
-
 
   const dismiss = () => {
     setOpen(false);
@@ -89,19 +86,15 @@ export default function NewsletterModal() {
     >
       <DialogContent
         showCloseButton={false}
-        className="top-[60%] gap-0 overflow-hidden border-none p-0 sm:max-w-[42rem] md:max-w-[52rem] gap-0 overflow-hidden border-none p-0
-    sm:max-w-[42rem] md:max-w-[52rem]
-    data-[state=open]:animate-in data-[state=open]:fade-in-0
-    data-[state=open]:zoom-in-95 data-[state=open]:slide-in-from-bottom-4
-    data-[state=closed]:animate-out data-[state=closed]:fade-out-0
-    data-[state=closed]:zoom-out-95
-    duration-300"
+        className="top-[60%] gap-0 overflow-hidden border-none p-0 sm:max-w-[42rem] md:max-w-[52rem]
+        data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:slide-in-from-bottom-4
+        data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95
+        duration-300"
       >
         <DialogTitle className="sr-only">Subscribe to newsletter</DialogTitle>
 
-        <div
-          className="relative flex flex-col md:flex-row"
-        >
+        <div className="relative flex flex-col md:flex-row">
+          {/* Close button */}
           <button
             type="button"
             onClick={dismiss}
@@ -111,6 +104,7 @@ export default function NewsletterModal() {
             <X size={18} strokeWidth={1.75} />
           </button>
 
+          {/* Image - desktop only */}
           <div className="relative hidden min-h-[24rem] w-full overflow-hidden md:block md:w-1/2">
             <Image
               src="/login.jpg"
@@ -121,7 +115,8 @@ export default function NewsletterModal() {
             />
           </div>
 
-          <div className="flex w-full flex-col justify-center gap-5 bg-[#FD3F92] px-5 py-10 text-white sm:gap-6 sm:px-8 sm:py-12 md:w-1/2">
+          {/* Form side */}
+          <div className="flex w-full flex-col justify-center gap-5 bg-[#FD3F92] px-6 py-10 text-white sm:gap-6 sm:px-8 sm:py-12 md:w-1/2 md:px-10">
             <h2 className="heading-2">Don&apos;t Miss What&apos;s Next</h2>
 
             <p className="max-w-[22rem] text-[0.9rem] leading-relaxed text-white/90 sm:text-[0.95rem]">
@@ -142,23 +137,23 @@ export default function NewsletterModal() {
                 className="h-12 rounded-full border-white/30 bg-white/10 px-5 text-[0.9rem] text-white placeholder:text-white/60 focus-visible:border-white focus-visible:ring-white/30"
               />
 
-<div className="flex w-full max-w-[22rem] flex-col gap-3 sm:flex-row sm:items-center">
-  <button
-    type="submit"
-    disabled={loading}
-    className="flex h-12 w-full flex-1 cursor-pointer items-center justify-center rounded-full bg-white px-8 text-[0.8rem] font-medium uppercase tracking-wide text-black transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-60 sm:px-6"
-  >
-    {loading ? "Subscribing..." : "Subscribe"}
-  </button>
+              <div className="flex w-full flex-col gap-3 sm:flex-row">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex h-12 w-full flex-1 items-center justify-center rounded-full bg-white py-[.9rem] px-6 text-[0.8rem] font-medium uppercase tracking-wide text-black transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {loading ? "Subscribing..." : "Subscribe"}
+                </button>
 
-  <button
-    type="button"
-    onClick={dismiss}
-    className="flex h-12 w-full flex-1 cursor-pointer items-center justify-center rounded-full border border-white/50 bg-transparent px-8 text-[0.8rem] font-medium uppercase tracking-wide text-white transition hover:bg-white/15 disabled:opacity-60 sm:px-6"
-  >
-    No thanks
-  </button>
-</div>
+                <button
+                  type="button"
+                  onClick={dismiss}
+                  className="flex h-12 w-full flex-1 items-center justify-center rounded-full border border-white/50 bg-transparent py-[.9rem] px-6 text-[0.8rem] font-medium uppercase tracking-wide text-white transition hover:bg-white/15"
+                >
+                  No thanks
+                </button>
+              </div>
             </form>
           </div>
         </div>

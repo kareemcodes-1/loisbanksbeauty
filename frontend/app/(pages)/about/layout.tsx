@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import React from "react";
 
-
 export const metadata: Metadata = {
-  title: "About us",
+  title: "About Us",
   description:
-    "Learn about LoisBanks Beauty — our story, values, and commitment to premium hair and beauty products.",
+    "Discover the story behind LoisBanks Beauty. We create luxury human hair wigs, athleisure and beauty essentials for women who never compromise on quality, texture or elegance.",
 };
 
 const AboutLayout = ({

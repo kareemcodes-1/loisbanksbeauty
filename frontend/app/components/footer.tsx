@@ -13,17 +13,17 @@ gsap.registerPlugin(ScrollTrigger);
 const Footer = () => {
   const footerRef = useRef<HTMLElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
-
   const pathname = usePathname();
 
   useGSAP(
     () => {
-      if (!footerRef.current || !triggerRef.current) return;
+      // Only run the animation on large screens
+      const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+      if (!isDesktop || !footerRef.current || !triggerRef.current) return;
 
       const footer = footerRef.current;
       const trigger = triggerRef.current;
 
-      // Make sure the footer always starts from the correct position
       gsap.set(footer, {
         yPercent: -50,
       });
@@ -43,9 +43,10 @@ const Footer = () => {
         end: "+=50%",
         animation: uncover,
         scrub: true,
+        invalidateOnRefresh: true,
       });
 
-      // Recalculate positions after navigation/layout changes
+      // Refresh after route change
       requestAnimationFrame(() => {
         ScrollTrigger.refresh();
       });
@@ -53,8 +54,6 @@ const Footer = () => {
       return () => {
         scrollTrigger.kill();
         uncover.kill();
-
-        // Remove any transform left behind by the animation
         gsap.set(footer, {
           clearProps: "transform",
         });
@@ -69,10 +68,9 @@ const Footer = () => {
 
   return (
     <>
-      {/* Footer scroll trigger */}
-      <div ref={triggerRef} className="section" />
+      {/* This trigger is only needed on desktop */}
+      <div ref={triggerRef} className="section hidden lg:block" />
 
-      {/* Footer */}
       <div className="relative w-full overflow-hidden bg-black">
         <footer
           ref={footerRef}
@@ -87,13 +85,14 @@ const Footer = () => {
                 <img
                   src="/favicon.jpeg"
                   className="h-14 w-14 rounded-full object-cover sm:h-16 sm:w-16"
-                  alt="LoisBanks Beauty"
+                  alt="LoisBanks Beauty - Luxury Human Hair Wigs"
                 />
               </Link>
 
               <p className="max-w-xs text-[0.9rem] leading-relaxed text-white/60 sm:text-base">
-                Premium luxury hair extensions crafted for confidence, beauty
-                and timeless elegance.
+                Shop luxury human hair wigs, athleisure wear and beauty
+                essentials. Premium quality, flawless textures and effortless
+                glam.
               </p>
 
               <div className="mt-1 flex gap-3">
@@ -135,15 +134,12 @@ const Footer = () => {
                 <Link href="/" className="transition hover:text-white">
                   Home
                 </Link>
-
                 <Link href="/shop" className="transition hover:text-white">
                   Shop
                 </Link>
-
                 <Link href="/about" className="transition hover:text-white">
-                  About Us
+                  About LoisBanks Beauty
                 </Link>
-
                 <Link href="/contact" className="transition hover:text-white">
                   Contact Us
                 </Link>
@@ -159,7 +155,6 @@ const Footer = () => {
               <div className="flex flex-col gap-4 text-[0.9rem] text-white/60 sm:gap-5 sm:text-base">
                 <div className="flex flex-col gap-1">
                   <p className="text-sm font-medium text-white">Email</p>
-
                   <Link
                     href="mailto:lbanksluxuryhairs@gmail.com"
                     className="break-all transition hover:text-white"
@@ -170,7 +165,6 @@ const Footer = () => {
 
                 <div className="flex flex-col gap-1">
                   <p className="text-sm font-medium text-white">WhatsApp</p>
-
                   <Link
                     href="https://wa.me/2348105001284"
                     className="transition hover:text-white"
@@ -181,7 +175,6 @@ const Footer = () => {
 
                 <div className="flex flex-col gap-1">
                   <p className="text-sm font-medium text-white">Hours</p>
-
                   <p>Mon – Sat | 9 AM – 6 PM</p>
                 </div>
               </div>
@@ -195,7 +188,6 @@ const Footer = () => {
 
               <div className="flex flex-col gap-2 text-[0.9rem] text-white/60 sm:text-base">
                 <p className="text-sm font-medium text-white">Address</p>
-
                 <p className="max-w-xs leading-relaxed">
                   33a Sedona mall, opp Monty suites, Adebayo Doherty street,
                   Lekki Phase 1
@@ -216,7 +208,6 @@ const Footer = () => {
               >
                 Refund Policy
               </Link>
-
               <Link
                 href="/shipping-policy"
                 className="transition hover:text-white"

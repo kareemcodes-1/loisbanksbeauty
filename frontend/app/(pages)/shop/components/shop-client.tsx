@@ -38,6 +38,13 @@ type Props = {
   pagination: PaginationMeta;
 };
 
+const isHairWig = (product: Product) => {
+  const name = product.collectionId?.name?.toLowerCase() || "";
+  return (
+    name.includes("wigs")
+  );
+};
+
 function isProductInStock(product: Product) {
   if (!product.trackInventory) return true;
   return product.stock > 0;
@@ -153,11 +160,20 @@ export default function ShopClient({
     return matchesCollection && matchesPrice && matchesAvailability;
   });
 
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (sort === "price-asc") return a.price - b.price;
-    if (sort === "price-desc") return b.price - a.price;
-    return 0;
-  });
+const sortedProducts = [...filteredProducts].sort((a, b) => {
+  // First priority: Hair Wigs always come before other products
+  const aIsWig = isHairWig(a);
+  const bIsWig = isHairWig(b);
+
+  if (aIsWig && !bIsWig) return -1;
+  if (!aIsWig && bIsWig) return 1;
+
+  // Then apply the selected sort
+  if (sort === "price-asc") return a.price - b.price;
+  if (sort === "price-desc") return b.price - a.price;
+
+  return 0; // keep original order for "default"
+});
 
   const activeSortLabel =
     SORT_OPTIONS.find((option) => option.value === sort)?.label ?? "Default";
@@ -258,7 +274,7 @@ women who know exactly what they want.
           <div className="flex min-h-[16rem] items-center justify-center border border-black/10 sm:min-h-[20rem]">
             <EmptyState
               icon={ShoppingBag}
-              message="No products available at the moment."
+              message="No products available."
               buttonText="Back to Home"
               buttonHref="/"
             />

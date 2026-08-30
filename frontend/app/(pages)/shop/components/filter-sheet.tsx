@@ -158,19 +158,27 @@ const FilterSheet = ({
         </div>
 
         {/* Footer */}
-        <div className="flex shrink-0 w-full items-center gap-2.5 border-t border-black/10 px-5 py-4 sm:gap-3 sm:px-6 sm:py-5 lg:px-8">
-          <button
-            type="button"
-            onClick={onClear}
-            className="w-full rounded-full border border-black/15 py-3 text-[0.7rem] font-medium uppercase text-black transition-colors duration-300 hover:border-black"
-          >
-            Clear All
-          </button>
+        {/* Footer */}
+<div className="flex w-full shrink-0 items-center gap-2.5 border-t border-black/10 px-5 py-4 sm:gap-3 sm:px-6 sm:py-5 lg:px-8">
+  <button
+    type="button"
+    onClick={onClear}
+    className={`w-full rounded-full py-3 text-[0.7rem] font-medium uppercase transition-colors duration-300 ${
+      selectedCollections.length > 0 ||
+      selectedAvailability.length > 0 ||
+      priceRange[0] !== minPrice ||
+      priceRange[1] !== maxPrice
+        ? "bg-black text-white hover:bg-black/90"
+        : "border border-black/15 text-black hover:border-black"
+    }`}
+  >
+    Clear All
+  </button>
 
-          <button type="button" onClick={onApply} className="btn-primary w-full">
-            Apply
-          </button>
-        </div>
+  <button type="button" onClick={onApply} className="btn-primary w-full">
+    Apply
+  </button>
+</div>
       </SheetContent>
     </Sheet>
   );
