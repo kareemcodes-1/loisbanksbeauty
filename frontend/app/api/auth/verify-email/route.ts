@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import crypto from "crypto";
 
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
@@ -16,34 +17,20 @@ export async function POST(request: Request) {
     if (!email || !code) {
       return NextResponse.json(
         {
-          message:
-            "Email and verification code are required.",
+          message: "Email and verification code are required.",
         },
-        { status: 400 }
-      );
-    }
-
-    if (!/^\d{6}$/.test(code)) {
-      return NextResponse.json(
-        {
-          message:
-            "Verification code must be 6 digits.",
-        },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     await connectDB();
 
     const user = await User.findOne({ email }).select(
-      "+emailVerificationCode +emailVerificationCodeExpires +emailVerificationAttempts"
+      "+emailVerificationCode +emailVerificationCodeExpires +emailVerificationLoginToken +emailVerificationLoginTokenExpires",
     );
 
     if (!user) {
-      return NextResponse.json(
-        { message: "User not found." },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "User not found." }, { status: 404 });
     }
 
     if (user.emailVerified) {
@@ -51,80 +38,60 @@ export async function POST(request: Request) {
         {
           message: "Email is already verified.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    if (
-      !user.emailVerificationCode ||
-      !user.emailVerificationCodeExpires
-    ) {
+    if (!user.emailVerificationCode || !user.emailVerificationCodeExpires) {
       return NextResponse.json(
         {
-          message:
-            "No active verification code. Please request a new one.",
+          message: "No active verification code. Please request a new one.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // Check expiration
     if (user.emailVerificationCodeExpires < new Date()) {
-      user.emailVerificationCode = undefined;
-      user.emailVerificationCodeExpires = undefined;
-      user.emailVerificationAttempts = 0;
-
-      await user.save();
-
       return NextResponse.json(
         {
-          message:
-            "Verification code has expired. Please request a new one.",
+          message: "Verification code has expired.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // Check verification attempts
-    const attempts = user.emailVerificationAttempts ?? 0;
-
-    if (attempts >= 5) {
-      return NextResponse.json(
-        {
-          message:
-            "Too many incorrect attempts. Please request a new code.",
-        },
-        { status: 429 }
-      );
-    }
-
-    // Check code
     if (user.emailVerificationCode !== code) {
-      user.emailVerificationAttempts = attempts + 1;
-
-      await user.save();
-
-      const remainingAttempts =
-        5 - (attempts + 1);
-
       return NextResponse.json(
         {
-          message:
-            remainingAttempts > 0
-              ? `Invalid verification code. ${remainingAttempts} attempt${
-                  remainingAttempts === 1 ? "" : "s"
-                } remaining.`
-              : "Invalid verification code. Please request a new one.",
+          message: "Invalid verification code.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // Verification successful
+    // Generate one-time login token
+    const loginToken = crypto.randomBytes(32).toString("hex");
+
+    const hashedLoginToken = crypto
+      .createHash("sha256")
+      .update(loginToken)
+      .digest("hex");
+
+    // Mark email as verified
     user.emailVerified = true;
+
+    // Clear verification code
     user.emailVerificationCode = undefined;
     user.emailVerificationCodeExpires = undefined;
     user.emailVerificationAttempts = 0;
+
+    // Store hashed login token
+    user.emailVerificationLoginToken = hashedLoginToken;
+
+    // Login token expires in 5 minutes
+    user.emailVerificationLoginTokenExpires = new Date(
+      Date.now() + 5 * 60 * 1000,
+    );
 
     await user.save();
 
@@ -132,8 +99,9 @@ export async function POST(request: Request) {
       {
         success: true,
         message: "Email verified successfully.",
+        loginToken,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("Verify email error:", error);
@@ -142,7 +110,7 @@ export async function POST(request: Request) {
       {
         message: "Failed to verify email.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -22,7 +22,9 @@ export async function POST(request: Request) {
 
     await connectDB();
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select(
+      "+emailVerificationLoginToken +emailVerificationLoginTokenExpires"
+    );
 
     if (!user) {
       return NextResponse.json(
@@ -38,19 +40,37 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate a 6-digit verification code
+    // Generate 6-digit verification code
     const code = crypto
       .randomInt(100000, 1000000)
       .toString();
 
     // Code expires in 10 minutes
-    const expiresAt = new Date(
+    const codeExpiresAt = new Date(
+      Date.now() + 10 * 60 * 1000
+    );
+
+    // Generate one-time login token
+    const loginToken = crypto.randomBytes(32).toString("hex");
+
+    // Store only the hashed login token in MongoDB
+    const hashedLoginToken = crypto
+      .createHash("sha256")
+      .update(loginToken)
+      .digest("hex");
+
+    // Login token also expires in 10 minutes
+    const loginTokenExpiresAt = new Date(
       Date.now() + 10 * 60 * 1000
     );
 
     user.emailVerificationCode = code;
-    user.emailVerificationCodeExpires = expiresAt;
+    user.emailVerificationCodeExpires = codeExpiresAt;
     user.emailVerificationAttempts = 0;
+
+    user.emailVerificationLoginToken = hashedLoginToken;
+    user.emailVerificationLoginTokenExpires =
+      loginTokenExpiresAt;
 
     await user.save();
 

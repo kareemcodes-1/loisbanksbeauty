@@ -1,3 +1,4 @@
+
 import mongoose, { Document, Model, Schema } from "mongoose";
 
 const addressSchema = new Schema(
@@ -65,6 +66,11 @@ export interface IUserDocument extends Document {
   emailVerificationCode?: string;
   emailVerificationCodeExpires?: Date;
   emailVerificationAttempts?: number;
+
+  // Temporary token used to automatically log the user in
+  // immediately after successful email verification.
+  emailVerificationLoginToken?: string;
+  emailVerificationLoginTokenExpires?: Date;
 
   addresses: {
     _id?: mongoose.Types.ObjectId;
@@ -144,6 +150,18 @@ const userSchema = new Schema<IUserDocument>(
       select: false,
     },
 
+    // Temporary login token
+    // Created only after the correct verification code is entered.
+    emailVerificationLoginToken: {
+      type: String,
+      select: false,
+    },
+
+    emailVerificationLoginTokenExpires: {
+      type: Date,
+      select: false,
+    },
+
     // =========================
     // Addresses
     // =========================
@@ -177,3 +195,4 @@ const User: Model<IUserDocument> =
   mongoose.model<IUserDocument>("User", userSchema);
 
 export default User;
+
