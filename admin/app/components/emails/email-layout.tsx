@@ -17,7 +17,8 @@ type EmailLayoutProps = {
 };
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://loisbanksbeauty.com";
-const LOGO_URL = `https://res.cloudinary.com/datpkisht/image/upload/v1786684533/gjxznh8gewb2j46cyvgt.jpg`; // public logo URL
+const LOGO_URL =
+  "https://res.cloudinary.com/datpkisht/image/upload/v1786684533/gjxznh8gewb2j46cyvgt.jpg";
 
 export default function EmailLayout({ preview, children }: EmailLayoutProps) {
   return (
@@ -45,20 +46,60 @@ export default function EmailLayout({ preview, children }: EmailLayoutProps) {
 
             {/* Footer */}
             <Section className="border-t border-black/5 bg-[#fafafa] px-10 py-8 text-center">
-              <Text className="m-0 text-xs leading-relaxed text-black/40">
-                LoisBanks Beauty · With love
+              <Text className="m-0 text-[13px] leading-relaxed text-black/60">
+                Thanks for choosing LoisBanks Beauty.
               </Text>
-              <Text className="mt-2 m-0 text-xs text-black/30">
-                <Link href={APP_URL} className="text-black/40 underline">
-                  Visit store
+
+              <Text className="mt-3 m-0 text-[12px] leading-relaxed text-black/45">
+                If you have any questions or need help with your order, feel free
+                to reach out to us.
+              </Text>
+
+              <Text className="mt-4 m-0 text-[12px] leading-relaxed text-black/45">
+                <Link href={APP_URL} className="text-black/50 underline">
+                  Visit our store
                 </Link>
                 {" · "}
                 <Link
                   href={`${APP_URL}/contact`}
-                  className="text-black/40 underline"
+                  className="text-black/50 underline"
                 >
                   Contact us
                 </Link>
+              </Text>
+
+              <Text className="mt-3 m-0 text-[12px] leading-relaxed text-black/45">
+                Email:{" "}
+                <Link
+                  href="mailto:lbanksluxuryhairs@gmail.com"
+                  className="text-black/50 underline"
+                >
+                  lbanksluxuryhairs@gmail.com
+                </Link>
+              </Text>
+
+              <Text className="mt-1 m-0 text-[12px] leading-relaxed text-black/45">
+                WhatsApp:{" "}
+                <Link
+                  href="https://wa.me/2348105001284"
+                  className="text-black/50 underline"
+                >
+                  +234 810 500 1284
+                </Link>
+              </Text>
+
+              <Text className="mt-4 m-0 text-[12px] leading-relaxed text-black/45">
+                Follow us on{" "}
+                <Link
+                  href="https://www.instagram.com/loisbanks_hair"
+                  className="text-black/50 underline"
+                >
+                  Instagram
+                </Link>
+              </Text>
+
+              <Text className="mt-6 m-0 text-[11px] text-black/30">
+                LoisBanks Beauty · With love
               </Text>
             </Section>
           </Container>

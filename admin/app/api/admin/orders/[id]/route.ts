@@ -8,8 +8,10 @@ import "@/models/Product";
 import {
   sendOrderConfirmedEmail,
   sendOrderShippedEmail,
+  sendOrderOutForDeliveryEmail,
   sendOrderReadyForPickupEmail,
-  sendOrderDeliveredEmail } from "@/lib/email/send"
+  sendOrderDeliveredEmail,
+} from "@/lib/email/send";
 
 interface RouteParams {
   params: Promise<{
@@ -21,26 +23,19 @@ const validOrderStatuses: OrderStatus[] = [
   "processing",
   "confirmed",
   "shipped",
+  "out_for_delivery",
   "ready_for_pickup",
   "delivered",
   "cancelled",
 ];
 
-const validPaymentStatuses = [
-  "pending",
-  "paid",
-  "failed",
-  "refunded",
-] as const;
+const validPaymentStatuses = ["pending", "paid", "failed", "refunded"] as const;
 
 function isValidObjectId(id: string) {
   return /^[0-9a-fA-F]{24}$/.test(id);
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     await connectDB();
 
@@ -49,14 +44,14 @@ export async function GET(
     if (!id) {
       return NextResponse.json(
         { message: "Order ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!isValidObjectId(id)) {
       return NextResponse.json(
         { message: "Invalid order ID" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -66,10 +61,7 @@ export async function GET(
       .lean();
 
     if (!order) {
-      return NextResponse.json(
-        { message: "Order not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "Order not found" }, { status: 404 });
     }
 
     return NextResponse.json(order, { status: 200 });
@@ -78,15 +70,12 @@ export async function GET(
 
     return NextResponse.json(
       { message: "Failed to fetch order" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     await connectDB();
 
@@ -95,26 +84,21 @@ export async function PUT(
     if (!id) {
       return NextResponse.json(
         { message: "Order ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!isValidObjectId(id)) {
       return NextResponse.json(
         { message: "Invalid order ID" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const body = await request.json();
 
-    const {
-      orderStatus,
-      paymentStatus,
-      channel,
-      paidAt,
-      trackingNumber,
-    } = body;
+    const { orderStatus, paymentStatus, channel, paidAt, trackingNumber } =
+      body;
 
     const updateData: Record<string, unknown> = {};
 
@@ -122,9 +106,10 @@ export async function PUT(
       if (!validOrderStatuses.includes(orderStatus)) {
         return NextResponse.json(
           { message: "Invalid order status" },
-          { status: 400 }
+          { status: 400 },
         );
       }
+
       updateData.orderStatus = orderStatus;
     }
 
@@ -132,9 +117,10 @@ export async function PUT(
       if (!validPaymentStatuses.includes(paymentStatus)) {
         return NextResponse.json(
           { message: "Invalid payment status" },
-          { status: 400 }
+          { status: 400 },
         );
       }
+
       updateData["paymentInfo.paymentStatus"] = paymentStatus;
     }
 
@@ -156,29 +142,24 @@ export async function PUT(
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json(
         { message: "No valid fields provided for update" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // Previous status (only email when status actually changes)
-    const previousOrder = await Order.findById(id)
-      .select("orderStatus")
-      .lean();
+    // Previous status (only send email when status actually changes)
+    const previousOrder = await Order.findById(id).select("orderStatus").lean();
 
     const order = await Order.findByIdAndUpdate(
       id,
       { $set: updateData },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     )
       .populate("userId", "name email phone")
       .populate("items.productId", "name slug")
       .lean();
 
     if (!order) {
-      return NextResponse.json(
-        { message: "Order not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "Order not found" }, { status: 404 });
     }
 
     // --- Emails (never block the API response) ---
@@ -200,32 +181,50 @@ export async function PUT(
       if (email) {
         try {
           if (orderStatus === "confirmed") {
-            await sendOrderConfirmedEmail(email, name, orderReference);
+            await sendOrderConfirmedEmail(email, name, {
+              orderReference,
+              items: order.items.map((item) => ({
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price,
+                image: item.media?.[0]?.url,
+                size: item.size,
+              })),
+              subtotal: order.subtotal,
+              shippingFee: order.shippingFee,
+              tax: order.tax,
+              totalAmount: order.totalAmount,
+              paymentMethod: order.paymentInfo.channel ?? "Paystack",
+              shippingMethod: order.shippingMethod,
+            });
           }
 
           if (orderStatus === "shipped") {
-            const trackingUrl = order.trackingNumber
-              ? undefined // or build a carrier URL if you have one
-              : undefined;
+            const trackingUrl = order.trackingNumber ? undefined : undefined;
 
             await sendOrderShippedEmail(
               email,
               name,
               orderReference,
-              trackingUrl
+              trackingUrl,
             );
+          }
+
+          if (orderStatus === "out_for_delivery") {
+            await sendOrderOutForDeliveryEmail(email, name, orderReference);
           }
 
           if (orderStatus === "ready_for_pickup") {
-            await sendOrderReadyForPickupEmail(
-              email,
-              name,
-              orderReference
-            );
+            await sendOrderReadyForPickupEmail(email, name, orderReference);
           }
 
           if (orderStatus === "delivered") {
-            await sendOrderDeliveredEmail(email, name, orderReference);
+            await sendOrderDeliveredEmail(
+              email,
+              name,
+              orderReference,
+              order.shippingMethod,
+            );
           }
         } catch (emailError) {
           console.error("Order status email failed:", emailError);
@@ -239,15 +238,12 @@ export async function PUT(
 
     return NextResponse.json(
       { message: "Failed to update order" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: RouteParams
-) {
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     await connectDB();
 
@@ -256,36 +252,33 @@ export async function DELETE(
     if (!id) {
       return NextResponse.json(
         { message: "Order ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!isValidObjectId(id)) {
       return NextResponse.json(
         { message: "Invalid order ID" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const order = await Order.findByIdAndDelete(id);
 
     if (!order) {
-      return NextResponse.json(
-        { message: "Order not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "Order not found" }, { status: 404 });
     }
 
     return NextResponse.json(
       { message: "Order deleted successfully" },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("DELETE /api/orders/[id] error:", error);
 
     return NextResponse.json(
       { message: "Failed to delete order" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

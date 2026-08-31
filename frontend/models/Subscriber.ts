@@ -1,9 +1,11 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
+import crypto from "crypto";
 
 export interface ISubscriberDocument extends Document {
   email: string;
   isActive: boolean;
-  source?: string; // e.g. "cta", "footer", "popup"
+  source?: string;
+  unsubscribeToken: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,6 +27,12 @@ const subscriberSchema = new Schema<ISubscriberDocument>(
       type: String,
       default: "cta",
       trim: true,
+    },
+    unsubscribeToken: {
+      type: String,
+      unique: true,
+      index: true,
+      default: () => crypto.randomBytes(24).toString("hex"),
     },
   },
   {

@@ -139,11 +139,12 @@ export async function POST(request: NextRequest) {
         )?.url ?? undefined;
 
       void notifySubscribersNewProduct({
-        productName: product.name,
-        productImage: image,
-        productSlug: product.slug,
-        price: `${priceFormatter(Number(product.price))}`,
-      });
+  productName: product.name,
+  productImage: image,
+  productSlug: product.slug,
+  price: priceFormatter(Number(product.price)),
+  description: product.description,
+});
     } catch (emailError) {
       console.error("Failed to queue new product emails:", emailError);
     }

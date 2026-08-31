@@ -154,6 +154,7 @@ export type OrderStatus =
   | "processing"
   | "confirmed"
   | "shipped"
+   | "out for delivery"
   | "ready_for_pickup"
   | "delivered"
   | "cancelled";

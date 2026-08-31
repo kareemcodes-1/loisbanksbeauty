@@ -35,6 +35,7 @@ import {
   type OrderStatus,
   type UpdateOrderPayload,
 } from "@/actions/admin/order.actions";
+
 import toast from "react-hot-toast";
 
 interface OrderStatusDialogProps {
@@ -43,31 +44,60 @@ interface OrderStatusDialogProps {
   order?: Order | null;
 }
 
-const ALL_STATUSES: { value: OrderStatus; label: string }[] = [
-  { value: "processing", label: "Processing" },
-  { value: "confirmed", label: "Confirmed" },
-  { value: "shipped", label: "Shipped" },
-  { value: "ready_for_pickup", label: "Ready for pickup" },
-  { value: "delivered", label: "Delivered" },
-  { value: "cancelled", label: "Cancelled" },
+const ALL_STATUSES: {
+  value: OrderStatus;
+  label: string;
+}[] = [
+  {
+    value: "processing",
+    label: "Processing",
+  },
+  {
+    value: "confirmed",
+    label: "Confirmed",
+  },
+  {
+    value: "shipped",
+    label: "Shipped",
+  },
+  {
+    value: "out_for_delivery",
+    label: "Out for delivery",
+  },
+  {
+    value: "ready_for_pickup",
+    label: "Ready for pickup",
+  },
+  {
+    value: "delivered",
+    label: "Delivered",
+  },
+  {
+    value: "cancelled",
+    label: "Cancelled",
+  },
 ];
 
 function getStatusesForShippingMethod(
   shippingMethod?: string | null
 ) {
   if (shippingMethod === "pickup") {
-    // No "shipped" for store pickup
-    return ALL_STATUSES.filter((s) => s.value !== "shipped");
-  }
-
-  if (shippingMethod === "delivery") {
-    // No "ready_for_pickup" for door delivery
+    // Pickup orders don't need shipped or out-for-delivery statuses.
     return ALL_STATUSES.filter(
-      (s) => s.value !== "ready_for_pickup"
+      (status) =>
+        status.value !== "shipped" &&
+        status.value !== "out_for_delivery"
     );
   }
 
-  // Fallback if missing on old orders
+  if (shippingMethod === "delivery") {
+    // Delivery orders don't need ready-for-pickup.
+    return ALL_STATUSES.filter(
+      (status) => status.value !== "ready_for_pickup"
+    );
+  }
+
+  // Fallback for older orders where shippingMethod is missing.
   return ALL_STATUSES;
 }
 
@@ -80,22 +110,35 @@ export function OrderStatusDialog({
 
   const [orderStatus, setOrderStatus] =
     React.useState<OrderStatus>("processing");
-  const [trackingNumber, setTrackingNumber] = React.useState("");
+
+  const [trackingNumber, setTrackingNumber] =
+    React.useState("");
 
   const availableStatuses = React.useMemo(
-    () => getStatusesForShippingMethod(order?.shippingMethod),
+    () =>
+      getStatusesForShippingMethod(
+        order?.shippingMethod
+      ),
     [order?.shippingMethod]
   );
 
   const updateMutation = useMutation({
     mutationFn: (data: UpdateOrderPayload) =>
       updateOrder(order!._id, data),
+
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      queryClient.invalidateQueries({ queryKey: ["order"] });
+      queryClient.invalidateQueries({
+        queryKey: ["orders"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["order"],
+      });
+
       toast.success("Order updated");
       onOpenChange(false);
     },
+
     onError: (error) => {
       toast.error(
         error instanceof Error
@@ -108,12 +151,14 @@ export function OrderStatusDialog({
   React.useEffect(() => {
     if (!open || !order) return;
 
-    const allowed = getStatusesForShippingMethod(
-      order.shippingMethod
-    ).map((s) => s.value);
+    const allowedStatuses =
+      getStatusesForShippingMethod(
+        order.shippingMethod
+      ).map((status) => status.value);
 
-    // If current status isn't valid for this shipping method, fall back
-    const nextStatus = allowed.includes(order.orderStatus)
+    const nextStatus = allowedStatuses.includes(
+      order.orderStatus
+    )
       ? order.orderStatus
       : "processing";
 
@@ -121,18 +166,24 @@ export function OrderStatusDialog({
     setTrackingNumber(order.trackingNumber ?? "");
   }, [open, order]);
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = (
+    event: React.FormEvent
+  ) => {
     event.preventDefault();
+
     if (!order) return;
 
     updateMutation.mutate({
       orderStatus,
-      trackingNumber: trackingNumber.trim() || null,
+      trackingNumber:
+        trackingNumber.trim() || null,
     });
   };
 
   const isBusy = updateMutation.isPending;
-  const isDelivery = order?.shippingMethod === "delivery";
+
+  const isDelivery =
+    order?.shippingMethod === "delivery";
 
   return (
     <Dialog
@@ -144,7 +195,9 @@ export function OrderStatusDialog({
     >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Update order</DialogTitle>
+          <DialogTitle>
+            Update order
+          </DialogTitle>
         </DialogHeader>
 
         <form
@@ -154,31 +207,40 @@ export function OrderStatusDialog({
         >
           <div className="space-y-2">
             <Label>Order status</Label>
+
             <Select
               value={orderStatus}
               onValueChange={(value) =>
-                setOrderStatus(value as OrderStatus)
+                setOrderStatus(
+                  value as OrderStatus
+                )
               }
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
+
               <SelectContent>
-                {availableStatuses.map((status) => (
-                  <SelectItem
-                    key={status.value}
-                    value={status.value}
-                  >
-                    {status.label}
-                  </SelectItem>
-                ))}
+                {availableStatuses.map(
+                  (status) => (
+                    <SelectItem
+                      key={status.value}
+                      value={status.value}
+                    >
+                      {status.label}
+                    </SelectItem>
+                  )
+                )}
               </SelectContent>
             </Select>
+
             <p className="text-xs text-muted-foreground">
-              {order?.shippingMethod === "pickup"
+              {order?.shippingMethod ===
+              "pickup"
                 ? "Pickup order — statuses include ready for pickup."
-                : order?.shippingMethod === "delivery"
-                  ? "Delivery order — statuses include shipped."
+                : order?.shippingMethod ===
+                    "delivery"
+                  ? "Delivery order — statuses include shipped and out for delivery."
                   : "Select a status for this order."}
             </p>
           </div>
@@ -189,41 +251,49 @@ export function OrderStatusDialog({
               <Label htmlFor="trackingNumber">
                 Tracking number
               </Label>
+
               <Input
                 id="trackingNumber"
                 value={trackingNumber}
                 onChange={(e) =>
-                  setTrackingNumber(e.target.value)
+                  setTrackingNumber(
+                    e.target.value
+                  )
                 }
                 placeholder="e.g. TRK-123456789"
               />
+
               <p className="text-xs text-muted-foreground">
-                Optional. Shown to the customer for tracking.
+                Optional. Shown to the customer
+                for tracking.
               </p>
             </div>
           )}
         </form>
 
-         <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-end p-[1rem] lg:p-[1rem]">
+        <DialogFooter className="flex-col-reverse gap-2 p-[1rem] sm:flex-row sm:justify-end lg:p-[1rem]">
           <Button
             type="button"
-               className="w-full sm:w-auto"
+            className="w-full sm:w-auto"
             variant="outline"
             disabled={isBusy}
-            onClick={() => onOpenChange(false)}
+            onClick={() =>
+              onOpenChange(false)
+            }
           >
             Cancel
           </Button>
 
           <Button
             type="submit"
-               className="w-full sm:w-auto"
+            className="w-full sm:w-auto"
             form="order-status-form"
             disabled={isBusy}
           >
             {isBusy && (
               <Loader2Icon className="size-4 animate-spin" />
             )}
+
             Save changes
           </Button>
         </DialogFooter>

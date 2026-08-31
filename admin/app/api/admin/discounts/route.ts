@@ -113,9 +113,10 @@ export async function POST(request: NextRequest) {
 
       void notifySubscribersNewDiscount({
         title: discount.title,
-        description: discount.description ?? "",
+        description: discount.description,
         discountLabel,
         expiresAt,
+        productCount: discount.productIds?.length ?? 0,
       });
     } catch (emailError) {
       console.error("Failed to queue discount emails:", emailError);

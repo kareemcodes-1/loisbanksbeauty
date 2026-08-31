@@ -57,6 +57,11 @@ function getStatusBadge(status: string) {
       className:
         "border-blue-200 bg-blue-100 text-blue-700 hover:bg-blue-100",
     },
+    out_for_delivery: {
+      label: "Out for delivery",
+      className:
+        "border-purple-200 bg-purple-100 text-purple-700 hover:bg-purple-100",
+    },
     ready_for_pickup: {
       label: "Ready for pickup",
       className:

@@ -24,36 +24,47 @@ export const authOptions: NextAuthOptions = {
       },
 
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
+  if (!credentials?.email || !credentials?.password) {
+    return null;
+  }
 
-        await connectDB();
+  await connectDB();
 
-        const user = await User.findOne({
-          email: credentials.email,
-        }).select("+password");
+  const normalizedEmail = credentials.email
+    .trim()
+    .toLowerCase();
 
-        if (!user) {
-          return null;
-        }
+  const user = await User.findOne({
+    email: normalizedEmail,
+  })
+    .select(
+      "+password +emailVerificationCode +emailVerificationExpires"
+    );
 
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
+  if (!user) {
+    return null;
+  }
 
-        if (!isPasswordValid) {
-          return null;
-        }
+  const isPasswordValid = await bcrypt.compare(
+    credentials.password,
+    user.password
+  );
 
-        return {
-          id: user._id.toString(),
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        };
-      },
+  if (!isPasswordValid) {
+    return null;
+  }
+
+  if (!user.emailVerified) {
+    throw new Error("EMAIL_NOT_VERIFIED");
+  }
+
+  return {
+    id: user._id.toString(),
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  };
+},
     }),
   ],
 

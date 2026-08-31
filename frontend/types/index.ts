@@ -153,6 +153,7 @@ export type OrderStatus =
   | "confirmed"
   | "shipped"
   | "ready_for_pickup"
+   | "out_for_delivery"
   | "delivered"
   | "cancelled";
 

@@ -141,6 +141,7 @@ export type OrderStatus =
   | "confirmed"
   | "shipped"
   | "ready_for_pickup"
+  | "out_for_delivery"
   | "delivered"
   | "cancelled";
 
@@ -223,19 +224,20 @@ const orderSchema = new Schema<IOrderDocument>(
       required: true,
     },
 
-    orderStatus: {
-      type: String,
-      enum: [
-        "processing",
-        "confirmed",
-        "shipped",
-        "ready_for_pickup",
-        "delivered",
-        "cancelled",
-      ],
-      default: "processing",
-      index: true,
-    },
+   orderStatus: {
+  type: String,
+  enum: [
+    "processing",
+    "confirmed",
+    "shipped",
+    "out_for_delivery",
+    "ready_for_pickup",
+    "delivered",
+    "cancelled",
+  ],
+  default: "processing",
+  index: true,
+},
 
     shippingMethod: {
       type: String,

@@ -7,50 +7,42 @@ const addressSchema = new Schema(
       required: true,
       trim: true,
     },
-
     lastName: {
       type: String,
       required: true,
       trim: true,
     },
-
     address: {
       type: String,
       required: true,
       trim: true,
     },
-
     apartment: {
       type: String,
       trim: true,
       default: "",
     },
-
     city: {
       type: String,
       required: true,
       trim: true,
     },
-
     state: {
       type: String,
       required: true,
       trim: true,
     },
-
     postalCode: {
       type: String,
       required: true,
       trim: true,
     },
-
     country: {
       type: String,
       required: true,
       trim: true,
       uppercase: true,
     },
-
     isDefault: {
       type: Boolean,
       default: false,
@@ -65,20 +57,31 @@ export interface IUserDocument extends Document {
   name: string;
   email: string;
   password: string;
-  phone: string;
+  phone?: string;
   role: "user" | "admin";
+
+  // Email verification
+  emailVerified: boolean;
+  emailVerificationCode?: string;
+  emailVerificationCodeExpires?: Date;
+  emailVerificationAttempts?: number;
+
   addresses: {
-  _id?: mongoose.Types.ObjectId;
-  firstName: string;
-  lastName: string;
-  address: string;
-  apartment?: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-  isDefault: boolean;
-}[];
+    _id?: mongoose.Types.ObjectId;
+    firstName: string;
+    lastName: string;
+    address: string;
+    apartment?: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+    isDefault: boolean;
+  }[];
+
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -116,9 +119,52 @@ const userSchema = new Schema<IUserDocument>(
       default: "user",
     },
 
+    // =========================
+    // Email Verification
+    // =========================
+
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    emailVerificationCode: {
+      type: String,
+      select: false,
+    },
+
+    emailVerificationCodeExpires: {
+      type: Date,
+      select: false,
+    },
+
+    emailVerificationAttempts: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
+
+    // =========================
+    // Addresses
+    // =========================
+
     addresses: {
       type: [addressSchema],
       default: [],
+    },
+
+    // =========================
+    // Password Reset
+    // =========================
+
+    resetPasswordToken: {
+      type: String,
+      select: false,
+    },
+
+    resetPasswordExpires: {
+      type: Date,
+      select: false,
     },
   },
   {

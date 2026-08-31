@@ -7,15 +7,23 @@ import {
   sendNewDiscountEmail,
 } from "@/lib/email/send";
 
+type ActiveSubscriber = {
+  email: string;
+  unsubscribeToken: string;
+};
+
 /** Active newsletter subscribers only */
-export async function getActiveSubscriberEmails(): Promise<string[]> {
+export async function getActiveSubscribers(): Promise<ActiveSubscriber[]> {
   await connectDB();
 
   const subscribers = await Subscriber.find({ isActive: true })
-    .select("email")
+    .select("email unsubscribeToken")
     .lean();
 
-  return subscribers.map((s) => s.email);
+  return subscribers.map((s) => ({
+    email: s.email,
+    unsubscribeToken: s.unsubscribeToken,
+  }));
 }
 
 /**
@@ -27,17 +35,25 @@ export async function notifySubscribersNewProduct(props: {
   productImage?: string;
   productSlug: string;
   price: string;
+  originalPrice?: string;
+  discountLabel?: string;
+  description?: string;
 }) {
-  const emails = await getActiveSubscriberEmails();
+  const subscribers = await getActiveSubscribers();
 
-  if (emails.length === 0) return;
+  if (subscribers.length === 0) return;
 
-  // Sequential is safer for rate limits; switch to batches later if needed
-  for (const email of emails) {
+  for (const subscriber of subscribers) {
     try {
-      await sendNewProductEmail(email, props);
+      await sendNewProductEmail(subscriber.email, {
+        ...props,
+        unsubscribeToken: subscriber.unsubscribeToken,
+      });
     } catch (error) {
-      console.error(`New product email failed for ${email}:`, error);
+      console.error(
+        `New product email failed for ${subscriber.email}:`,
+        error
+      );
     }
   }
 }
@@ -47,19 +63,26 @@ export async function notifySubscribersNewProduct(props: {
  */
 export async function notifySubscribersNewDiscount(props: {
   title: string;
-  description: string;
+  description?: string;
   discountLabel: string;
   expiresAt?: string;
+  productCount?: number;
 }) {
-  const emails = await getActiveSubscriberEmails();
+  const subscribers = await getActiveSubscribers();
 
-  if (emails.length === 0) return;
+  if (subscribers.length === 0) return;
 
-  for (const email of emails) {
+  for (const subscriber of subscribers) {
     try {
-      await sendNewDiscountEmail(email, props);
+      await sendNewDiscountEmail(subscriber.email, {
+        ...props,
+        unsubscribeToken: subscriber.unsubscribeToken,
+      });
     } catch (error) {
-      console.error(`New discount email failed for ${email}:`, error);
+      console.error(
+        `New discount email failed for ${subscriber.email}:`,
+        error
+      );
     }
   }
 }

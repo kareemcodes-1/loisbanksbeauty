@@ -59,6 +59,13 @@ export interface IUserDocument extends Document {
   password: string;
   phone?: string;
   role: "user" | "admin";
+
+  // Email verification
+  emailVerified: boolean;
+  emailVerificationCode?: string;
+  emailVerificationCodeExpires?: Date;
+  emailVerificationAttempts?: number;
+
   addresses: {
     _id?: mongoose.Types.ObjectId;
     firstName: string;
@@ -71,8 +78,10 @@ export interface IUserDocument extends Document {
     country: string;
     isDefault: boolean;
   }[];
+
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -84,6 +93,7 @@ const userSchema = new Schema<IUserDocument>(
       required: true,
       trim: true,
     },
+
     email: {
       type: String,
       required: true,
@@ -91,28 +101,67 @@ const userSchema = new Schema<IUserDocument>(
       lowercase: true,
       trim: true,
     },
+
     password: {
       type: String,
       required: true,
       select: false,
     },
+
     phone: {
       type: String,
       trim: true,
     },
+
     role: {
       type: String,
       enum: ["user", "admin"],
       default: "user",
     },
+
+    // =========================
+    // Email Verification
+    // =========================
+
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    emailVerificationCode: {
+      type: String,
+      select: false,
+    },
+
+    emailVerificationCodeExpires: {
+      type: Date,
+      select: false,
+    },
+
+    emailVerificationAttempts: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
+
+    // =========================
+    // Addresses
+    // =========================
+
     addresses: {
       type: [addressSchema],
       default: [],
     },
+
+    // =========================
+    // Password Reset
+    // =========================
+
     resetPasswordToken: {
       type: String,
       select: false,
     },
+
     resetPasswordExpires: {
       type: Date,
       select: false,

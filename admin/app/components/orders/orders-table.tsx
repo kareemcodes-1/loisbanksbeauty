@@ -108,26 +108,37 @@ function getStatusBadge(status: string) {
       className:
         "border-amber-200 bg-amber-100 text-amber-700 hover:bg-amber-100",
     },
+
     confirmed: {
       label: "Confirmed",
       className:
         "border-green-200 bg-green-50 text-green-700 hover:bg-green-50",
     },
+
     shipped: {
       label: "Shipped",
       className:
         "border-blue-200 bg-blue-100 text-blue-700 hover:bg-blue-100",
     },
+
+    out_for_delivery: {
+      label: "Out for delivery",
+      className:
+        "border-purple-200 bg-purple-100 text-purple-700 hover:bg-purple-100",
+    },
+
     ready_for_pickup: {
       label: "Ready for pickup",
       className:
         "border-green-200 bg-green-100 text-green-700 hover:bg-green-100",
     },
+
     delivered: {
       label: "Delivered",
       className:
         "border-green-200 bg-green-50 text-green-700 hover:bg-green-50",
     },
+
     cancelled: {
       label: "Cancelled",
       className:
@@ -449,13 +460,33 @@ export function OrdersTable({ onEdit }: OrdersTableProps) {
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="processing">Processing</SelectItem>
-              <SelectItem value="confirmed">Confirmed</SelectItem>
-              <SelectItem value="shipped">Shipped</SelectItem>
-              <SelectItem value="ready_for_pickup">Ready for pickup</SelectItem>
-              <SelectItem value="delivered">Delivered</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
+              <SelectItem value="processing">
+                Processing
+              </SelectItem>
+
+              <SelectItem value="confirmed">
+                Confirmed
+              </SelectItem>
+
+              <SelectItem value="shipped">
+                Shipped
+              </SelectItem>
+
+              <SelectItem value="out_for_delivery">
+                Out for delivery
+              </SelectItem>
+
+              <SelectItem value="ready_for_pickup">
+                Ready for pickup
+              </SelectItem>
+
+              <SelectItem value="delivered">
+                Delivered
+              </SelectItem>
+
+              <SelectItem value="cancelled">
+                Cancelled
+              </SelectItem>
             </SelectContent>
           </Select>
 
