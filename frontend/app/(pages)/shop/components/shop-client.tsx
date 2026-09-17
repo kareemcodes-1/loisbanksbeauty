@@ -61,7 +61,10 @@ export default function ShopClient({
   const [sort, setSort] = useState<SortValue>("default");
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
 
-  const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
+  const [selectedCollections, setSelectedCollections] = useState<string[]>(() => {
+    const collectionId = searchParams.get("filter");
+    return collectionId ? [collectionId] : [];
+  });
   const [selectedAvailability, setSelectedAvailability] = useState<
     AvailabilityFilter[]
   >([]);
@@ -87,7 +90,10 @@ export default function ShopClient({
     maxPrice,
   ]);
 
-  const [draftCollections, setDraftCollections] = useState<string[]>([]);
+  const [draftCollections, setDraftCollections] = useState<string[]>(() => {
+    const collectionId = searchParams.get("collection");
+    return collectionId ? [collectionId] : [];
+  });
   const [draftPriceRange, setDraftPriceRange] = useState<[number, number]>([
     minPrice,
     maxPrice,
@@ -160,45 +166,45 @@ export default function ShopClient({
     return matchesCollection && matchesPrice && matchesAvailability;
   });
 
-const sortedProducts = [...filteredProducts].sort((a, b) => {
-  // First priority: Hair Wigs always come before other products
-  const aIsWig = isHairWig(a);
-  const bIsWig = isHairWig(b);
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    // First priority: Hair Wigs always come before other products
+    const aIsWig = isHairWig(a);
+    const bIsWig = isHairWig(b);
 
-  if (aIsWig && !bIsWig) return -1;
-  if (!aIsWig && bIsWig) return 1;
+    if (aIsWig && !bIsWig) return -1;
+    if (!aIsWig && bIsWig) return 1;
 
-  // Then apply the selected sort
-  if (sort === "price-asc") return a.price - b.price;
-  if (sort === "price-desc") return b.price - a.price;
+    // Then apply the selected sort
+    if (sort === "price-asc") return a.price - b.price;
+    if (sort === "price-desc") return b.price - a.price;
 
-  return 0; // keep original order for "default"
-});
+    return 0; // keep original order for "default"
+  });
 
   const activeSortLabel =
     SORT_OPTIONS.find((option) => option.value === sort)?.label ?? "Default";
 
-   return (
+  return (
     <section className="w-full px-[1.5rem] sm:px-8 lg:px-[3rem] pb-[4rem] pt-[9rem]">
       <div className="mx-auto w-full">
         <div className="mx-auto flex max-w-[min(50rem,100%)] flex-col items-center gap-3 text-center">
           <span className="subtitle">Shop</span>
 
           <SplitLines
-                      text="Find Your Perfect Match"
-                      tag="h1"
-                      className="heading-1 max-w-[min(40rem,100%)]"
-                      duration={1}
-                      stagger={0.025}
-                      ease="power4.out"
-                      yPercent={150}
-                      threshold={0.1}
-                      rootMargin="-100px"
-                    />
+            text="Shop Our Collection"
+            tag="h1"
+            className="heading-1 max-w-[min(40rem,100%)]"
+            duration={1}
+            stagger={0.025}
+            ease="power4.out"
+            yPercent={150}
+            threshold={0.1}
+            rootMargin="-100px"
+          />
 
           <p className="mx-auto max-w-[min(32rem,100%)] text-[0.875rem] leading-relaxed text-black/50 sm:text-[0.9rem] lg:text-[1rem]">
-           Luxury hair, beauty essentials, and athleisure curated for 
-women who know exactly what they want.
+            Luxury hair, beauty essentials, and athleisure curated for
+            women who know exactly what they want.
           </p>
         </div>
 
@@ -241,11 +247,10 @@ women who know exactly what they want.
                 <DropdownMenuItem
                   key={option.value}
                   onClick={() => setSort(option.value)}
-                  className={`cursor-pointer gap-2 rounded-xl px-3 py-2.5 text-[0.8rem] font-medium ${
-                    sort === option.value
+                  className={`cursor-pointer gap-2 rounded-xl px-3 py-2.5 text-[0.8rem] font-medium ${sort === option.value
                       ? "bg-[#FD3F92]/10 text-[#FD3F92]"
                       : ""
-                  }`}
+                    }`}
                 >
                   <span className="flex-1">{option.label}</span>
                   {sort === option.value && (

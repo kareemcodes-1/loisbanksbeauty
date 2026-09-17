@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 
 import { Geist } from "next/font/google";
@@ -15,11 +16,11 @@ const siteName = "LoisBanks Beauty";
 const siteUrl =
   process.env.NEXT_PUBLIC_APP_URL || "https://loisbanksbeauty.com";
 
-const title = "LoisBanks Beauty | Luxury Human Hair Wigs, Athleisure & Beauty Essentials";
+const title =
+  "LoisBanks Beauty | Luxury Human Hair Wigs, Athleisure & Beauty Essentials";
 const description =
   "Shop luxury human hair wigs, athleisure wear and beauty essentials. Premium quality, flawless textures, effortless glam — worldwide delivery.";
 
-// Put og.jpg in /public, OR use a full CDN URL
 const ogImage =
   "https://res.cloudinary.com/datpkisht/image/upload/v1787147828/i1avstooywwwrsd0l99t.jpg";
 
@@ -104,6 +105,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={geist.variable}>
+      <head>
+        <Script
+      src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+          strategy="afterInteractive"
+        />
+
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-C1HWX0D2PR');
+          `}
+        </Script>
+      </head>
+
       <body className="bg-white text-black antialiased">
         <WebsiteSchema />
         <OrganizationSchema />

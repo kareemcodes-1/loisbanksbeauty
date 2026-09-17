@@ -8,8 +8,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import Link from "next/link";
+import { ReactNode } from "react";
 
-const faqs = [
+const faqs: { question: string; answer: ReactNode }[] = [
   {
     question: "Are your wigs made from 100% human hair?",
     answer:
@@ -30,10 +32,23 @@ const faqs = [
     answer:
       "Orders are processed within 24–48 hours after payment is confirmed. Once your order has been shipped, you'll receive a tracking number, and delivery time will depend on your location.",
   },
-  {
+   {
     question: "Can I return or exchange an item?",
-    answer:
-      "We do not offer refunds or returns. However, eligible items may be exchanged if they are unused and in their original condition. Refunds are only considered in rare cases where the issue is due to an error on our part. Please read our Return & Exchange Policy for full details.",
+    answer: (
+      <>
+        We do not offer refunds or returns. However, eligible items may be
+        exchanged if they are unused and in their original condition. Refunds
+        are only considered in rare cases where the issue is due to an error on
+        our part. Please read our{" "}
+        <Link
+          href="/refund-policy"
+          className="font-medium text-[#FD3F92] underline underline-offset-2 transition-opacity hover:opacity-70"
+        >
+          Refund Policy
+        </Link>{" "}
+        for full details.
+      </>
+    ),
   },
   {
     question: "How can I track my order?",

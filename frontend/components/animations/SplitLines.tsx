@@ -33,77 +33,107 @@ export const SplitLines: React.FC<SplitLinesProps> = ({
   const containerRef = useRef<HTMLElement>(null);
 
   useGSAP(
-  () => {
-    const element = containerRef.current;
-    if (!element) return;
+    () => {
+      const element = containerRef.current;
+      if (!element) return;
 
-    let outerSplit: SplitText;
-    let innerSplit: SplitText;
-    let observer: IntersectionObserver;
+      let outerSplit: SplitText | null = null;
+      let innerSplit: SplitText | null = null;
+      let observer: IntersectionObserver | null = null;
+      let isMounted = true;
 
-    const setupSplit = () => {
-      outerSplit = new SplitText(element, {
-        type: "lines",
-        linesClass: "split-outer",
-      });
+      const setupSplit = () => {
+        // Component may have unmounted while waiting for fonts
+        if (!isMounted || !containerRef.current) return;
 
-      innerSplit = new SplitText(outerSplit.lines, {
-        type: "lines",
-        linesClass: "split-inner",
-      });
-
-      gsap.set(outerSplit.lines, { overflow: "hidden" });
-      gsap.set(innerSplit.lines, { yPercent });
-
-      const animateIn = () => {
-        gsap.to(innerSplit.lines, {
-          yPercent: 0,
-          duration,
-          stagger,
-          ease,
-          overwrite: true,
+        outerSplit = new SplitText(element, {
+          type: "lines",
+          linesClass: "split-outer",
         });
+
+        innerSplit = new SplitText(outerSplit.lines, {
+          type: "lines",
+          linesClass: "split-inner",
+        });
+
+        gsap.set(outerSplit.lines, {
+          overflow: "hidden",
+        });
+
+        gsap.set(innerSplit.lines, {
+          yPercent,
+        });
+
+        const animateIn = () => {
+          if (!innerSplit) return;
+
+          gsap.to(innerSplit.lines, {
+            yPercent: 0,
+            duration,
+            stagger,
+            ease,
+            overwrite: true,
+          });
+        };
+
+        observer = new IntersectionObserver(
+          ([entry]) => {
+            if (!entry.isIntersecting) return;
+
+            animateIn();
+
+            // Only animate once during this component's lifetime
+            observer?.disconnect();
+            observer = null;
+          },
+          {
+            threshold,
+            rootMargin,
+          }
+        );
+
+        observer.observe(element);
       };
 
-      observer = new IntersectionObserver(
-        ([entry]) => {
-          if (!entry.isIntersecting) return;
-          animateIn();
-          observer.disconnect();
-        },
-        { threshold, rootMargin }
-      );
+      if (document.fonts?.status === "loaded") {
+        setupSplit();
+      } else {
+        document.fonts?.ready.then(() => {
+          setupSplit();
+        });
+      }
 
-      observer.observe(element);
-    };
+      return () => {
+        isMounted = false;
 
-    // Wait for fonts to be ready before measuring/splitting text
-    if (document.fonts?.status === "loaded") {
-      setupSplit();
-    } else {
-      document.fonts?.ready.then(setupSplit);
+        observer?.disconnect();
+
+        if (innerSplit) {
+          gsap.killTweensOf(innerSplit.lines);
+          innerSplit.revert();
+        }
+
+        outerSplit?.revert();
+      };
+    },
+    {
+      scope: containerRef,
+      dependencies: [
+        text,
+        duration,
+        stagger,
+        ease,
+        yPercent,
+        threshold,
+        rootMargin,
+      ],
     }
-
-    return () => {
-      observer?.disconnect();
-      if (innerSplit) gsap.killTweensOf(innerSplit.lines);
-      innerSplit?.revert();
-      outerSplit?.revert();
-    };
-  },
-  {
-    scope: containerRef,
-    dependencies: [text, duration, stagger, ease, yPercent, threshold, rootMargin],
-  }
-);
+  );
 
   const Component = Tag as React.ElementType;
 
   return (
-    <Component
-      ref={containerRef}
-      className={className}
-    >
+    <Component ref={containerRef} className={className}>
       {text}
     </Component>
   );
