@@ -1,10 +1,10 @@
-// app/checkout/callback/page.tsx
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectDB from "@/lib/mongodb";
 import Order from "@/models/Order";
 import User from "@/models/User";
+import { sendNewOrderEmail } from "@/lib/email/send";
 
 type Props = {
   searchParams: Promise<{ reference?: string }>;
@@ -40,7 +40,7 @@ export default async function CheckoutCallbackPage({ searchParams }: Props) {
     redirect("/checkout?error=payment_failed");
   }
 
-  const { metadata, amount, channel, paid_at } = verifyData.data;
+  const { metadata, channel, paid_at } = verifyData.data;
   const orderId = metadata?.orderId;
 
   if (!orderId) {
@@ -49,6 +49,7 @@ export default async function CheckoutCallbackPage({ searchParams }: Props) {
 
   // 2. Find the pending order
   const order = await Order.findById(orderId);
+
   if (!order || order.userId.toString() !== session.user.id) {
     redirect("/checkout?error=order_not_found");
   }
@@ -66,14 +67,36 @@ export default async function CheckoutCallbackPage({ searchParams }: Props) {
     channel: channel || null,
     paidAt: paid_at ? new Date(paid_at) : new Date(),
   };
+
   order.orderStatus = "processing";
+
   await order.save();
 
-  // 4. Save address to user if it was a new address
+  // 4. Send new order notification to admin
+  await sendNewOrderEmail({
+    orderId: order._id.toString(),
+    customerName: `${order.shippingAddress.firstName} ${order.shippingAddress.lastName}`,
+    customerEmail: session.user.email || "",
+    items: order.items.map((item) => ({
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+      size: item.size,
+    })),
+    subtotal: order.subtotal,
+    shippingFee: order.shippingFee,
+    totalAmount: order.totalAmount,
+    paymentChannel: order.paymentInfo.channel,
+    shippingMethod: order.shippingMethod,
+    shippingAddress: order.shippingAddress,
+  });
+
+  // 5. Save address to user if it was a new address
   const selectedAddressId = metadata?.selectedAddressId;
 
   if (selectedAddressId === "new") {
     const user = await User.findById(session.user.id);
+
     if (user) {
       // Set all existing addresses to non-default
       user.addresses.forEach((addr) => {
@@ -96,6 +119,6 @@ export default async function CheckoutCallbackPage({ searchParams }: Props) {
     }
   }
 
-  // 5. Redirect to success page
+  // 6. Redirect to success page
   redirect(`/checkout/success?orderId=${order._id}`);
 }

@@ -8,6 +8,9 @@ import PasswordResetEmail from "@/app/components/emails/password-reset";
 import ContactEnquiryEmail from "@/app/components/emails/contact-enquiry";
 import EmailVerificationEmail from "@/app/components/emails/email-verification";
 
+import NewOrderEmail from "@/app/components/emails/new-order";
+import { priceFormatter } from "../priceFormatter";
+
 export async function sendWelcomeEmail(to: string, name: string) {
   const html = await render(<WelcomeEmail name={name} />);
   await sendEmail({
@@ -68,7 +71,7 @@ export async function sendContactEnquiryEmail(props: {
   );
 
   const receiver =
-    process.env.CONTACT_RECEIVER_EMAIL || "lbanksluxuryhairs@gmail.com";
+    process.env.ADMIN_EMAIL || "lbanksluxuryhairs@gmail.com";
 
   await sendEmail({
     to: receiver,
@@ -76,5 +79,46 @@ export async function sendContactEnquiryEmail(props: {
     html,
     replyTo: props.email,
     // If your sendEmail supports reply-to, pass props.email here
+  });
+}
+
+export async function sendNewOrderEmail(props: {
+  orderId: string;
+  customerName: string;
+  customerEmail: string;
+  items: {
+    name: string;
+    price: number;
+    quantity: number;
+    size?: string | null;
+  }[];
+  subtotal: number;
+  shippingFee: number;
+  totalAmount: number;
+  paymentChannel?: string | null;
+  shippingMethod: "pickup" | "delivery";
+  shippingAddress?: {
+    firstName: string;
+    lastName: string;
+    address: string;
+    apartment?: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+  };
+}) {
+  const html = await render(
+    <NewOrderEmail {...props} />
+  );
+
+  const receiver =
+    process.env.ADMIN_EMAIL ||
+    "lbanksluxuryhairs@gmail.com";
+
+  await sendEmail({
+    to: receiver,
+    subject: `New order #${props.orderId} — ${priceFormatter(props.totalAmount)}`,
+    html,
   });
 }
