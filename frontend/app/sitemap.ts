@@ -1,7 +1,20 @@
 import type { MetadataRoute } from "next";
+import connectDB from "@/lib/mongodb";
+import Product from "@/models/Product";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://loisbanksbeauty.com";
+
+  await connectDB();
+
+  const products = await Product.find({
+    isActive: true,
+  }).select("slug updatedAt");
+
+  const productUrls = products.map((product) => ({
+    url: `${baseUrl}/shop/p/${product.slug}`,
+    lastModified: product.updatedAt || new Date(),
+  }));
 
   return [
     {
@@ -20,5 +33,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${baseUrl}/contact`,
       lastModified: new Date(),
     },
+    {
+      url: `${baseUrl}/shipping-policy`,
+      lastModified: new Date(),
+    },
+    {
+      url: `${baseUrl}/refund-policy`,
+      lastModified: new Date(),
+    },
+
+    ...productUrls,
   ];
 }
