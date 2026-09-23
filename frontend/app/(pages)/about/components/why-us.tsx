@@ -14,13 +14,13 @@ const offers = [
     icon: Gem,
     title: "Premium Quality",
     description:
-      "Every wig, beauty essential, and fashion piece is carefully selected to meet high standards of quality and durability.",
+      "Every wig, beauty essential, and athleisure wear is carefully selected to meet high standards of quality and durability.",
   },
   {
     icon: Globe,
     title: "Worldwide Shipping",
     description:
-      "We deliver safely to customers across Nigeria and around the world with reliable shipping partners.",
+      "We deliver safely to customers around the world with reliable shipping partners.",
   },
   {
     icon: BadgeDollarSign,

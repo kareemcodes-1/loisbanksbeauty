@@ -8,32 +8,32 @@ const testimonials = [
   {
     name: "Adaeze O.",
     review:
-      "I ordered the camilla curls for my cousin’s wedding and they mixed with my own hair better than I expected. Washed them twice already and they still feel soft.",
+      "I was a bit unsure about ordering online, but the whole process was straightforward. My order arrived well packaged and the hair looked just like the pictures.",
   },
   {
     name: "Chioma E.",
     review:
-      "Took about 4 days to get to Port Harcourt. The texture is close to what I saw on the site — not stiff. I’ve been using a light leave-in and it’s holding up.",
+      "The lace melting spray has actually made my installs much easier. It holds the lace down nicely without me having to use too much product.",
   },
   {
     name: "Blessing A.",
     review:
-      "Second time ordering. First pack lasted me a few months with regular wear. Packaging was neat and the length was true to the description.",
+      "I ordered the hair wax stick because I needed something for flyaways. It does exactly what I wanted and doesn't leave my hair looking overly greasy.",
   },
   {
     name: "Hauwa B.",
     review:
-      "I was worried about shedding but it’s been minimal so far. Install was straightforward and the colour matched my dye job pretty well.",
+      "My order got to me in a few days and everything was neatly packaged. I also liked that I could easily find the products I was looking for on the site.",
   },
   {
     name: "Tola A.",
     review:
-      "Bought these for everyday use, not just events. They don’t tangle as much as a cheaper set I had before. Will stick with this brand for now.",
+      "The frontal glue remover was really useful when I needed to take my install off. It made the process much easier than trying to pull everything off normally.",
   },
   {
     name: "Ngozi N.",
     review:
-      "Customer service replied when I asked about maintenance, which helped. Hair looks good in a ponytail and when I straighten it lightly.",
+      "I had a question before ordering and customer service actually got back to me. My order arrived as expected and the whole experience was pretty smooth.",
   },
 ];
 

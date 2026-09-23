@@ -63,7 +63,7 @@ const FAQ = () => {
       <div className="mx-auto flex w-full max-w-5xl flex-col items-center gap-8 sm:gap-10 lg:gap-14">
         <div className="flex w-full flex-col items-center gap-3 text-center sm:gap-4">
            <FadeContent blur={true} duration={0.5} initialOpacity={0}>
-              <span className="subtitle">Questions?</span>
+              <span className="subtitle">Got Questions?</span>
           </FadeContent>
 
            <SplitLines

@@ -44,10 +44,6 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
     ? Math.max(1, product.stock)
     : Infinity;
 
-  const collectionSlug = product.collectionId?.name
-    ?.toLowerCase()
-    .replace(/\s+/g, "-");
-
   const reviewCount = product.reviewCount ?? 0;
   const averageRating = product.averageRating ?? 0;
 
@@ -92,7 +88,7 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
           {product.collectionId && (
             <>
               <Link
-                href={`/collections/${collectionSlug}`}
+                href={`/shop?filter=${product.collectionId}`}
                 className="transition-colors hover:text-black"
               >
                 {product.collectionId.name}

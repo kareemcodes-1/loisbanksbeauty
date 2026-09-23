@@ -73,7 +73,7 @@ export default function FounderStory() {
                   label: "Satisfied Clients",
                 },
                 {
-                  value: 20,
+                  value: 10,
                   suffix: "+",
                   label: "Luxury Products",
                 },
