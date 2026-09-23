@@ -1,7 +1,6 @@
-import { BetaAnalyticsDataClient } from "@google-analytics/data";
-import { NextResponse } from "next/server";
 
-const analyticsDataClient = new BetaAnalyticsDataClient();
+import { analyticsDataClient } from "@/lib/analytics";
+import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
