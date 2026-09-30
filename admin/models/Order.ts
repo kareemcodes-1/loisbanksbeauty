@@ -139,8 +139,8 @@ const paymentInfoSchema = new Schema(
 export type OrderStatus =
   | "processing"
   | "confirmed"
-  | "shipped"
   | "ready_for_pickup"
+  | "shipped"
   | "out_for_delivery"
   | "delivered"
   | "cancelled";

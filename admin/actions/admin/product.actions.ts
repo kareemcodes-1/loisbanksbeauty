@@ -10,21 +10,21 @@ export interface PaginationMeta {
 }
 
 export interface ProductPayload {
-    name: string;
-    slug: string;
-    description: string;
-    price: number;
-    collectionId: string;
- 
-    trackInventory: boolean;
-    stock: number;
-    lowStockThreshold: number;
- 
-    featured: boolean;
-    isActive: boolean;
-    sizes?: string[];
- 
-    media: { url: string; type: "image" | "video" }[];
+  name: string;
+  slug: string;
+  description: string;
+  price: number;
+  collectionId: string;
+
+  featured: boolean;
+  inStock: boolean;
+
+  sizes?: string[];
+
+  media: {
+    url: string;
+    type: "image" | "video";
+  }[];
 }
 
 export interface GetProductsResult {
@@ -74,52 +74,53 @@ export async function getProducts({
 }
 
 export async function createProduct(data: ProductPayload) {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/products`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-    });
- 
-    if (!response.ok) {
-        const error = await response
-            .json()
-            .catch(() => null);
- 
-        throw new Error(
-            error?.message ?? "Failed to create product"
-        );
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/admin/products`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
     }
- 
-    return response.json();
+  );
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+
+    throw new Error(error?.message ?? "Failed to create product");
+  }
+
+  return response.json();
 }
- 
+
 export async function updateProduct(
-    id: string,
-    data: ProductPayload
+  id: string,
+  data: ProductPayload
 ) {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/products/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-    });
- 
-    if (!response.ok) {
-        const error = await response
-            .json()
-            .catch(() => null);
- 
-        throw new Error(
-            error?.message ?? "Failed to update product"
-        );
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/admin/products/${id}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
     }
- 
-    return response.json();
+  );
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+
+    throw new Error(error?.message ?? "Failed to update product");
+  }
+
+  return response.json();
 }
 
 export async function deleteProduct(id: string) {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/products/${id}`, {
-    method: "DELETE",
-  });
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/admin/products/${id}`,
+    {
+      method: "DELETE",
+    }
+  );
 
   if (!response.ok) {
     const error = await response.json().catch(() => null);

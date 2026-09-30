@@ -158,7 +158,6 @@ const FilterSheet = ({
         </div>
 
         {/* Footer */}
-        {/* Footer */}
 <div className="flex w-full shrink-0 items-center gap-2.5 border-t border-black/10 px-5 py-4 sm:gap-3 sm:px-6 sm:py-5 lg:px-8">
   <button
     type="button"

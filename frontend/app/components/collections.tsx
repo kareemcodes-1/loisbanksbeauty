@@ -51,7 +51,7 @@ const Collections = async () => {
                     </h3>
 
                     <Link
-                      href={`/shop?filter=${item._id}`}
+                      href={`/shop?collections=${item._id}`}
                       className="btn-primary self-start"
                     >
                       Shop Now

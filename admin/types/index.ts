@@ -75,11 +75,7 @@ export interface Product {
   media: ProductMedia[];
 
   featured: boolean;
-
-  trackInventory: boolean;
-  stock: number;
-  lowStockThreshold: number;
-  isActive: boolean;
+  inStock: boolean;
 
   sizes: string[];
 

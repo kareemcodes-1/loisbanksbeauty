@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const now = new Date();
 
     // Empty query → suggested products
-    const filter: Record<string, unknown> = { isActive: true };
+    const filter: Record<string, unknown> = {};
 
     if (q) {
       const words = q

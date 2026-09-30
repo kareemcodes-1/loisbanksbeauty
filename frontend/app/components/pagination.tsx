@@ -53,15 +53,15 @@ const Pagination = ({
   const pages = getPageNumbers(currentPage, totalPages);
 
   const goTo = (page: number) => {
-  if (page < 1 || page > totalPages || page === currentPage) return;
+    if (page < 1 || page > totalPages || page === currentPage) return;
 
-  onPageChange(page);
+    onPageChange(page);
 
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth",
-  });
-};
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
 
   return (
     <nav

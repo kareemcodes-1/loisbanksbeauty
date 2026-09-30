@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowUpDown, Check, ShoppingBag } from "lucide-react";
 
@@ -32,72 +32,129 @@ interface PaginationMeta {
   totalPages: number;
 }
 
+interface PriceRange {
+  min: number;
+  max: number;
+}
+
 type Props = {
   initialProducts: Product[];
   collections: Collection[];
   pagination: PaginationMeta;
+  priceRange: PriceRange;
 };
-
-const isHairWig = (product: Product) => {
-  const name = product.collectionId?.name?.toLowerCase() || "";
-  return (
-    name.includes("wigs")
-  );
-};
-
-function isProductInStock(product: Product) {
-  if (!product.trackInventory) return true;
-  return product.stock > 0;
-}
 
 export default function ShopClient({
   initialProducts,
   collections,
   pagination,
+  priceRange: apiPriceRange,
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [sort, setSort] = useState<SortValue>("default");
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
 
-  const [selectedCollections, setSelectedCollections] = useState<string[]>(() => {
-    const collectionId = searchParams.get("filter");
-    return collectionId ? [collectionId] : [];
-  });
-  const [selectedAvailability, setSelectedAvailability] = useState<
-    AvailabilityFilter[]
-  >([]);
-  const [draftAvailability, setDraftAvailability] = useState<
-    AvailabilityFilter[]
-  >([]);
+  const minPrice = apiPriceRange.min;
+  const maxPrice = apiPriceRange.max;
 
-  const { minPrice, maxPrice } = useMemo(() => {
-    if (initialProducts.length === 0) {
-      return { minPrice: 0, maxPrice: 0 };
+  const getCollectionIdsFromUrl = () => {
+    const collectionsParam = searchParams.get("collections");
+
+    if (collectionsParam) {
+      return collectionsParam.split(",").filter(Boolean);
     }
 
-    const prices = initialProducts.map((product) => product.price);
+    // Keep support for the old ?filter=collectionId URL
+    const legacyFilter = searchParams.get("filter");
 
-    return {
-      minPrice: Math.floor(Math.min(...prices)),
-      maxPrice: Math.ceil(Math.max(...prices)),
-    };
-  }, [initialProducts]);
+    return legacyFilter ? [legacyFilter] : [];
+  };
 
-  const [priceRange, setPriceRange] = useState<[number, number]>([
-    minPrice,
-    maxPrice,
-  ]);
+  const getAvailabilityFromUrl = (): AvailabilityFilter[] => {
+    const availabilityParam = searchParams.get("availability");
 
-  const [draftCollections, setDraftCollections] = useState<string[]>(() => {
-    const collectionId = searchParams.get("collection");
-    return collectionId ? [collectionId] : [];
-  });
-  const [draftPriceRange, setDraftPriceRange] = useState<[number, number]>([
-    minPrice,
-    maxPrice,
-  ]);
+    if (!availabilityParam) {
+      return [];
+    }
+
+    return availabilityParam.split(",").filter(
+      (value): value is AvailabilityFilter =>
+        value === "in-stock" || value === "out-of-stock",
+    );
+  };
+
+  const getPriceRangeFromUrl = (): [number, number] => {
+    const minParam = searchParams.get("minPrice");
+    const maxParam = searchParams.get("maxPrice");
+
+    const parsedMin = minParam !== null ? Number(minParam) : minPrice;
+    const parsedMax = maxParam !== null ? Number(maxParam) : maxPrice;
+
+    return [
+      Number.isFinite(parsedMin) ? parsedMin : minPrice,
+      Number.isFinite(parsedMax) ? parsedMax : maxPrice,
+    ];
+  };
+
+  const getSortFromUrl = (): SortValue => {
+    const sortParam = searchParams.get("sort");
+
+    if (
+      sortParam === "price-asc" ||
+      sortParam === "price-desc"
+    ) {
+      return sortParam;
+    }
+
+    return "default";
+  };
+
+  const [selectedCollections, setSelectedCollections] = useState<string[]>(
+    getCollectionIdsFromUrl,
+  );
+
+  const [selectedAvailability, setSelectedAvailability] = useState<
+    AvailabilityFilter[]
+  >(getAvailabilityFromUrl);
+
+  const [priceRange, setPriceRange] = useState<[number, number]>(
+    getPriceRangeFromUrl,
+  );
+
+  const [sort, setSort] = useState<SortValue>(getSortFromUrl);
+
+  const [draftCollections, setDraftCollections] = useState<string[]>(
+    getCollectionIdsFromUrl,
+  );
+
+  const [draftAvailability, setDraftAvailability] = useState<
+    AvailabilityFilter[]
+  >(getAvailabilityFromUrl);
+
+  const [draftPriceRange, setDraftPriceRange] = useState<[number, number]>(
+    getPriceRangeFromUrl,
+  );
+
+  useEffect(() => {
+    const nextCollections = getCollectionIdsFromUrl();
+    const nextAvailability = getAvailabilityFromUrl();
+    const nextPriceRange = getPriceRangeFromUrl();
+    const nextSort = getSortFromUrl();
+
+    setSelectedCollections(nextCollections);
+    setSelectedAvailability(nextAvailability);
+    setPriceRange(nextPriceRange);
+    setSort(nextSort);
+
+    if (filterSheetOpen) {
+      setDraftCollections(nextCollections);
+      setDraftAvailability(nextAvailability);
+      setDraftPriceRange(nextPriceRange);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, minPrice, maxPrice]);
 
   useEffect(() => {
     if (filterSheetOpen) {
@@ -105,13 +162,71 @@ export default function ShopClient({
       setDraftPriceRange(priceRange);
       setDraftAvailability(selectedAvailability);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterSheetOpen]);
+  }, [
+    filterSheetOpen,
+    selectedCollections,
+    selectedAvailability,
+    priceRange,
+  ]);
+
+  const updateUrl = ({
+    collections = selectedCollections,
+    availability = selectedAvailability,
+    price = priceRange,
+    sortValue = sort,
+    page = 1,
+  }: {
+    collections?: string[];
+    availability?: AvailabilityFilter[];
+    price?: [number, number];
+    sortValue?: SortValue;
+    page?: number;
+  }) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.set("page", String(page));
+
+    // Remove legacy filter parameter.
+    params.delete("filter");
+
+    if (collections.length > 0) {
+      params.set("collections", collections.join(","));
+    } else {
+      params.delete("collections");
+    }
+
+    if (availability.length > 0) {
+      params.set("availability", availability.join(","));
+    } else {
+      params.delete("availability");
+    }
+
+    const hasPriceFilter =
+      price[0] !== minPrice || price[1] !== maxPrice;
+
+    if (hasPriceFilter) {
+      params.set("minPrice", String(price[0]));
+      params.set("maxPrice", String(price[1]));
+    } else {
+      params.delete("minPrice");
+      params.delete("maxPrice");
+    }
+
+    if (sortValue !== "default") {
+      params.set("sort", sortValue);
+    } else {
+      params.delete("sort");
+    }
+
+    router.push(`?${params.toString()}`, {
+      scroll: false,
+    });
+  };
 
   const handleToggleAvailability = (value: AvailabilityFilter) => {
     setDraftAvailability((prev) =>
       prev.includes(value)
-        ? prev.filter((v) => v !== value)
+        ? prev.filter((item) => item !== value)
         : [...prev, value],
     );
   };
@@ -126,6 +241,15 @@ export default function ShopClient({
     setSelectedCollections(draftCollections);
     setPriceRange(draftPriceRange);
     setSelectedAvailability(draftAvailability);
+
+    updateUrl({
+      collections: draftCollections,
+      availability: draftAvailability,
+      price: draftPriceRange,
+      sortValue: sort,
+      page: 1,
+    });
+
     setFilterSheetOpen(false);
   };
 
@@ -137,55 +261,41 @@ export default function ShopClient({
     );
   };
 
+  const handleSortChange = (value: SortValue) => {
+    setSort(value);
+
+    updateUrl({
+      collections: selectedCollections,
+      availability: selectedAvailability,
+      price: priceRange,
+      sortValue: value,
+      page: 1,
+    });
+  };
+
   const handlePageChange = (page: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", String(page));
-    router.push(`?${params.toString()}`, { scroll: false });
+    updateUrl({
+      collections: selectedCollections,
+      availability: selectedAvailability,
+      price: priceRange,
+      sortValue: sort,
+      page,
+    });
   };
 
   const activeFilterCount =
     selectedCollections.length +
     selectedAvailability.length +
-    (priceRange[0] !== minPrice || priceRange[1] !== maxPrice ? 1 : 0);
-
-  const filteredProducts = initialProducts.filter((product) => {
-    const matchesCollection =
-      selectedCollections.length === 0 ||
-      (product.collectionId?._id &&
-        selectedCollections.includes(product.collectionId._id));
-
-    const matchesPrice =
-      product.price >= priceRange[0] && product.price <= priceRange[1];
-
-    const inStock = isProductInStock(product);
-    const matchesAvailability =
-      selectedAvailability.length === 0 ||
-      (selectedAvailability.includes("in-stock") && inStock) ||
-      (selectedAvailability.includes("out-of-stock") && !inStock);
-
-    return matchesCollection && matchesPrice && matchesAvailability;
-  });
-
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    // First priority: Hair Wigs always come before other products
-    const aIsWig = isHairWig(a);
-    const bIsWig = isHairWig(b);
-
-    if (aIsWig && !bIsWig) return -1;
-    if (!aIsWig && bIsWig) return 1;
-
-    // Then apply the selected sort
-    if (sort === "price-asc") return a.price - b.price;
-    if (sort === "price-desc") return b.price - a.price;
-
-    return 0; // keep original order for "default"
-  });
+    (priceRange[0] !== minPrice || priceRange[1] !== maxPrice
+      ? 1
+      : 0);
 
   const activeSortLabel =
-    SORT_OPTIONS.find((option) => option.value === sort)?.label ?? "Default";
+    SORT_OPTIONS.find((option) => option.value === sort)?.label ??
+    "Default";
 
   return (
-    <section className="w-full px-[1.5rem] sm:px-8 lg:px-[3rem] pb-[4rem] pt-[9rem]">
+    <section className="w-full px-[1.5rem] pb-[4rem] pt-[9rem] sm:px-8 lg:px-[3rem]">
       <div className="mx-auto w-full">
         <div className="mx-auto flex max-w-[min(50rem,100%)] flex-col items-center gap-3 text-center">
           <span className="subtitle">Shop</span>
@@ -203,8 +313,8 @@ export default function ShopClient({
           />
 
           <p className="mx-auto max-w-[min(32rem,100%)] text-[0.875rem] leading-relaxed text-black/50 sm:text-[0.9rem] lg:text-[1rem]">
-            Luxury hair, beauty essentials, and athleisure curated for
-            women who know exactly what they want.
+            Luxury hair, beauty essentials, and athleisure curated for women
+            who know exactly what they want.
           </p>
         </div>
 
@@ -217,6 +327,7 @@ export default function ShopClient({
           >
             <span className="text-base leading-none">+</span>
             Filters
+
             {activeFilterCount > 0 && (
               <span className="ml-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#FD3F92] px-1 text-[0.6rem] font-semibold text-white">
                 {activeFilterCount}
@@ -234,7 +345,10 @@ export default function ShopClient({
                   size={14}
                   className="text-black/50 transition-colors group-hover:text-[#FD3F92]"
                 />
-                <span className="max-w-[10rem] truncate">{activeSortLabel}</span>
+
+                <span className="max-w-[10rem] truncate">
+                  {activeSortLabel}
+                </span>
               </button>
             </DropdownMenuTrigger>
 
@@ -246,13 +360,15 @@ export default function ShopClient({
               {SORT_OPTIONS.map((option) => (
                 <DropdownMenuItem
                   key={option.value}
-                  onClick={() => setSort(option.value)}
-                  className={`cursor-pointer gap-2 rounded-xl px-3 py-2.5 text-[0.8rem] font-medium ${sort === option.value
+                  onClick={() => handleSortChange(option.value)}
+                  className={`cursor-pointer gap-2 rounded-xl px-3 py-2.5 text-[0.8rem] font-medium ${
+                    sort === option.value
                       ? "bg-[#FD3F92]/10 text-[#FD3F92]"
                       : ""
-                    }`}
+                  }`}
                 >
                   <span className="flex-1">{option.label}</span>
+
                   {sort === option.value && (
                     <Check size={14} strokeWidth={2} />
                   )}
@@ -262,16 +378,18 @@ export default function ShopClient({
           </DropdownMenu>
         </div>
 
-        <div className="py-4 sm:py-6">
-          <p className="text-[0.7rem] uppercase tracking-[0.05em] text-black/35">
-            {sortedProducts.length}{" "}
-            {sortedProducts.length === 1 ? "Product" : "Products"}
-          </p>
-        </div>
+        {/* Product Count */}
+<div className="py-4 sm:py-6">
+  <p className="text-[0.7rem] uppercase tracking-[0.05em] text-black/35">
+    {initialProducts.length}{" "}
+    {initialProducts.length === 1 ? "Product" : "Products"}
+  </p>
+</div>
 
-        {sortedProducts.length > 0 ? (
+        {/* Products */}
+        {initialProducts.length > 0 ? (
           <div className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-10 lg:grid-cols-3">
-            {sortedProducts.map((product) => (
+            {initialProducts.map((product) => (
               <ProductCard key={product._id} item={product} />
             ))}
           </div>
@@ -286,6 +404,7 @@ export default function ShopClient({
           </div>
         )}
 
+        {/* Pagination */}
         <Pagination
           currentPage={pagination.page}
           totalPages={pagination.totalPages}

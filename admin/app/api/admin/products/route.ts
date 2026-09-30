@@ -28,12 +28,11 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get("sortBy") || "createdAt";
 
     const sortOrder: SortOrder =
-  searchParams.get("sortOrder") === "asc" ? 1 : -1;
+      searchParams.get("sortOrder") === "asc" ? 1 : -1;
 
     const allowedSortFields = [
       "name",
       "price",
-      "stock",
       "averageRating",
       "reviewCount",
       "createdAt",
@@ -72,8 +71,8 @@ export async function GET(request: NextRequest) {
     }
 
     const sort: Record<string, SortOrder> = {
-  [safeSortBy]: sortOrder,
-};
+      [safeSortBy]: sortOrder,
+    };
 
     const [products, total] = await Promise.all([
       Product.find(filter)
@@ -135,18 +134,22 @@ export async function POST(request: NextRequest) {
     try {
       const image =
         product.media?.find(
-          (item: { type: string; url: string }) => item.type === "image"
+          (item: { type: string; url: string }) =>
+            item.type === "image"
         )?.url ?? undefined;
 
       void notifySubscribersNewProduct({
-  productName: product.name,
-  productImage: image,
-  productSlug: product.slug,
-  price: priceFormatter(Number(product.price)),
-  description: product.description,
-});
+        productName: product.name,
+        productImage: image,
+        productSlug: product.slug,
+        price: priceFormatter(Number(product.price)),
+        description: product.description,
+      });
     } catch (emailError) {
-      console.error("Failed to queue new product emails:", emailError);
+      console.error(
+        "Failed to queue new product emails:",
+        emailError
+      );
     }
 
     return NextResponse.json(product, {

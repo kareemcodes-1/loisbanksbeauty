@@ -9,7 +9,10 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 
-import { getProducts, deleteProduct } from "@/actions/admin/product.actions";
+import {
+  getProducts,
+  deleteProduct,
+} from "@/actions/admin/product.actions";
 
 import {
   columnVisibilityFeature,
@@ -81,6 +84,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+
 import { priceFormatter } from "@/lib/priceFormatter";
 
 interface ProductsTableProps {
@@ -91,8 +95,8 @@ const features = tableFeatures({
   columnVisibilityFeature,
 });
 
-const columnHelper = createColumnHelper<typeof features, Product>();
-
+const columnHelper =
+  createColumnHelper<typeof features, Product>();
 
 function formatDate(date: string | Date) {
   return new Intl.DateTimeFormat("en-NG", {
@@ -102,15 +106,8 @@ function formatDate(date: string | Date) {
   }).format(new Date(date));
 }
 
-function getStockStatus(product: Product) {
-  if (!product.isActive) {
-    return {
-      label: "Inactive",
-      className: "border-border bg-muted text-muted-foreground",
-    };
-  }
-
-  if (!product.trackInventory) {
+function getAvailabilityStatus(product: Product) {
+  if (product.inStock) {
     return {
       label: "In stock",
       className:
@@ -118,25 +115,10 @@ function getStockStatus(product: Product) {
     };
   }
 
-  if (product.stock <= 0) {
-    return {
-      label: "Out of stock",
-      className: "border-red-200 bg-red-100 text-red-700 hover:bg-red-100",
-    };
-  }
-
-  if (product.stock <= product.lowStockThreshold) {
-    return {
-      label: "Low stock",
-      className:
-        "border-yellow-200 bg-yellow-100 text-yellow-700 hover:bg-yellow-100",
-    };
-  }
-
   return {
-    label: "In stock",
+    label: "Out of stock",
     className:
-      "border-green-200 bg-green-100 text-green-700 hover:bg-green-100",
+      "border-red-200 bg-red-100 text-red-700 hover:bg-red-100",
   };
 }
 
@@ -146,6 +128,7 @@ function ProductsTableSkeleton() {
       {/* Search & Sort */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Skeleton className="h-10 w-full sm:max-w-sm" />
+
         <Skeleton className="h-10 w-full sm:w-[200px]" />
       </div>
 
@@ -157,46 +140,50 @@ function ProductsTableSkeleton() {
                 <TableRow>
                   <TableHead>Product</TableHead>
                   <TableHead>Price</TableHead>
-                  <TableHead>Stock</TableHead>
+                  <TableHead>Availability</TableHead>
                   <TableHead>Rating</TableHead>
-                  <TableHead>Status</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead />
                 </TableRow>
               </TableHeader>
 
               <TableBody>
-                {Array.from({ length: 8 }).map((_, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      <div className="flex min-w-[220px] items-center gap-3">
-                        <Skeleton className="size-11 rounded-md" />
-                        <div className="space-y-2">
-                          <Skeleton className="h-4 w-32" />
-                          <Skeleton className="h-3 w-24" />
+                {Array.from({ length: 8 }).map(
+                  (_, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <div className="flex min-w-[220px] items-center gap-3">
+                          <Skeleton className="size-11 rounded-md" />
+
+                          <div className="space-y-2">
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-3 w-24" />
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-16" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-10" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-20" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-6 w-20 rounded-full" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-20" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="ml-auto size-8 rounded-md" />
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+
+                      <TableCell>
+                        <Skeleton className="h-4 w-16" />
+                      </TableCell>
+
+                      <TableCell>
+                        <Skeleton className="h-6 w-24 rounded-full" />
+                      </TableCell>
+
+                      <TableCell>
+                        <Skeleton className="h-4 w-20" />
+                      </TableCell>
+
+                      <TableCell>
+                        <Skeleton className="h-4 w-20" />
+                      </TableCell>
+
+                      <TableCell>
+                        <Skeleton className="ml-auto size-8 rounded-md" />
+                      </TableCell>
+                    </TableRow>
+                  )
+                )}
               </TableBody>
             </Table>
           </div>
@@ -206,16 +193,23 @@ function ProductsTableSkeleton() {
   );
 }
 
-export function ProductsTable({ onEdit }: ProductsTableProps) {
+export function ProductsTable({
+  onEdit,
+}: ProductsTableProps) {
   const queryClient = useQueryClient();
 
   const [search, setSearch] = React.useState("");
-  const [debouncedSearch, setDebouncedSearch] = React.useState("");
-  const [page, setPage] = React.useState(1);
-  const [sortBy, setSortBy] = React.useState("createdAt");
-  const [sortOrder, setSortOrder] = React.useState<"asc" | "desc">("desc");
+  const [debouncedSearch, setDebouncedSearch] =
+    React.useState("");
 
-  // Delete confirmation state
+  const [page, setPage] = React.useState(1);
+
+  const [sortBy, setSortBy] =
+    React.useState("createdAt");
+
+  const [sortOrder, setSortOrder] =
+    React.useState<"asc" | "desc">("desc");
+
   const [productToDelete, setProductToDelete] =
     React.useState<Product | null>(null);
 
@@ -236,7 +230,12 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
   /*
    * Fetch products
    */
-  const { data, isLoading, isFetching, isError } = useQuery({
+  const {
+    data,
+    isLoading,
+    isFetching,
+    isError,
+  } = useQuery({
     queryKey: [
       "products",
       {
@@ -247,6 +246,7 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
         sortOrder,
       },
     ],
+
     queryFn: () =>
       getProducts({
         page,
@@ -255,6 +255,7 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
         sortBy,
         sortOrder,
       }),
+
     placeholderData: keepPreviousData,
   });
 
@@ -266,9 +267,12 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
    */
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteProduct(id),
+
     onSuccess: () => {
-      // Invalidate all product list queries so the table refreshes
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({
+        queryKey: ["products"],
+      });
+
       setProductToDelete(null);
     },
   });
@@ -278,6 +282,7 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
    */
   const handleSortChange = (value: string) => {
     const [field, order] = value.split("-");
+
     setSortBy(field);
     setSortOrder(order as "asc" | "desc");
     setPage(1);
@@ -285,6 +290,7 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
 
   const handleConfirmDelete = () => {
     if (!productToDelete) return;
+
     deleteMutation.mutate(productToDelete._id);
   };
 
@@ -297,9 +303,13 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
         /* Product */
         columnHelper.accessor("name", {
           header: "Product",
+
           cell: ({ row }) => {
             const product = row.original;
-            const image = product.media?.find((item) => item.type === "image");
+
+            const image = product.media?.find(
+              (item) => item.type === "image"
+            );
 
             return (
               <div className="flex min-w-[220px] items-center gap-3">
@@ -320,7 +330,10 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
                 </div>
 
                 <div className="min-w-0">
-                  <p className="truncate font-medium">{product.name}</p>
+                  <p className="truncate font-medium">
+                    {product.name}
+                  </p>
+
                   <p className="truncate text-xs text-muted-foreground">
                     {product.slug}
                   </p>
@@ -333,6 +346,7 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
         /* Price */
         columnHelper.accessor("price", {
           header: "Price",
+
           cell: ({ row }) => (
             <span className="font-medium tabular-nums">
               {priceFormatter(row.original.price)}
@@ -340,37 +354,41 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
           ),
         }),
 
-        /* Stock */
-        columnHelper.accessor("stock", {
-          header: "Stock",
+        /* Availability */
+        columnHelper.display({
+          id: "availability",
+
+          header: "Availability",
+
           cell: ({ row }) => {
-            const product = row.original;
+            const status =
+              getAvailabilityStatus(row.original);
 
-            if (!product.trackInventory) {
-              return (
-                <span className="text-sm text-muted-foreground">
-                  Not tracked
-                </span>
-              );
-            }
-
-            return <span className="tabular-nums">{product.stock}</span>;
+            return (
+              <Badge className={status.className}>
+                {status.label}
+              </Badge>
+            );
           },
         }),
 
         /* Rating */
         columnHelper.display({
           id: "rating",
+
           header: "Rating",
+
           cell: ({ row }) => {
             const product = row.original;
 
             return (
               <div className="flex items-center gap-1.5">
                 <StarIcon className="size-4 fill-yellow-400 text-yellow-400" />
+
                 <span className="tabular-nums">
                   {product.averageRating.toFixed(1)}
                 </span>
+
                 <span className="text-xs text-muted-foreground">
                   ({product.reviewCount})
                 </span>
@@ -379,22 +397,10 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
           },
         }),
 
-        /* Status */
-        columnHelper.display({
-          id: "status",
-          header: "Status",
-          cell: ({ row }) => {
-            const status = getStockStatus(row.original);
-
-            return (
-              <Badge className={status.className}>{status.label}</Badge>
-            );
-          },
-        }),
-
         /* Created */
         columnHelper.accessor("createdAt", {
           header: "Created",
+
           cell: ({ row }) => (
             <span className="text-sm text-muted-foreground">
               {formatDate(row.original.createdAt)}
@@ -405,7 +411,9 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
         /* Actions */
         columnHelper.display({
           id: "actions",
+
           header: "",
+
           cell: ({ row }) => {
             const product = row.original;
 
@@ -413,14 +421,25 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
               <div className="flex justify-end">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="size-8">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8"
+                    >
                       <MoreHorizontalIcon />
-                      <span className="sr-only">Open product actions</span>
+
+                      <span className="sr-only">
+                        Open product actions
+                      </span>
                     </Button>
                   </DropdownMenuTrigger>
 
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => onEdit?.(product)}>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        onEdit?.(product)
+                      }
+                    >
                       <PencilIcon />
                       Edit
                     </DropdownMenuItem>
@@ -429,7 +448,9 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
 
                     <DropdownMenuItem
                       variant="destructive"
-                      onClick={() => setProductToDelete(product)}
+                      onClick={() =>
+                        setProductToDelete(product)
+                      }
                     >
                       <Trash2Icon />
                       Delete
@@ -464,7 +485,9 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
     return (
       <Card>
         <CardContent className="flex h-32 items-center justify-center p-6">
-          <p className="text-sm text-destructive">Failed to load products.</p>
+          <p className="text-sm text-destructive">
+            Failed to load products.
+          </p>
         </CardContent>
       </Card>
     );
@@ -495,9 +518,12 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:max-w-sm">
           <SearchIcon className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+
           <Input
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(event) =>
+              setSearch(event.target.value)
+            }
             placeholder="Search products..."
             className="pl-9"
           />
@@ -512,16 +538,37 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
           </SelectTrigger>
 
           <SelectContent>
-            <SelectItem value="createdAt-desc">Newest</SelectItem>
-            <SelectItem value="createdAt-asc">Oldest</SelectItem>
-            <SelectItem value="name-asc">Name A-Z</SelectItem>
-            <SelectItem value="name-desc">Name Z-A</SelectItem>
-            <SelectItem value="price-asc">Price: Low to High</SelectItem>
-            <SelectItem value="price-desc">Price: High to Low</SelectItem>
-            <SelectItem value="stock-asc">Stock: Low to High</SelectItem>
-            <SelectItem value="stock-desc">Stock: High to Low</SelectItem>
-            <SelectItem value="averageRating-desc">Rating: Highest</SelectItem>
-            <SelectItem value="averageRating-asc">Rating: Lowest</SelectItem>
+            <SelectItem value="createdAt-desc">
+              Newest
+            </SelectItem>
+
+            <SelectItem value="createdAt-asc">
+              Oldest
+            </SelectItem>
+
+            <SelectItem value="name-asc">
+              Name A-Z
+            </SelectItem>
+
+            <SelectItem value="name-desc">
+              Name Z-A
+            </SelectItem>
+
+            <SelectItem value="price-asc">
+              Price: Low to High
+            </SelectItem>
+
+            <SelectItem value="price-desc">
+              Price: High to Low
+            </SelectItem>
+
+            <SelectItem value="averageRating-desc">
+              Rating: Highest
+            </SelectItem>
+
+            <SelectItem value="averageRating-asc">
+              Rating: Lowest
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -532,33 +579,51 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder ? null : (
-                          <table.FlexRender header={header} />
-                        )}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                ))}
+                {table
+                  .getHeaderGroups()
+                  .map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map(
+                        (header) => (
+                          <TableHead key={header.id}>
+                            {header.isPlaceholder
+                              ? null
+                              : (
+                                  <table.FlexRender
+                                    header={header}
+                                  />
+                                )}
+                          </TableHead>
+                        )
+                      )}
+                    </TableRow>
+                  ))}
               </TableHeader>
 
               <TableBody>
                 {table.getRowModel().rows.length > 0 ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      className={isFetching ? "opacity-60" : undefined}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          <table.FlexRender cell={cell} />
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
+                  table
+                    .getRowModel()
+                    .rows.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        className={
+                          isFetching
+                            ? "opacity-60"
+                            : undefined
+                        }
+                      >
+                        {row
+                          .getVisibleCells()
+                          .map((cell) => (
+                            <TableCell key={cell.id}>
+                              <table.FlexRender
+                                cell={cell}
+                              />
+                            </TableCell>
+                          ))}
+                      </TableRow>
+                    ))
                 ) : (
                   <TableRow>
                     <TableCell
@@ -602,8 +667,15 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
               <Button
                 variant="outline"
                 size="sm"
-                disabled={isFetching || !pagination?.hasPreviousPage}
-                onClick={() => setPage((current) => current - 1)}
+                disabled={
+                  isFetching ||
+                  !pagination?.hasPreviousPage
+                }
+                onClick={() =>
+                  setPage(
+                    (current) => current - 1
+                  )
+                }
               >
                 <ChevronLeftIcon />
                 Previous
@@ -612,8 +684,15 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
               <Button
                 variant="outline"
                 size="sm"
-                disabled={isFetching || !pagination?.hasNextPage}
-                onClick={() => setPage((current) => current + 1)}
+                disabled={
+                  isFetching ||
+                  !pagination?.hasNextPage
+                }
+                onClick={() =>
+                  setPage(
+                    (current) => current + 1
+                  )
+                }
               >
                 Next
                 <ChevronRightIcon />
@@ -627,12 +706,17 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
       <AlertDialog
         open={!!productToDelete}
         onOpenChange={(open) => {
-          if (!open) setProductToDelete(null);
+          if (!open) {
+            setProductToDelete(null);
+          }
         }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete product?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Delete product?
+            </AlertDialogTitle>
+
             <AlertDialogDescription>
               This will permanently delete{" "}
               <span className="font-medium text-foreground">
@@ -643,7 +727,9 @@ export function ProductsTable({ onEdit }: ProductsTableProps) {
           </AlertDialogHeader>
 
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteMutation.isPending}>
+            <AlertDialogCancel
+              disabled={deleteMutation.isPending}
+            >
               Cancel
             </AlertDialogCancel>
 

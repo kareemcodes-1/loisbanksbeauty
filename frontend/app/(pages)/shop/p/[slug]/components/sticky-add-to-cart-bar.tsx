@@ -7,11 +7,6 @@ import type { Product } from "@/types";
 import { useCartStore } from "@/store/cart";
 import { priceFormatter } from "@/lib/priceFormatter";
 import { getProductPricing } from "@/lib/product-pricing";
-import {
-  getStockLabel,
-  getStockStatus,
-  isAddToCartDisabled,
-} from "@/lib/product-stock";
 import { useCurrencyStore } from "@/store/currency";
 
 type StickyAddToCartBarProps = {
@@ -34,9 +29,8 @@ const StickyAddToCartBar = ({ product }: StickyAddToCartBarProps) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const stockStatus = getStockStatus(product);
-  const stockLabel = getStockLabel(product);
-  const disabled = isAddToCartDisabled(product);
+  const disabled = !product.inStock;
+  const stockLabel = product.inStock ? "In Stock" : "Out of Stock";
 
   const thumbnail = product.media.find((item) => item.type === "image");
 
@@ -45,22 +39,17 @@ const StickyAddToCartBar = ({ product }: StickyAddToCartBarProps) => {
 
   const handleAddToCart = () => {
     if (disabled) return;
+
     addItem(product, 1, product.sizes?.[0] ?? null);
   };
 
-  const stockBadgeClass =
-    stockStatus === "out-of-stock"
-      ? "border-red-200 bg-red-100 text-red-700"
-      : stockStatus === "low-stock"
-        ? "border-amber-200 bg-amber-100 text-amber-800"
-        : "border-emerald-200 bg-emerald-100 text-emerald-700";
+  const stockBadgeClass = product.inStock
+    ? "border-emerald-200 bg-emerald-100 text-emerald-700"
+    : "border-red-200 bg-red-100 text-red-700";
 
-  const statusDotClass =
-    stockStatus === "out-of-stock"
-      ? "bg-red-500"
-      : stockStatus === "low-stock"
-        ? "bg-amber-400"
-        : "bg-emerald-500";
+  const statusDotClass = product.inStock
+    ? "bg-emerald-500"
+    : "bg-red-500";
 
   return (
     <div
@@ -111,10 +100,12 @@ const StickyAddToCartBar = ({ product }: StickyAddToCartBarProps) => {
             <span
               className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-40 ${statusDotClass}`}
             />
+
             <span
               className={`relative inline-flex h-2 w-2 rounded-full ${statusDotClass}`}
             />
           </span>
+
           <span className="text-[0.65rem] font-medium uppercase tracking-[0.08em]">
             {stockLabel}
           </span>
