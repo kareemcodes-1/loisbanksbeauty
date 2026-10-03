@@ -19,20 +19,17 @@ async function getChatSettingsDoc() {
   return settings;
 }
 
-/** Search products — no exact stock count */
+/** Search products */
 export async function searchProducts(query: string, limit = 8) {
   await connectDB();
 
   const products = await Product.find({
-    isActive: true,
     $or: [
       { name: { $regex: query, $options: "i" } },
       { description: { $regex: query, $options: "i" } },
     ],
   })
-    .select(
-      "name slug price stock trackInventory sizes media description"
-    )
+    .select("name slug price inStock sizes media description")
     .limit(limit)
     .lean();
 
@@ -41,7 +38,7 @@ export async function searchProducts(query: string, limit = 8) {
     name: p.name,
     slug: p.slug,
     price: p.price,
-    inStock: p.trackInventory ? p.stock > 0 : true,
+    inStock: p.inStock ?? true,
     sizes: p.sizes || [],
     description: p.description,
     image:
@@ -55,13 +52,9 @@ export async function listAvailableProducts(limit = 15) {
   await connectDB();
 
   const products = await Product.find({
-    isActive: true,
-    $or: [
-      { trackInventory: false },
-      { trackInventory: true, stock: { $gt: 0 } },
-    ],
+    inStock: true,
   })
-    .select("name slug price stock trackInventory sizes media")
+    .select("name slug price inStock sizes media")
     .sort({ createdAt: -1 })
     .limit(limit)
     .lean();
@@ -93,13 +86,12 @@ export async function findProductForCart(query: string) {
   const escaped = cleaned.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
   let p = await Product.findOne({
-    isActive: true,
     $or: [
       { name: { $regex: escaped, $options: "i" } },
       { slug: { $regex: escaped, $options: "i" } },
     ],
   })
-    .select("name slug price stock trackInventory sizes media")
+    .select("name slug price inStock sizes media")
     .lean();
 
   if (!p) {
@@ -110,7 +102,6 @@ export async function findProductForCart(query: string) {
 
     if (words.length > 0) {
       p = await Product.findOne({
-        isActive: true,
         $and: words.map((w) => ({
           name: {
             $regex: w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
@@ -118,7 +109,7 @@ export async function findProductForCart(query: string) {
           },
         })),
       })
-        .select("name slug price stock trackInventory sizes media")
+        .select("name slug price inStock sizes media")
         .lean();
     }
   }
@@ -126,13 +117,12 @@ export async function findProductForCart(query: string) {
   if (!p) {
     const main = cleaned.split(" ").slice(0, 3).join(" ");
     p = await Product.findOne({
-      isActive: true,
       name: {
         $regex: main.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
         $options: "i",
       },
     })
-      .select("name slug price stock trackInventory sizes media")
+      .select("name slug price inStock sizes media")
       .lean();
   }
 
@@ -140,9 +130,7 @@ export async function findProductForCart(query: string) {
     return { error: "not_found", query: cleaned };
   }
 
-  const inStock = p.trackInventory ? p.stock > 0 : true;
-
-  if (!inStock) {
+  if (!p.inStock) {
     return {
       error: "out_of_stock",
       name: p.name,
@@ -164,8 +152,7 @@ export async function listCollections() {
   await connectDB();
 
   const collections = await Collection.find({})
-    .select("name slug description")
-    .sort({ order: 1 })
+    .select("name slug")
     .lean();
 
   return collections.map((c) => ({
@@ -184,9 +171,7 @@ export async function listActiveDiscounts() {
     startsAt: { $lte: now },
     expiresAt: { $gte: now },
   })
-    .select(
-      "title description discountType discountValue productIds"
-    )
+    .select("title description discountType discountValue productIds")
     .lean();
 
   return discounts.map((d) => ({
@@ -207,10 +192,13 @@ export async function getUserOrders(userId: string, limit = 5) {
 
   return orders.map((o) => ({
     id: o._id.toString(),
-    reference: o.paymentInfo?.transactionId || o._id.toString(),
+    reference:
+      o.paymentInfo?.transactionReference ||
+      String(o._id).slice(-8).toUpperCase(),
     status: o.orderStatus,
     totalAmount: o.totalAmount,
-    itemCount: o.items?.reduce((s: number, i: any) => s + i.quantity, 0) || 0,
+    itemCount:
+      o.items?.reduce((s: number, i: any) => s + i.quantity, 0) || 0,
     items: (o.items || []).map((i: any) => ({
       name: i.name,
       quantity: i.quantity,
@@ -278,16 +266,10 @@ export async function getProductsByCollection(query: string, limit = 12) {
   }
 
   const products = await Product.find({
-    isActive: true,
     collectionId: collection._id,
-    $or: [
-      { trackInventory: false },
-      { trackInventory: true, stock: { $gt: 0 } },
-    ],
+    inStock: true,
   })
-    .select(
-      "name slug price stock trackInventory sizes media description"
-    )
+    .select("name slug price inStock sizes media description")
     .limit(limit)
     .lean();
 
@@ -303,7 +285,7 @@ export async function getProductsByCollection(query: string, limit = 12) {
       name: p.name,
       slug: p.slug,
       price: p.price,
-      inStock: p.trackInventory ? p.stock > 0 : true,
+      inStock: p.inStock ?? true,
       sizes: p.sizes || [],
       description: p.description,
       image:

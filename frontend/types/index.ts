@@ -76,6 +76,11 @@ export interface Product {
 
   featured: boolean;
   inStock: boolean;
+  discount?: {
+    discountType: "percentage" | "fixed";
+    discountValue: number;
+    title?: string;
+  } | null;
 
   sizes: string[];
 
