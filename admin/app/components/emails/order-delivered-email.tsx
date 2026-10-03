@@ -1,5 +1,10 @@
-import { Button, Heading, Section, Text } from "@react-email/components";
-import EmailLayout from "./email-layout";
+import { Link, Text } from "@react-email/components";
+import EmailLayout, {
+  EmailButton,
+  EmailEyebrow,
+  EmailHeading,
+  EmailText,
+} from "./email-layout";
 
 type Props = {
   name: string;
@@ -15,57 +20,39 @@ export default function OrderDeliveredEmail({
   orderReference,
   shippingMethod,
 }: Props) {
+  const isPickup = shippingMethod === "pickup";
+
   return (
     <EmailLayout preview={`Your order #${orderReference} is complete`}>
-      <Text className="m-0 text-center text-[11px] font-medium uppercase tracking-[0.2em] text-[#FD3F92]">
-        Completed
-      </Text>
+      <EmailEyebrow>Completed</EmailEyebrow>
+      <EmailHeading>Your order is complete</EmailHeading>
 
-      <Heading className="mt-3 mb-0 text-center text-[24px] font-medium leading-tight text-black">
-        Your order is complete
-      </Heading>
-
-      <Text className="mt-4 mb-0 text-center text-[15px] leading-relaxed text-black/60">
-        Hi {name}, your order <strong>#{orderReference}</strong> has been
-        {shippingMethod === "pickup"
-          ? " successfully collected from our store."
-          : " successfully delivered to you."}
-      </Text>
-
-      <Text className="mt-5 mb-0 text-center text-[15px] leading-relaxed text-black/60">
+      <EmailText center>
+        Hi {name}, your order <strong>#{orderReference}</strong> has been{" "}
+        {isPickup
+          ? "collected from our store."
+          : "delivered to you."}{" "}
         Thank you for shopping with LoisBanks Beauty. We hope you love it.
-      </Text>
+      </EmailText>
 
-      <Section className="mt-8 rounded-2xl bg-[#fafafa] px-5 py-4 text-center">
-        <Text className="m-0 text-[11px] font-medium uppercase tracking-[0.14em] text-black/40">
-          Order Reference
-        </Text>
-        <Text className="mt-1 mb-0 font-mono text-[15px] font-medium tracking-wide text-black">
-          {orderReference}
-        </Text>
-      </Section>
+      <EmailText center>
+        We&apos;d love to hear what you think. Leave a quick review when you
+        can.
+      </EmailText>
 
-      <Text className="mt-8 mb-0 text-center text-[14px] leading-relaxed text-black/60">
-        We’d love to hear what you think. Leave a quick review when you can.
-      </Text>
+      <EmailButton href={`${APP_URL}/reviews/pending`}>
+        Leave a review
+      </EmailButton>
 
-      <Section className="mt-6 text-center">
-        <Button
-          href={`${APP_URL}/reviews/pending`}
-          className="rounded-full bg-[#FD3F92] px-8 py-3.5 text-[13px] font-medium uppercase tracking-[0.08em] text-white no-underline"
-        >
-          Leave a Review
-        </Button>
-      </Section>
-
-      <Section className="mt-4 text-center">
-        <Button
+      <Text className="m-0 text-center text-[13px] text-black/50">
+        Or{" "}
+        <Link
           href={`${APP_URL}/orders`}
-          className="rounded-full border border-black/15 bg-white px-8 py-3.5 text-[13px] font-medium uppercase tracking-[0.08em] text-black no-underline"
+          className="font-medium text-black underline"
         >
-          View Order
-        </Button>
-      </Section>
+          view your order
+        </Link>
+      </Text>
     </EmailLayout>
   );
 }

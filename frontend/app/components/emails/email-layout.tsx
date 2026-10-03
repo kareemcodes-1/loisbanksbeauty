@@ -66,13 +66,19 @@ export default function EmailLayout({ preview, children }: EmailLayoutProps) {
 
             {/* Footer */}
             <Section className="bg-[#fafafa] px-6 py-8 text-center sm:px-10">
-              <Text className="m-0 text-[13px] leading-[1.6] text-black/60">
-                Questions about your order? Just reply to this email or reach
-                out, we&apos;re happy to help.
+             <Text className="m-0 text-[13px] leading-[1.6] text-black/60">
+                Need help?{" "}
+                <Link
+                  href={`${APP_URL}/contact`}
+                  className="text-[#fd3f92] underline"
+                >
+                  Send us a message
+                </Link>{" "}
+                on our contact page, we&apos;re happy to help.
               </Text>
 
               <Text className="m-0 mt-4 text-[12px] leading-[1.8] text-black/50">
-                <Link href={APP_URL} className="text-black/50 underline">
+                <Link   href={`${APP_URL}/shop`} className="text-black/50 underline">
                   Shop
                 </Link>
                 {"  ·  "}

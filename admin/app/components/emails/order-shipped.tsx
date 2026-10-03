@@ -1,5 +1,10 @@
-import { Button, Heading, Section, Text } from "@react-email/components";
-import EmailLayout from "./email-layout";
+import { Link, Text } from "@react-email/components";
+import EmailLayout, {
+  EmailButton,
+  EmailEyebrow,
+  EmailHeading,
+  EmailText,
+} from "./email-layout";
 
 type Props = {
   name: string;
@@ -7,7 +12,8 @@ type Props = {
   trackingUrl?: string;
 };
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://loisbanksbeauty.com";
+const APP_URL =
+  process.env.NEXT_PUBLIC_APP_URL || "https://loisbanksbeauty.com";
 
 export default function OrderShippedEmail({
   name,
@@ -16,50 +22,31 @@ export default function OrderShippedEmail({
 }: Props) {
   return (
     <EmailLayout preview={`Your order #${orderReference} has been shipped`}>
-      <Text className="m-0 text-center text-[11px] font-medium uppercase tracking-[0.2em] text-[#FD3F92]">
-        Shipped
-      </Text>
+      <EmailEyebrow>Shipped</EmailEyebrow>
+      <EmailHeading>Your order is on the way</EmailHeading>
 
-      <Heading className="mt-3 mb-0 text-center text-[24px] font-medium leading-tight text-black">
-        Your order is on the way
-      </Heading>
+      <EmailText center>
+        Hi {name}, good news: your order <strong>#{orderReference}</strong> has
+        been shipped and is heading to your delivery address. We&apos;ll let you
+        know once it has been delivered.
+      </EmailText>
 
-      <Text className="mt-4 mb-0 text-center text-[15px] leading-relaxed text-black/60">
-        Hi {name}, good news — your order <strong>#{orderReference}</strong> has
-        been shipped and is on its way to your delivery address.
-      </Text>
-
-      <Section className="mt-8 rounded-2xl bg-[#fafafa] px-5 py-4 text-center">
-        <Text className="m-0 text-[11px] font-medium uppercase tracking-[0.14em] text-black/40">
-          Order Reference
-        </Text>
-        <Text className="mt-1 mb-0 font-mono text-[15px] font-medium tracking-wide text-black">
-          {orderReference}
-        </Text>
-      </Section>
-
-      <Text className="mt-8 mb-0 text-center text-[15px] leading-relaxed text-black/60">
-        We will notify you once your package has been delivered. Thank you for
-        shopping with LoisBanks Beauty.
-      </Text>
-
-      <Section className="mt-8 text-center">
-        {trackingUrl ? (
-          <Button
-            href={trackingUrl}
-            className="rounded-full bg-[#FD3F92] px-8 py-3.5 text-[13px] font-medium uppercase tracking-[0.08em] text-white no-underline"
-          >
-            Track Package
-          </Button>
-        ) : (
-          <Button
-            href={`${APP_URL}/orders`}
-            className="rounded-full bg-[#FD3F92] px-8 py-3.5 text-[13px] font-medium uppercase tracking-[0.08em] text-white no-underline"
-          >
-            View Order
-          </Button>
-        )}
-      </Section>
+      {trackingUrl ? (
+        <>
+          <EmailButton href={trackingUrl}>Track package</EmailButton>
+          <Text className="m-0 text-center text-[13px] text-black/50">
+            Or{" "}
+            <Link
+              href={`${APP_URL}/orders`}
+              className="font-medium text-black underline"
+            >
+              view your order
+            </Link>
+          </Text>
+        </>
+      ) : (
+        <EmailButton href={`${APP_URL}/orders`}>View order</EmailButton>
+      )}
     </EmailLayout>
   );
 }
