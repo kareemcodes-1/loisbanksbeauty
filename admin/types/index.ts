@@ -134,24 +134,46 @@ export interface ShippingAddress {
   phone?: string;
 }
 
-export type PaymentGateway = "paystack";
+export interface OrderItem {
+  _id: string;
+  productId: string;
+  name: string;
+  media: OrderMedia[];
+  price: number;
+  quantity: number;
+  size?: string | null;
+}
 
-export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
+export interface ShippingAddress {
+  firstName: string;
+  lastName: string;
+  address: string;
+  apartment?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  phone?: string;
+}
+
+export type PaymentMethod = "bank_transfer";
+
+export type PaymentStatus = "pending" | "paid";
 
 export interface PaymentInfo {
-  transactionId: string;
-  gateway: PaymentGateway;
+  paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
-  channel: string | null;
+  transactionReference: string | null;
+  customerNotifiedAt: string | null;   // ← added
   paidAt: string | null;
 }
 
 export type OrderStatus =
-  | "processing"
+  | "pending"
   | "confirmed"
   | "shipped"
-   | "out_for_delivery"
   | "ready_for_pickup"
+  | "out_for_delivery"
   | "delivered"
   | "cancelled";
 
@@ -159,17 +181,32 @@ export type ShippingMethod = "pickup" | "delivery";
 
 export interface Order {
   _id: string;
-  userId: string | { _id: string; name?: string; email?: string; phone?: string };
+
+  userId:
+    | string
+    | {
+        _id: string;
+        name?: string;
+        email?: string;
+        phone?: string;
+      };
+
   items: OrderItem[];
   shippingAddress: ShippingAddress;
   paymentInfo: PaymentInfo;
+
   orderStatus: OrderStatus;
   shippingMethod: ShippingMethod;
   trackingNumber: string | null;
+
+  // NEW
+  adminNote: string | null;
+
   subtotal: number;
   shippingFee: number;
   tax: number;
   totalAmount: number;
+
   createdAt: string;
   updatedAt: string;
 }

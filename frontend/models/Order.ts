@@ -104,40 +104,40 @@ const shippingAddressSchema = new Schema(
   }
 );
 
+
 const paymentInfoSchema = new Schema(
   {
-    transactionId: {
+    paymentMethod: {
       type: String,
+      enum: ["bank_transfer"],
       required: true,
-      trim: true,
-    },
-    gateway: {
-      type: String,
-      enum: ["paystack"],
-      required: true,
+      default: "bank_transfer",
     },
     paymentStatus: {
       type: String,
-      enum: ["pending", "paid", "failed", "refunded"],
+      enum: ["pending", "paid"],
       required: true,
+      default: "pending",
     },
-    channel: {
+    transactionReference: {
       type: String,
       default: null,
       trim: true,
+    },
+    customerNotifiedAt: {
+      type: Date,
+      default: null,
     },
     paidAt: {
       type: Date,
       default: null,
     },
   },
-  {
-    _id: false,
-  }
+  { _id: false }
 );
 
 export type OrderStatus =
-  | "processing"
+  | "pending"
   | "confirmed"
   | "shipped"
   | "ready_for_pickup"
@@ -176,16 +176,19 @@ export interface IOrderDocument extends Document {
   };
 
   paymentInfo: {
-    transactionId: string;
-    gateway: "paystack";
-    paymentStatus: "pending" | "paid" | "failed" | "refunded";
-    channel: string | null;
+    paymentMethod: "bank_transfer";
+    paymentStatus: "pending" | "paid";
+    transactionReference: string | null;
+    customerNotifiedAt: Date | null;
     paidAt: Date | null;
   };
 
   orderStatus: OrderStatus;
   shippingMethod: ShippingMethod;
   trackingNumber: string | null;
+
+  // NEW
+  adminNote: string | null;
 
   subtotal: number;
   shippingFee: number;
@@ -224,20 +227,20 @@ const orderSchema = new Schema<IOrderDocument>(
       required: true,
     },
 
-   orderStatus: {
-  type: String,
-  enum: [
-    "processing",
-    "confirmed",
-    "shipped",
-    "out_for_delivery",
-    "ready_for_pickup",
-    "delivered",
-    "cancelled",
-  ],
-  default: "processing",
-  index: true,
-},
+    orderStatus: {
+      type: String,
+      enum: [
+        "pending",
+        "confirmed",
+        "shipped",
+        "out_for_delivery",
+        "ready_for_pickup",
+        "delivered",
+        "cancelled",
+      ],
+      default: "pending",
+      index: true,
+    },
 
     shippingMethod: {
       type: String,
@@ -246,6 +249,13 @@ const orderSchema = new Schema<IOrderDocument>(
     },
 
     trackingNumber: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+
+    // NEW
+    adminNote: {
       type: String,
       default: null,
       trim: true,

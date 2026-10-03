@@ -103,8 +103,8 @@ function formatDate(date: string | Date) {
 
 function getStatusBadge(status: string) {
   const map: Record<string, { label: string; className: string }> = {
-    processing: {
-      label: "Processing",
+    pending: {
+      label: "Pending",
       className:
         "border-amber-200 bg-amber-100 text-amber-700 hover:bg-amber-100",
     },
@@ -460,8 +460,8 @@ export function OrdersTable({ onEdit }: OrdersTableProps) {
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="processing">
-                Processing
+              <SelectItem value="pending">
+                Pending
               </SelectItem>
 
               <SelectItem value="confirmed">

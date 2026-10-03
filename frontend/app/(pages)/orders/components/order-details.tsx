@@ -12,7 +12,7 @@ type Props = {
 };
 
 const statusStyles: Record<string, string> = {
-  processing: "bg-orange-100 text-orange-700 border-orange-200",
+  pending: "bg-orange-100 text-orange-700 border-orange-200",
   confirmed: "bg-green-50 text-green-700 border-green-200",
   shipped: "bg-blue-100 text-blue-700 border-blue-200",
   out_for_delivery: "bg-orange-50 text-orange-700 border-orange-200",
@@ -22,7 +22,7 @@ const statusStyles: Record<string, string> = {
 };
 
 const statusLabels: Record<string, string> = {
-  processing: "Processing",
+  pending: "Pending",
   confirmed: "Confirmed",
   shipped: "Shipped",
   out_for_delivery: "Out for delivery",
@@ -48,6 +48,9 @@ export default function OrderDetails({ order }: Props) {
       })
     : null;
 
+    console.log("Order paymentInfo:", order.paymentInfo);
+  console.log("paymentMethod value:", order.paymentInfo?.paymentMethod);
+
   return (
     <div>
       <Link
@@ -71,13 +74,15 @@ export default function OrderDetails({ order }: Props) {
 
         <div className="flex flex-wrap items-center gap-2">
           <span
-            className={`inline-flex w-fit items-center rounded-full border px-4 py-1.5 text-[.7rem] font-medium uppercase lg:text-[.8rem] ${
-              statusStyles[order.orderStatus] ||
-              "border-gray-200 bg-gray-50 text-gray-700"
-            }`}
-          >
-            {statusLabels[order.orderStatus] || order.orderStatus}
-          </span>
+  className={`inline-flex w-fit items-center rounded-full border px-4 py-1.5 text-[.7rem] font-medium uppercase lg:text-[.8rem] ${
+    statusStyles[order.orderStatus] ||
+    "border-gray-200 bg-gray-50 text-gray-700"
+  }`}
+>
+  {order.orderStatus === "cancelled" && order.adminNote
+    ? `Cancelled - ${order.adminNote}`
+    : statusLabels[order.orderStatus] || order.orderStatus}
+</span>
 
           {order.shippingMethod && (
             <span className="inline-flex w-fit items-center rounded-full border border-black/10 bg-black/5 px-4 py-1.5 text-[.7rem] font-medium uppercase text-black/70 lg:text-[.8rem]">
@@ -231,47 +236,53 @@ export default function OrderDetails({ order }: Props) {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm sm:p-6">
-            <h2 className="mb-4 text-[1.1rem] font-medium">
-              Payment
-            </h2>
+<section className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm sm:p-6">
+  <h2 className="mb-4 text-[1.1rem] font-medium">Payment</h2>
 
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-black/60">Status</span>
+  <div className="space-y-3 text-sm">
+    {/* Payment method */}
+    <div className="flex justify-between">
+      <span className="text-black/60">Method</span>
+      <span className="font-medium">
+        {order.paymentInfo.paymentMethod === "bank_transfer"
+          ? "Bank transfer"
+          : order.paymentInfo.paymentMethod}
+      </span>
+    </div>
 
-                <span className="font-medium capitalize">
-                  {order.paymentInfo.paymentStatus}
-                </span>
-              </div>
+    {/* Payment status */}
+    <div className="flex justify-between items-center">
+      <span className="text-black/60">Status</span>
+      <span
+        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+          order.paymentInfo.paymentStatus === "paid"
+            ? "bg-green-100 text-green-700"
+            : "bg-orange-100 text-orange-700"
+        }`}
+      >
+        {order.paymentInfo.paymentStatus === "paid" ? "Paid" : "Pending"}
+      </span>
+    </div>
 
-              <div className="flex justify-between">
-                <span className="text-black/60">Method</span>
+    {/* Paid on */}
+    {paidAt && (
+      <div className="flex justify-between">
+        <span className="text-black/60">Paid on</span>
+        <span>{paidAt}</span>
+      </div>
+    )}
 
-                <span className="capitalize">
-                  {order.paymentInfo.channel ||
-                    order.paymentInfo.gateway}
-                </span>
-              </div>
-
-              {paidAt && (
-                <div className="flex justify-between">
-                  <span className="text-black/60">Paid on</span>
-                  <span>{paidAt}</span>
-                </div>
-              )}
-
-              <div className="pt-2">
-                <p className="text-xs text-black/40">
-                  Reference
-                </p>
-
-                <p className="mt-0.5 break-all font-mono text-xs text-black/70">
-                  {order.paymentInfo.transactionId}
-                </p>
-              </div>
-            </div>
-          </section>
+    {/* Transaction reference (only if admin recorded one) */}
+    {order.paymentInfo.transactionReference && (
+      <div className="pt-2">
+        <p className="text-xs text-black/40">Transaction reference</p>
+        <p className="mt-0.5 break-all font-mono text-xs text-black/70">
+          {order.paymentInfo.transactionReference}
+        </p>
+      </div>
+    )}
+  </div>
+</section>
         </div>
       </div>
     </div>

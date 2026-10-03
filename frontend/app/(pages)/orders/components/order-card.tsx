@@ -11,7 +11,7 @@ type Props = {
 };
 
 const statusStyles: Record<string, string> = {
-  processing: "bg-amber-50 text-amber-700 border-amber-200",
+  pending: "bg-orange-100 text-orange-700 border-orange-200",
   confirmed: "bg-green-50 text-green-700 border-green-200",
   shipped: "bg-blue-100 text-blue-700 border-blue-200",
   out_for_delivery: "bg-orange-50 text-orange-700 border-orange-200",
@@ -21,7 +21,7 @@ const statusStyles: Record<string, string> = {
 };
 
 const statusLabels: Record<string, string> = {
-  processing: "Processing",
+  pending: "Pending",
   confirmed: "Confirmed",
   shipped: "Shipped",
   out_for_delivery: "Out for delivery",
@@ -31,6 +31,7 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function OrderCard({ order }: Props) {
+  console.log(order)
   const currency = useCurrencyStore((s) => s.currency);
 
   const firstImage =
@@ -55,13 +56,15 @@ export default function OrderCard({ order }: Props) {
         <p className="text-[13px] text-black/40">{formattedDate}</p>
 
         <span
-          className={`rounded-full border px-2.5 py-1 font-medium text-[.6rem] uppercase tracking-wide lg:text-[.7rem] ${
-            statusStyles[order.orderStatus] ||
-            "border-gray-200 bg-gray-50 text-gray-600"
-          }`}
-        >
-          {statusLabels[order.orderStatus] || order.orderStatus}
-        </span>
+  className={`rounded-full border px-2.5 py-1 font-medium text-[.6rem] uppercase tracking-wide lg:text-[.7rem] ${
+    statusStyles[order.orderStatus] ||
+    "border-gray-200 bg-gray-50 text-gray-600"
+  }`}
+>
+  {order.orderStatus === "cancelled" 
+    ? `Cancelled - ${order.adminNote}`
+    : statusLabels[order.orderStatus] || order.orderStatus}
+</span>
       </div>
 
       {/* Main */}
@@ -101,9 +104,6 @@ export default function OrderCard({ order }: Props) {
 
       {/* Bottom */}
       <div className="mt-5 flex items-center justify-between border-t border-black/5 pt-4">
-        <p className="font-mono text-[12px] text-black/30">
-          {order.paymentInfo.transactionId}
-        </p>
 
         <Link
           href={`/orders/${order._id}`}

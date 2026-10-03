@@ -48,41 +48,17 @@ const ALL_STATUSES: {
   value: OrderStatus;
   label: string;
 }[] = [
-  {
-    value: "processing",
-    label: "Processing",
-  },
-  {
-    value: "confirmed",
-    label: "Confirmed",
-  },
-  {
-    value: "shipped",
-    label: "Shipped",
-  },
-  {
-    value: "out_for_delivery",
-    label: "Out for delivery",
-  },
-  {
-    value: "ready_for_pickup",
-    label: "Ready for pickup",
-  },
-  {
-    value: "delivered",
-    label: "Delivered",
-  },
-  {
-    value: "cancelled",
-    label: "Cancelled",
-  },
+  { value: "pending", label: "Pending" },
+  { value: "confirmed", label: "Confirmed" },
+  { value: "shipped", label: "Shipped" },
+  { value: "out_for_delivery", label: "Out for delivery" },
+  { value: "ready_for_pickup", label: "Ready for pickup" },
+  { value: "delivered", label: "Delivered" },
+  { value: "cancelled", label: "Cancelled" },
 ];
 
-function getStatusesForShippingMethod(
-  shippingMethod?: string | null
-) {
+function getStatusesForShippingMethod(shippingMethod?: string | null) {
   if (shippingMethod === "pickup") {
-    // Pickup orders don't need shipped or out-for-delivery statuses.
     return ALL_STATUSES.filter(
       (status) =>
         status.value !== "shipped" &&
@@ -91,13 +67,11 @@ function getStatusesForShippingMethod(
   }
 
   if (shippingMethod === "delivery") {
-    // Delivery orders don't need ready-for-pickup.
     return ALL_STATUSES.filter(
       (status) => status.value !== "ready_for_pickup"
     );
   }
 
-  // Fallback for older orders where shippingMethod is missing.
   return ALL_STATUSES;
 }
 
@@ -109,16 +83,15 @@ export function OrderStatusDialog({
   const queryClient = useQueryClient();
 
   const [orderStatus, setOrderStatus] =
-    React.useState<OrderStatus>("processing");
+    React.useState<OrderStatus>("pending");
 
   const [trackingNumber, setTrackingNumber] =
     React.useState("");
 
+  const [adminNote, setAdminNote] = React.useState("");
+
   const availableStatuses = React.useMemo(
-    () =>
-      getStatusesForShippingMethod(
-        order?.shippingMethod
-      ),
+    () => getStatusesForShippingMethod(order?.shippingMethod),
     [order?.shippingMethod]
   );
 
@@ -127,14 +100,8 @@ export function OrderStatusDialog({
       updateOrder(order!._id, data),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["orders"],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ["order"],
-      });
-
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["order"] });
       toast.success("Order updated");
       onOpenChange(false);
     },
@@ -151,39 +118,49 @@ export function OrderStatusDialog({
   React.useEffect(() => {
     if (!open || !order) return;
 
-    const allowedStatuses =
-      getStatusesForShippingMethod(
-        order.shippingMethod
-      ).map((status) => status.value);
+    const allowedStatuses = getStatusesForShippingMethod(
+      order.shippingMethod
+    ).map((status) => status.value);
 
-    const nextStatus = allowedStatuses.includes(
-      order.orderStatus
-    )
+    const nextStatus = allowedStatuses.includes(order.orderStatus)
       ? order.orderStatus
-      : "processing";
+      : "pending";
 
     setOrderStatus(nextStatus);
     setTrackingNumber(order.trackingNumber ?? "");
+    setAdminNote(order.adminNote ?? "");
   }, [open, order]);
 
-  const handleSubmit = (
-    event: React.FormEvent
-  ) => {
-    event.preventDefault();
+  // When admin selects Cancelled, pre-fill the underpayment note
+  const handleStatusChange = (value: string) => {
+  const status = value as OrderStatus;
+  setOrderStatus(status);
 
+  if (status === "cancelled" && !adminNote) {
+    setAdminNote("Payment unsuccessful");
+  }
+};
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
     if (!order) return;
 
-    updateMutation.mutate({
+    const payload: UpdateOrderPayload = {
       orderStatus,
-      trackingNumber:
-        trackingNumber.trim() || null,
-    });
+      trackingNumber: trackingNumber.trim() || null,
+    };
+
+    // Only send adminNote when cancelling (or if they typed something)
+    if (orderStatus === "cancelled" || adminNote.trim()) {
+      payload.adminNote = adminNote.trim() || null;
+    }
+
+    updateMutation.mutate(payload);
   };
 
   const isBusy = updateMutation.isPending;
-
-  const isDelivery =
-    order?.shippingMethod === "delivery";
+  const isDelivery = order?.shippingMethod === "delivery";
+  const showAdminNote = orderStatus === "cancelled";
 
   return (
     <Dialog
@@ -195,9 +172,7 @@ export function OrderStatusDialog({
     >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            Update order
-          </DialogTitle>
+          <DialogTitle>Update order</DialogTitle>
         </DialogHeader>
 
         <form
@@ -205,45 +180,56 @@ export function OrderStatusDialog({
           onSubmit={handleSubmit}
           className="space-y-5 py-2"
         >
+          {/* Order status */}
           <div className="space-y-2">
             <Label>Order status</Label>
 
             <Select
               value={orderStatus}
-              onValueChange={(value) =>
-                setOrderStatus(
-                  value as OrderStatus
-                )
-              }
+              onValueChange={handleStatusChange}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
 
               <SelectContent>
-                {availableStatuses.map(
-                  (status) => (
-                    <SelectItem
-                      key={status.value}
-                      value={status.value}
-                    >
-                      {status.label}
-                    </SelectItem>
-                  )
-                )}
+                {availableStatuses.map((status) => (
+                  <SelectItem
+                    key={status.value}
+                    value={status.value}
+                  >
+                    {status.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
             <p className="text-xs text-muted-foreground">
-              {order?.shippingMethod ===
-              "pickup"
+              {order?.shippingMethod === "pickup"
                 ? "Pickup order — statuses include ready for pickup."
-                : order?.shippingMethod ===
-                    "delivery"
+                : order?.shippingMethod === "delivery"
                   ? "Delivery order — statuses include shipped and out for delivery."
                   : "Select a status for this order."}
             </p>
           </div>
+
+          {/* Admin note – only when cancelling (underpayment) */}
+          {showAdminNote && (
+            <div className="space-y-2">
+              <Label htmlFor="adminNote">Cancellation reason</Label>
+
+              <Input
+                id="adminNote"
+                value={adminNote}
+                onChange={(e) => setAdminNote(e.target.value)}
+                placeholder="Payment unsuccessful"
+              />
+
+              <p className="text-xs text-muted-foreground">
+                This will be shown to the customer.
+              </p>
+            </div>
+          )}
 
           {/* Tracking mainly for delivery */}
           {isDelivery && (
@@ -256,16 +242,13 @@ export function OrderStatusDialog({
                 id="trackingNumber"
                 value={trackingNumber}
                 onChange={(e) =>
-                  setTrackingNumber(
-                    e.target.value
-                  )
+                  setTrackingNumber(e.target.value)
                 }
                 placeholder="e.g. TRK-123456789"
               />
 
               <p className="text-xs text-muted-foreground">
-                Optional. Shown to the customer
-                for tracking.
+                Optional. Shown to the customer for tracking.
               </p>
             </div>
           )}
@@ -277,9 +260,7 @@ export function OrderStatusDialog({
             className="w-full sm:w-auto"
             variant="outline"
             disabled={isBusy}
-            onClick={() =>
-              onOpenChange(false)
-            }
+            onClick={() => onOpenChange(false)}
           >
             Cancel
           </Button>
@@ -293,7 +274,6 @@ export function OrderStatusDialog({
             {isBusy && (
               <Loader2Icon className="size-4 animate-spin" />
             )}
-
             Save changes
           </Button>
         </DialogFooter>

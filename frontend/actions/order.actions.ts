@@ -1,11 +1,10 @@
-
 "use server";
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectDB from "@/lib/mongodb";
 import Order from "@/models/Order";
-import type { Order as OrderType } from "@/types"; // ← import from types
+import type { Order as OrderType } from "@/types";
 
 const ORDERS_PER_PAGE = 10;
 
@@ -38,17 +37,20 @@ function formatOrder(order: any): OrderType {
       phone: order.shippingAddress.phone || "",
     },
     paymentInfo: {
-      transactionId: order.paymentInfo.transactionId,
-      gateway: order.paymentInfo.gateway,
-      paymentStatus: order.paymentInfo.paymentStatus,
-      channel: order.paymentInfo.channel,
+      paymentMethod: order.paymentInfo.paymentMethod ?? "bank_transfer",
+      paymentStatus: order.paymentInfo.paymentStatus ?? "pending",
+      transactionReference: order.paymentInfo.transactionReference ?? null,
+      customerNotifiedAt: order.paymentInfo.customerNotifiedAt
+        ? new Date(order.paymentInfo.customerNotifiedAt).toISOString()
+        : null,
       paidAt: order.paymentInfo.paidAt
         ? new Date(order.paymentInfo.paidAt).toISOString()
         : null,
     },
     orderStatus: order.orderStatus,
-    shippingMethod: order.shippingMethod ?? "delivery", // or "pickup"
+    shippingMethod: order.shippingMethod ?? "delivery",
     trackingNumber: order.trackingNumber ?? null,
+    adminNote: order.adminNote ?? null,
     subtotal: order.subtotal,
     shippingFee: order.shippingFee,
     tax: order.tax,

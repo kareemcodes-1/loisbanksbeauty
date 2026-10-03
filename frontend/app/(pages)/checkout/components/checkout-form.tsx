@@ -1,4 +1,3 @@
-// components/checkout/checkout-form.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -65,11 +64,13 @@ export default function CheckoutForm({ user }: Props) {
   useEffect(() => {
     if (user.addresses.length === 0) {
       setSelectedAddressId("new");
+
       setDelivery((prev) => ({
         ...prev,
         firstName: user.name?.split(" ")[0] || "",
         lastName: user.name?.split(" ").slice(1).join(" ") || "",
       }));
+
       return;
     }
 
@@ -77,6 +78,7 @@ export default function CheckoutForm({ user }: Props) {
       user.addresses.find((a) => a.isDefault) || user.addresses[0];
 
     setSelectedAddressId(defaultAddr._id);
+
     setDelivery({
       firstName: defaultAddr.firstName,
       lastName: defaultAddr.lastName,
@@ -103,10 +105,12 @@ export default function CheckoutForm({ user }: Props) {
         postalCode: "",
         country: "",
       });
+
       return;
     }
 
     const addr = user.addresses.find((a) => a._id === id);
+
     if (!addr) return;
 
     setDelivery({
@@ -124,21 +128,30 @@ export default function CheckoutForm({ user }: Props) {
   // Pickup = 0 · Delivery = fee for selected country
   const shippingFee = getShippingFee(shippingMethod, delivery.country);
 
-  // Fee shown on the delivery option (based on current country)
-  const deliveryOptionFee = getShippingFee("delivery", delivery.country);
+  // Fee shown on the delivery option
+  const deliveryOptionFee = getShippingFee(
+    "delivery",
+    delivery.country
+  );
 
   const handleContactChange = (
     field: keyof typeof contact,
     value: string
   ) => {
-    setContact((prev) => ({ ...prev, [field]: value }));
+    setContact((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
   const handleDeliveryChange = (
     field: keyof DeliveryData,
     value: string
   ) => {
-    setDelivery((prev) => ({ ...prev, [field]: value }));
+    setDelivery((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -174,14 +187,14 @@ export default function CheckoutForm({ user }: Props) {
         0
       );
 
-      // Recalculate from shared helper (same as UI)
       const shippingFeeBase = getShippingFee(
         shippingMethod,
         delivery.country
       );
+
       const totalAmountBase = subtotalBase + shippingFeeBase;
 
-      const res = await fetch("/api/paystack/initialize", {
+      const res = await fetch("/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -196,17 +209,23 @@ export default function CheckoutForm({ user }: Props) {
           subtotal: subtotalBase,
           totalAmount: totalAmountBase,
           currency,
+          paymentMethod: "bank_transfer",
         }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data.message || "Failed to initialize payment");
+        toast.error(data.message || "Failed to place your order.");
         return;
       }
 
-      window.location.href = data.authorization_url;
+      if (!data.orderId) {
+        toast.error("Order was created but something went wrong.");
+        return;
+      }
+
+      window.location.href = `/checkout/payment?orderId=${data.orderId}`;
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong. Please try again.");
@@ -225,6 +244,7 @@ export default function CheckoutForm({ user }: Props) {
           <Skeleton className="h-32 w-full rounded-2xl" />
           <Skeleton className="h-12 w-full rounded-xl" />
         </div>
+
         <div>
           <Skeleton className="h-96 w-full rounded-2xl" />
         </div>
@@ -244,7 +264,10 @@ export default function CheckoutForm({ user }: Props) {
     <form onSubmit={handleSubmit}>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px] lg:gap-12">
         <div className="space-y-5 sm:space-y-6">
-          <ContactSection data={contact} onChange={handleContactChange} />
+          <ContactSection
+            data={contact}
+            onChange={handleContactChange}
+          />
 
           <DeliverySection
             data={delivery}
@@ -270,7 +293,7 @@ export default function CheckoutForm({ user }: Props) {
             disabled={isSubmitting}
             className="btn-primary w-full disabled:opacity-50"
           >
-            {isSubmitting ? "Processing..." : "Pay now"}
+            {isSubmitting ? "Placing order..." : "Place order"}
           </button>
         </div>
 

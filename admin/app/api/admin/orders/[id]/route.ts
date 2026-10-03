@@ -20,7 +20,7 @@ interface RouteParams {
 }
 
 const validOrderStatuses: OrderStatus[] = [
-  "processing",
+  "pending",
   "confirmed",
   "shipped",
   "out_for_delivery",
@@ -29,7 +29,7 @@ const validOrderStatuses: OrderStatus[] = [
   "cancelled",
 ];
 
-const validPaymentStatuses = ["pending", "paid", "failed", "refunded"] as const;
+const validPaymentStatuses = ["pending", "paid"] as const;
 
 function isValidObjectId(id: string) {
   return /^[0-9a-fA-F]{24}$/.test(id);
@@ -97,11 +97,17 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     const body = await request.json();
 
-    const { orderStatus, paymentStatus, channel, paidAt, trackingNumber } =
-      body;
+    const {
+      orderStatus,
+      paymentStatus,
+      trackingNumber,
+      transactionReference,
+      adminNote, // NEW
+    } = body;
 
     const updateData: Record<string, unknown> = {};
 
+    // ── Order status ──────────────────────────────────────────
     if (orderStatus !== undefined) {
       if (!validOrderStatuses.includes(orderStatus)) {
         return NextResponse.json(
@@ -111,8 +117,15 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       }
 
       updateData.orderStatus = orderStatus;
+
+      // Confirming the order also marks payment as paid
+      if (orderStatus === "confirmed") {
+        updateData["paymentInfo.paymentStatus"] = "paid";
+        updateData["paymentInfo.paidAt"] = new Date();
+      }
     }
 
+    // ── Payment status ────────────────────────────────────────
     if (paymentStatus !== undefined) {
       if (!validPaymentStatuses.includes(paymentStatus)) {
         return NextResponse.json(
@@ -122,16 +135,29 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       }
 
       updateData["paymentInfo.paymentStatus"] = paymentStatus;
+
+      if (paymentStatus === "paid" && !updateData["paymentInfo.paidAt"]) {
+        updateData["paymentInfo.paidAt"] = new Date();
+      }
     }
 
-    if (channel !== undefined) {
-      updateData["paymentInfo.channel"] = channel;
+    // ── Admin note (for underpayment / cancellation reason) ───
+    if (adminNote !== undefined) {
+      updateData.adminNote =
+        adminNote === null || adminNote === ""
+          ? null
+          : String(adminNote).trim();
     }
 
-    if (paidAt !== undefined) {
-      updateData["paymentInfo.paidAt"] = paidAt;
+    // ── Transaction reference ─────────────────────────────────
+    if (transactionReference !== undefined) {
+      updateData["paymentInfo.transactionReference"] =
+        transactionReference === null || transactionReference === ""
+          ? null
+          : String(transactionReference).trim();
     }
 
+    // ── Tracking number ───────────────────────────────────────
     if (trackingNumber !== undefined) {
       updateData.trackingNumber =
         trackingNumber === null || trackingNumber === ""
@@ -162,74 +188,77 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ message: "Order not found" }, { status: 404 });
     }
 
-    // --- Emails (never block the API response) ---
+    // ── Emails ────────────────────────────────────────────────
     const statusChanged =
       orderStatus !== undefined &&
       previousOrder &&
       previousOrder.orderStatus !== orderStatus;
 
-      console.log("=== ORDER STATUS UPDATE ===");
-console.log("Order ID:", id);
-console.log("Previous status:", previousOrder?.orderStatus);
-console.log("New status:", orderStatus);
-console.log("Status changed:", statusChanged);
-console.log("User:", order.userId);
-console.log("User email:", (order.userId as { email?: string })?.email);
-console.log("User name:", (order.userId as { name?: string })?.name);
-console.log("============================");
-
     if (statusChanged) {
-  console.log(">>> ENTERED STATUS EMAIL BLOCK");
+      const user = order.userId as {
+        name?: string;
+        email?: string;
+      } | null;
 
-  const user = order.userId as {
-    name?: string;
-    email?: string;
-  } | null;
+      const email = user?.email;
+      const name = user?.name ?? "there";
+      const orderReference = String(order._id).slice(-8).toUpperCase();
 
-  const email = user?.email;
-  const name = user?.name ?? "there";
-  const orderReference = String(order._id).slice(-8).toUpperCase();
+      if (email) {
+        try {
+          if (orderStatus === "confirmed") {
+            await sendOrderConfirmedEmail(email, name, {
+              orderReference,
+              items: order.items.map((item) => ({
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price,
+                image: item.media?.[0]?.url,
+                size: item.size,
+              })),
+              subtotal: order.subtotal,
+              shippingFee: order.shippingFee,
+              tax: order.tax,
+              totalAmount: order.totalAmount,
+              paymentMethod: "Bank transfer",
+              shippingMethod: order.shippingMethod,
+            });
+          }
 
-  console.log(">>> EMAIL:", email);
-  console.log(">>> ORDER STATUS:", orderStatus);
+          if (orderStatus === "shipped") {
+            await sendOrderShippedEmail(
+              email,
+              name,
+              orderReference,
+              order.trackingNumber ?? undefined,
+            );
+          }
 
-  if (email) {
-    console.log(">>> ABOUT TO SEND CONFIRMED EMAIL");
+          if (orderStatus === "out_for_delivery") {
+            await sendOrderOutForDeliveryEmail(email, name, orderReference);
+          }
 
-    try {
-      if (orderStatus === "confirmed") {
-        console.log(">>> CALLING sendOrderConfirmedEmail");
+          if (orderStatus === "ready_for_pickup") {
+            await sendOrderReadyForPickupEmail(email, name, orderReference);
+          }
 
-        await sendOrderConfirmedEmail(email, name, {
-          orderReference,
-          items: order.items.map((item) => ({
-            name: item.name,
-            quantity: item.quantity,
-            price: item.price,
-            image: item.media?.[0]?.url,
-            size: item.size,
-          })),
-          subtotal: order.subtotal,
-          shippingFee: order.shippingFee,
-          tax: order.tax,
-          totalAmount: order.totalAmount,
-          paymentMethod: order.paymentInfo.channel ?? "Paystack",
-          shippingMethod: order.shippingMethod,
-        });
-
-        console.log(">>> CONFIRMED EMAIL SENT");
+          if (orderStatus === "delivered") {
+            await sendOrderDeliveredEmail(
+              email,
+              name,
+              orderReference,
+              order.shippingMethod,
+            );
+          }
+        } catch (emailError) {
+          console.error("Order status email failed:", emailError);
+        }
       }
-    } catch (emailError) {
-      console.error("Order status email failed:", emailError);
     }
-  } else {
-    console.log(">>> NO EMAIL FOUND");
-  }
-}
 
     return NextResponse.json(order, { status: 200 });
   } catch (error) {
-    console.error("PATCH /api/orders/[id] error:", error);
+    console.error("PUT /api/orders/[id] error:", error);
 
     return NextResponse.json(
       { message: "Failed to update order" },

@@ -10,7 +10,7 @@ export interface PaginationMeta {
 }
 
 export type OrderStatus =
-  | "processing"
+  | "pending"
   | "confirmed"
   | "shipped"
   | "out_for_delivery"
@@ -18,10 +18,13 @@ export type OrderStatus =
   | "delivered"
   | "cancelled";
 
-export interface UpdateOrderPayload {
-  orderStatus: OrderStatus;
+export type UpdateOrderPayload = {
+  orderStatus?: OrderStatus;
+  paymentStatus?: "pending" | "paid";
   trackingNumber?: string | null;
-}
+  transactionReference?: string | null;
+  adminNote?: string | null;
+};
 
 export interface GetOrdersResult {
   orders: Order[];

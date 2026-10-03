@@ -44,8 +44,8 @@ function formatDate(date: string | Date) {
 
 function getStatusBadge(status: string) {
   const map: Record<string, { label: string; className: string }> = {
-    processing: {
-      label: "Processing",
+    pending: {
+      label: "Pending",
       className:
         "border-orange-200 bg-orange-100 text-orange-700 hover:bg-orange-100",
     },
@@ -99,12 +99,7 @@ function getPaymentBadge(status: string) {
     pending: {
       label: "Pending",
       className:
-        "border-yellow-200 bg-yellow-100 text-yellow-700 hover:bg-yellow-100",
-    },
-    failed: {
-      label: "Failed",
-      className:
-        "border-red-200 bg-red-100 text-red-700 hover:bg-red-100",
+        "border-orange-200 bg-orange-100 text-orange-700 hover:bg-orange-100",
     },
   };
 
@@ -115,6 +110,7 @@ function getPaymentBadge(status: string) {
     }
   );
 }
+
 
 function OrderDetailSkeleton() {
   return (
@@ -386,70 +382,53 @@ export default function OrderDetailPage() {
           </Card>
 
           {/* Payment */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <CreditCardIcon className="size-4" />
-                Payment
-              </CardTitle>
-            </CardHeader>
+<Card>
+  <CardHeader className="pb-3">
+    <CardTitle className="flex items-center gap-2 text-base">
+      <CreditCardIcon className="size-4" />
+      Payment
+    </CardTitle>
+  </CardHeader>
 
-            <CardContent className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  Status
-                </span>
+  <CardContent className="space-y-3 text-sm">
+    <div className="flex justify-between">
+      <span className="text-muted-foreground">Method</span>
+      <span className="font-medium">
+        {order.paymentInfo.paymentMethod === "bank_transfer"
+          ? "Bank transfer"
+          : order.paymentInfo.paymentMethod}
+      </span>
+    </div>
 
-                <Badge className={payment.className}>
-                  {payment.label}
-                </Badge>
-              </div>
+    <div className="flex justify-between">
+      <span className="text-muted-foreground">Status</span>
+      <Badge className={payment.className}>{payment.label}</Badge>
+    </div>
 
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  Gateway
-                </span>
+    {order.paymentInfo.customerNotifiedAt && (
+      <div className="flex justify-between">
+        <span className="text-muted-foreground">Customer notified</span>
+        <span>{formatDate(order.paymentInfo.customerNotifiedAt)}</span>
+      </div>
+    )}
 
-                <span className="capitalize">
-                  {order.paymentInfo.gateway}
-                </span>
-              </div>
+    {order.paymentInfo.paidAt && (
+      <div className="flex justify-between">
+        <span className="text-muted-foreground">Paid at</span>
+        <span>{formatDate(order.paymentInfo.paidAt)}</span>
+      </div>
+    )}
 
-              {order.paymentInfo.channel && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">
-                    Channel
-                  </span>
-
-                  <span className="capitalize">
-                    {order.paymentInfo.channel}
-                  </span>
-                </div>
-              )}
-
-              <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">
-                  Transaction ID
-                </span>
-
-                <span className="max-w-[200px] truncate font-mono text-xs">
-                  {order.paymentInfo.transactionId}
-                </span>
-              </div>
-
-              {order.paymentInfo.paidAt && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">
-                    Paid at
-                  </span>
-
-                  <span>
-                    {formatDate(order.paymentInfo.paidAt)}
-                  </span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+    {order.paymentInfo.transactionReference && (
+      <div className="flex justify-between gap-4">
+        <span className="text-muted-foreground">Reference</span>
+        <span className="max-w-[200px] truncate font-mono text-xs">
+          {order.paymentInfo.transactionReference}
+        </span>
+      </div>
+    )}
+  </CardContent>
+</Card>
 
           {/* Shipping Address */}
           <Card>
