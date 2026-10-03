@@ -156,25 +156,28 @@ export async function getPendingReviews() {
       .lean();
 
     // Map productId → latest delivered order info
-    const productOrderMap = new Map<
-      string,
-      { orderId: string; orderReference: string; deliveredAt: Date }
-    >();
+const productOrderMap = new Map<
+  string,
+  { orderId: string; orderReference: string; deliveredAt: Date }
+>();
 
-    for (const order of deliveredOrders) {
-      for (const item of order.items) {
-        const productId = item.productId.toString();
+for (const order of deliveredOrders) {
+  for (const item of order.items) {
+    const productId = item.productId.toString();
 
-        // Keep the most recent delivery for each product
-        if (!productOrderMap.has(productId)) {
-          productOrderMap.set(productId, {
-            orderId: order._id.toString(),
-            orderReference: order.paymentInfo?.transactionId || order._id.toString(),
-            deliveredAt: order.updatedAt || order.createdAt,
-          });
-        }
-      }
+    // Keep the most recent delivery for each product
+    if (!productOrderMap.has(productId)) {
+      productOrderMap.set(productId, {
+        orderId: order._id.toString(),
+        // Use short order ID as reference (or transactionReference if you prefer)
+        orderReference:
+          order.paymentInfo?.transactionReference ||
+          String(order._id).slice(-8).toUpperCase(),
+        deliveredAt: order.updatedAt || order.createdAt,
+      });
     }
+  }
+}
 
     // Products delivered but not yet reviewed
     const needsReviewProductIds = [...productOrderMap.keys()].filter(
