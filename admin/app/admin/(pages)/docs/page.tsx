@@ -135,40 +135,76 @@ export default function DocumentationPage() {
               register={(el) => (sectionRefs.current.dashboard = el)}
             >
               <p>
-                This is your overview page. It shows how the store is doing at a
-                glance.
+                This is your overview page. It gives you a quick look at how your
+                store is performing.
               </p>
+
               <ul className="list-disc space-y-1.5 pl-5">
                 <li>
                   <span className="font-medium text-foreground">
                     Total revenue
                   </span>{" "}
-                  — money made from completed orders
+                  — total revenue generated from completed orders
                 </li>
-                <li>
-                  <span className="font-medium text-foreground">
-                    Total products
-                  </span>{" "}
-                  — how many products are in the store
-                </li>
+
                 <li>
                   <span className="font-medium text-foreground">
                     Total orders
                   </span>{" "}
-                  — how many orders customers have placed
+                  — the total number of orders placed on the store
                 </li>
+
                 <li>
                   <span className="font-medium text-foreground">
-                    Total users
+                    Total visitors
                   </span>{" "}
-                  — how many customer accounts exist
+                  — website visitors recorded in the last 30 days
+                </li>
+
+                <li>
+                  <span className="font-medium text-foreground">
+                    Conversion rate
+                  </span>{" "}
+                  — the percentage of visitors who completed an order
                 </li>
               </ul>
+
               <p>
-                The chart shows orders over time (for example last 7 days, 30
-                days, or 3 months). Below that you&rsquo;ll see recent customers
-                and recent reviews.
+                Below the overview cards, you&rsquo;ll find your revenue chart,
+                traffic sources, top countries, and top-selling products. These
+                sections help you understand where your visitors are coming from,
+                where they are located, and which products are performing best.
               </p>
+
+              <ul className="list-disc space-y-1.5 pl-5">
+                <li>
+                  <span className="font-medium text-foreground">
+                    Revenue chart
+                  </span>{" "}
+                  — shows your store&rsquo;s revenue and order activity over time
+                </li>
+
+                <li>
+                  <span className="font-medium text-foreground">
+                    Traffic sources
+                  </span>{" "}
+                  — shows where visitors are coming from
+                </li>
+
+                <li>
+                  <span className="font-medium text-foreground">
+                    Top countries
+                  </span>{" "}
+                  — shows the countries generating the most website traffic
+                </li>
+
+                <li>
+                  <span className="font-medium text-foreground">
+                    Top-selling products
+                  </span>{" "}
+                  — shows the products receiving the most sales
+                </li>
+              </ul>
             </SectionBlock>
 
             <SectionBlock
@@ -178,53 +214,62 @@ export default function DocumentationPage() {
               register={(el) => (sectionRefs.current.products = el)}
             >
               <p>
-                Use this page to add, edit, or delete products that appear on
-                the website.
+                Use this page to add, edit, or delete products that appear on the
+                website.
               </p>
+
               <div className="space-y-3 pt-1">
-                <Term name="Name">The product name customers see.</Term>
+                <Term name="Name">
+                  The product name customers see on the website.
+                </Term>
+
                 <Term name="Slug">
-                  The link text for the product page (usually created from the
-                  name).
+                  The unique link used for the product page. It is usually generated
+                  from the product name.
                 </Term>
+
                 <Term name="Collection">
-                  The group this product belongs to (for example Luxury Wigs or
-                  Beauty Essentials).
+                  The collection this product belongs to. Collections help organize
+                  related products on the store.
                 </Term>
+
                 <Term name="Description">
-                  Short details about the product for the product page.
+                  The product details and information customers see on the product
+                  page.
                 </Term>
+
                 <Term name="Price">
-                  Selling price in Naira (this is what is stored in the system).
+                  The selling price of the product in Naira.
                 </Term>
+
                 <Term name="Media">
-                  Photos or videos of the product. Add clear images so customers
-                  can see what they are buying.
+                  Images or videos displayed on the product page. Add clear,
+                  high-quality media so customers can see the product properly.
                 </Term>
+
                 <Term name="Sizes">
-                  Optional. Use for wigs, clothing, etc. (for example 12&quot;,
-                  14&quot;, S, M, L). Leave empty if the product has no sizes.
+                  Optional. Add available sizes when the product has different size
+                  options, such as 12&quot;, 14&quot;, S, M, or L. Leave empty if the
+                  product does not have sizes.
                 </Term>
-                <Term name="Track inventory">
-                  Turn this on if you want the website to count how many you
-                  have left. Turn it off if you always have stock or don&rsquo;t
-                  want the site to track numbers.
-                </Term>
-                <Term name="Stock">
-                  How many of this product you currently have. When it reaches 0
-                  (and tracking is on), customers can&rsquo;t buy it.
-                </Term>
-                <Term name="Low stock threshold">
-                  A warning level. Example: if you set 5, the product is marked
-                  &ldquo;low stock&rdquo; when 5 or fewer are left.
-                </Term>
+
                 <Term name="Featured">
-                  Shows the product in special / highlighted areas on the
-                  website.
+                  When enabled, the product can appear in featured or highlighted
+                  product sections on the website.
                 </Term>
-                <Term name="Active">
-                  When on, the product is visible in the store. When off, it is
-                  hidden from customers but still saved in admin.
+
+                <Term name="In Stock">
+                  Controls whether the product is available for purchase. Turn this
+                  off when the product is currently unavailable.
+                </Term>
+
+                <Term name="Average Rating">
+                  The product&rsquo;s average customer rating. This is calculated from
+                  the reviews the product receives.
+                </Term>
+
+                <Term name="Review Count">
+                  The total number of customer reviews the product has received.
                 </Term>
               </div>
             </SectionBlock>
@@ -274,42 +319,72 @@ export default function DocumentationPage() {
               register={(el) => (sectionRefs.current.orders = el)}
             >
               <p>
-                Here you see every order customers place. Open an order to see
-                items, address, payment, and total.
+                Here you can view and manage every order customers place. Open an
+                order to see the products purchased, customer details, shipping
+                address, payment information, shipping method, and order total.
               </p>
+
               <p className="text-foreground">
-                You can update the order status as you process it:
+                You can update the order status as you process each order:
               </p>
+
               <div className="flex flex-col gap-2.5 pt-1">
                 <div className="flex items-center gap-3">
-                  <StatusBadge label="Processing" />
-                  <span>new order, still being prepared</span>
+                  <StatusBadge label="Pending" />
+                  <span>new order that has not been confirmed yet</span>
                 </div>
+
                 <div className="flex items-center gap-3">
                   <StatusBadge label="Confirmed" />
-                  <span>you&rsquo;ve accepted the order</span>
+                  <span>order has been accepted and confirmed</span>
                 </div>
+
                 <div className="flex items-center gap-3">
                   <StatusBadge label="Shipped" />
-                  <span>order has left the store / is on the way</span>
+                  <span>order has left the store and is being transported</span>
                 </div>
+
+                <div className="flex items-center gap-3">
+                  <StatusBadge label="Out for delivery" />
+                  <span>order is currently on its way to the customer</span>
+                </div>
+
                 <div className="flex items-center gap-3">
                   <StatusBadge label="Ready for pickup" />
-                  <span>for store pickup orders that are ready</span>
+                  <span>pickup order is ready for the customer to collect</span>
                 </div>
+
                 <div className="flex items-center gap-3">
                   <StatusBadge label="Delivered" />
-                  <span>customer has received a door delivery</span>
+                  <span>customer has received the order</span>
                 </div>
+
                 <div className="flex items-center gap-3">
                   <StatusBadge label="Cancelled" />
-                  <span>order was cancelled</span>
+                  <span>order has been cancelled</span>
                 </div>
               </div>
-              <p className="pt-1">
-                Pickup is free for the customer. Door delivery has a shipping
-                fee. You can also add a tracking number when you have one.
-              </p>
+
+              <div className="space-y-3 pt-1">
+                <Term name="Payment method">
+                  Orders currently use bank transfer as the payment method.
+                </Term>
+
+                <Term name="Shipping fee">
+                  The delivery charge added to the order. Pickup orders can have a
+                  shipping fee of zero.
+                </Term>
+
+                <Term name="Tracking number">
+                  An optional tracking number you can add when the order is being
+                  shipped or delivered.
+                </Term>
+
+                <Term name="Admin note">
+                  A private note for internal use. Use this to record useful
+                  information about the order while processing it.
+                </Term>
+              </div>
             </SectionBlock>
 
             <SectionBlock

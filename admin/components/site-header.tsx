@@ -14,6 +14,10 @@ const routeNames: Record<string, string> = {
   "/admin/discounts": "Discounts",
   "/admin/reviews": "Reviews",
   "/admin/subscribers": "Subscribers",
+    "/admin/preferences": "Preferences",
+    "/admin/account": "Account",
+    "/admin/docs": "Documentation",
+    "/admin/ai-assistant": "AI Assistant",
 };
 
 export function SiteHeader() {

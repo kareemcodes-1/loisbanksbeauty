@@ -45,6 +45,7 @@ import {
   type ProductPayload,
 } from "@/actions/admin/product.actions";
 import toast from "react-hot-toast";
+import { generateSlug } from "@/lib/slug-generator";
 
 interface ProductDialogProps {
   open: boolean;
@@ -531,9 +532,11 @@ export function ProductDialog({
             <Input
               id="name"
               value={name}
-              onChange={(event) =>
-                setName(event.target.value)
-              }
+              onChange={(event) => {
+  const value = event.target.value;
+  setName(value);
+  setSlug(generateSlug(value));
+}}
               placeholder="Enter product name"
               required
             />
@@ -546,15 +549,13 @@ export function ProductDialog({
             </Label>
 
             <Input
-              id="slug"
-              value={slug}
-              onChange={(event) =>
-                setSlug(event.target.value)
-              }
-              placeholder="product-slug"
-              required
-              className="font-mono text-sm"
-            />
+  id="slug"
+  value={slug}
+  onChange={(event) => setSlug(event.target.value)}
+  placeholder="product-slug"
+  required
+  className="font-mono text-sm"
+/>
           </div>
 
           {/* Collection */}
@@ -630,7 +631,7 @@ export function ProductDialog({
             </Label>
 
             <p className="text-xs text-muted-foreground">
-              Optional. Add sizes for wigs, apparel,
+              Optional. Add sizes for wigs, wears,
               etc. Leave empty if the product has no
               sizes.
             </p>

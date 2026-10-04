@@ -1,4 +1,3 @@
-
 import mongoose, { Document, Model, Schema } from "mongoose";
 
 const addressSchema = new Schema(
@@ -72,6 +71,10 @@ export interface IUserDocument extends Document {
   emailVerificationLoginToken?: string;
   emailVerificationLoginTokenExpires?: Date;
 
+  // Email change
+  pendingEmail?: string;
+  pendingEmailUpdates?: boolean;
+
   addresses: {
     _id?: mongoose.Types.ObjectId;
     firstName: string;
@@ -132,6 +135,19 @@ const userSchema = new Schema<IUserDocument>(
     emailVerified: {
       type: Boolean,
       default: false,
+    },
+
+    pendingEmail: {
+      type: String,
+      lowercase: true,
+      trim: true,
+      select: false,
+    },
+
+    pendingEmailUpdates: {
+      type: Boolean,
+      default: false,
+      select: false,
     },
 
     emailVerificationCode: {
@@ -195,4 +211,3 @@ const User: Model<IUserDocument> =
   mongoose.model<IUserDocument>("User", userSchema);
 
 export default User;
-

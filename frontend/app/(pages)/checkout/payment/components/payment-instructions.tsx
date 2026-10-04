@@ -12,7 +12,6 @@ import { Loader2 } from "lucide-react";
 type Props = {
   orderId: string;
   totalAmount: number;
-  paymentStatus: "pending" | "paid";
   customerNotifiedAt: string | null;
   bankDetails: {
     bankName: string;
@@ -24,7 +23,6 @@ type Props = {
 export default function PaymentInstructions({
   orderId,
   totalAmount,
-  paymentStatus,
   customerNotifiedAt,
   bankDetails,
 }: Props) {
@@ -81,63 +79,6 @@ export default function PaymentInstructions({
 
   const formattedAmount = priceFormatter(totalAmount, currency);
 
-  // ── Paid state ──────────────────────────────────────────────
-  if (paymentStatus === "paid") {
-    return (
-      <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm sm:p-8">
-        <div className="mx-auto flex max-w-lg flex-col items-center text-center">
-          <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-green-100">
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="text-green-600"
-            >
-              <path d="m5 12 4 4L19 6" />
-            </svg>
-          </div>
-
-          <h1 className="text-2xl font-semibold">Payment confirmed</h1>
-
-          <p className="mt-3 text-sm leading-relaxed text-black/60">
-            Your payment has been verified and your order is now confirmed.
-          </p>
-
-          <div className="mt-6 w-full rounded-xl bg-neutral-50 p-5 text-left">
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-sm text-black/50">Order reference</span>
-              <span className="max-w-[220px] truncate text-sm font-medium">
-                {orderId}
-              </span>
-            </div>
-
-            <div className="mt-3 flex items-center justify-between gap-4">
-              <span className="text-sm text-black/50">Amount</span>
-              <span className="text-sm font-semibold">{formattedAmount}</span>
-            </div>
-          </div>
-
-          <div className="mt-6 flex w-full flex-col gap-3 sm:flex-row">
-            <Link
-              href="/orders"
-              className="btn-primary flex w-full items-center justify-center"
-            >
-              View my orders
-            </Link>
-            <Link
-              href="/shop"
-              className="flex w-full items-center justify-center rounded-xl border border-black/10 px-5 py-3 text-sm font-medium transition hover:bg-black/[0.03]"
-            >
-              Continue shopping
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // ── Notified state ──────────────────────────────────────────
 if (hasNotified) {

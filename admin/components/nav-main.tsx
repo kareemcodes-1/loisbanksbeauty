@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import {
   SidebarGroup,
@@ -21,33 +22,41 @@ export function NavMain({
   }[];
 }) {
   const { setOpenMobile } = useSidebar();
+  const pathname = usePathname();
 
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
         <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton
-                asChild
-                tooltip={item.title}
-                className="h-11 px-3 text-[0.9rem]"
-              >
-                <Link
-                  href={item.url}
-                  onClick={() => setOpenMobile(false)}
-                >
-                  <span className="[&_svg]:size-4">
-                    {item.icon}
-                  </span>
+          {items.map((item) => {
+            const isActive =
+              pathname === item.url ||
+              pathname.startsWith(`${item.url}/`);
 
-                  <span>{item.title}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+            return (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive}
+                  tooltip={item.title}
+                  className="h-11 px-3 text-[0.9rem]"
+                >
+                  <Link
+                    href={item.url}
+                    onClick={() => setOpenMobile(false)}
+                  >
+                    <span className="[&_svg]:size-4">
+                      {item.icon}
+                    </span>
+
+                    <span>{item.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
         </SidebarMenu>
-      </SidebarGroupContent>
+        </SidebarGroupContent>
     </SidebarGroup>
   );
 }

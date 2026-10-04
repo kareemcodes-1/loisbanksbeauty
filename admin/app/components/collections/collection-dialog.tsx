@@ -30,6 +30,7 @@ import {
   type CollectionPayload,
 } from "@/actions/admin/collection.actions";
 import toast from "react-hot-toast";
+import { generateSlug } from "@/lib/slug-generator";
 
 interface CollectionDialogProps {
   open: boolean;
@@ -306,7 +307,11 @@ export function CollectionDialog({
             <Input
               id="name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(event) => {
+              const value = event.target.value;
+              setName(value);
+              setSlug(generateSlug(value));
+            }}
               placeholder="Enter collection name"
               required
             />

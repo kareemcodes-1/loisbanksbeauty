@@ -1,0 +1,36 @@
+import ChatWidget from "../components/chat/chat-widget";
+import Curve from "../components/curve-transition";
+import ScrollToTop from "../components/scroll-to-top";
+import AuthProvider from "@/providers/session-provider";
+import ToastProvider from "@/providers/toast-provider";
+import NextTopLoader from "nextjs-toploader";
+import NewsletterModal from "../components/modals/newsletter-modal";
+
+export default function AuthLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <AuthProvider>
+      <ToastProvider />
+
+      <ScrollToTop />
+
+      <Curve />
+
+      <NextTopLoader
+        color="#FD3F92"
+        height={2}
+        showSpinner={false}
+        crawlSpeed={200}
+        speed={400}
+        shadow="0 0 10px #FD3F92, 0 0 5px #FD3F92"
+      />
+
+      <main>{children}</main>
+      <ChatWidget />
+      <NewsletterModal />
+    </AuthProvider>
+  );
+}

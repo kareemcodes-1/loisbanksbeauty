@@ -17,7 +17,7 @@ const ProductCard = ({ item }: { item: Product }) => {
   const secondImage = images[1];
 
   const fallbackImage = firstImage?.url || "/placeholder.jpg";
-  const hoverImage = secondImage?.url;
+  const hoverImage = !item.inStock ? undefined : secondImage?.url;
 
   const { originalPrice, finalPrice, hasDiscount, discountLabel } =
     getProductPricing(item);
@@ -51,18 +51,14 @@ const ProductCard = ({ item }: { item: Product }) => {
             }`}
           />
 
-          {/* Second image on hover */}
+          {/* Second image on hover — only when in stock */}
           {hoverImage && (
             <Image
               src={hoverImage}
               alt={item.name}
               fill
               sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 33vw"
-              className={`absolute inset-0 object-cover transition-opacity duration-500 ${
-                isOutOfStock
-                  ? "opacity-50"
-                  : "opacity-0 group-hover:opacity-100"
-              }`}
+              className="absolute inset-0 object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
             />
           )}
 

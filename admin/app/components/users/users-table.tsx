@@ -77,11 +77,13 @@ function formatDate(date: string | Date) {
 function UsersTableSkeleton() {
   return (
     <div className="flex flex-col gap-4">
+      {/* Search + Sort */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Skeleton className="h-10 w-full sm:max-w-sm" />
         <Skeleton className="h-10 w-full sm:w-[200px]" />
       </div>
 
+      {/* Table */}
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -95,31 +97,54 @@ function UsersTableSkeleton() {
                   <TableHead />
                 </TableRow>
               </TableHeader>
+
               <TableBody>
-                {Array.from({ length: 8 }).map((_, i) => (
+                {Array.from({ length: 10 }).map((_, i) => (
                   <TableRow key={i}>
+                    {/* User */}
                     <TableCell>
-                      <div className="space-y-2">
+                      <div className="min-w-[180px] space-y-2">
                         <Skeleton className="h-4 w-32" />
                         <Skeleton className="h-3 w-40" />
                       </div>
                     </TableCell>
+
+                    {/* Phone */}
                     <TableCell>
                       <Skeleton className="h-4 w-24" />
                     </TableCell>
+
+                    {/* Orders */}
                     <TableCell>
                       <Skeleton className="h-6 w-10 rounded-full" />
                     </TableCell>
+
+                    {/* Joined */}
                     <TableCell>
                       <Skeleton className="h-4 w-20" />
                     </TableCell>
+
+                    {/* Actions */}
                     <TableCell>
-                      <Skeleton className="ml-auto size-8 rounded-md" />
+                      <div className="flex justify-end">
+                        <Skeleton className="size-8 rounded-md" />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
+          </div>
+
+          {/* Pagination */}
+          <div className="flex flex-col gap-3 border-t px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <Skeleton className="h-4 w-32" />
+
+            <div className="flex items-center gap-2">
+              <Skeleton className="mr-2 h-4 w-24" />
+              <Skeleton className="h-9 w-24" />
+              <Skeleton className="h-9 w-16" />
+            </div>
           </div>
         </CardContent>
       </Card>

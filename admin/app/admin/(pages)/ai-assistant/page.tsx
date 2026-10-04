@@ -129,7 +129,7 @@ export default function AiAssistantPage() {
             <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="mx-auto w-full max-w-2xl space-y-6">
+          <form onSubmit={handleSubmit} className="mx-auto w-full space-y-6">
             {/* Brand */}
             <Card>
               <CardHeader>

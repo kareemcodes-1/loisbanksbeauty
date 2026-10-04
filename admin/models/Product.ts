@@ -33,11 +33,9 @@ export interface IProductDocument extends Document {
   }[];
 
   featured: boolean;
-
   inStock: boolean;
 
   sizes: string[];
-
   averageRating: number;
   reviewCount: number;
 

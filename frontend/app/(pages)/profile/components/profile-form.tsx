@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import type { ProfileUser } from "@/actions/profile.actions";
 import { useSession } from "next-auth/react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type Props = {
   user: ProfileUser;
@@ -25,6 +26,7 @@ const isStrongPassword = (password: string) => {
 
 export default function ProfileForm({ user }: Props) {
   const { update } = useSession();
+  const router = useRouter();
 
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
@@ -44,72 +46,95 @@ export default function ProfileForm({ user }: Props) {
 
   const [saving, setSaving] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
 
-    if (newPassword && newPassword !== confirmPassword) {
-      toast.error("New passwords do not match.");
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (newPassword && newPassword !== confirmPassword) {
+    toast.error("New passwords do not match.");
+    return;
+  }
+
+  if (newPassword && !isStrongPassword(newPassword)) {
+    toast.error(
+      "Password must be at least 8 characters and include uppercase, lowercase, number, and symbol."
+    );
+    return;
+  }
+
+  if (newPassword && !currentPassword) {
+    toast.error("Enter your current password to set a new one.");
+    return;
+  }
+
+  setSaving(true);
+
+  try {
+    const res = await fetch("/api/profile", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name,
+        email,
+        phone,
+        emailUpdates,
+        currentPassword: currentPassword || undefined,
+        newPassword: newPassword || undefined,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      toast.error(data.message || "Failed to update profile.");
       return;
     }
 
-    if (newPassword && !isStrongPassword(newPassword)) {
-      toast.error(
-        "Password must be at least 8 characters and include uppercase, lowercase, number, and symbol."
+    // ==========================================
+    // Email changed → verification required
+    // ==========================================
+
+    if (data.requiresEmailVerification && data.email) {
+      toast.success("Check your new email for a verification code.");
+
+      router.push(
+        `/verify-email?email=${encodeURIComponent(
+          data.email
+        )}&purpose=change`
       );
+
       return;
     }
 
-    if (newPassword && !currentPassword) {
-      toast.error("Enter your current password to set a new one.");
-      return;
+    // ==========================================
+    // Normal profile update
+    // ==========================================
+
+    await update({
+      name: data.user?.name ?? name,
+      email: data.user?.email ?? email,
+    });
+
+    toast.success(data.message || "Profile updated.");
+
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+
+    if (typeof data.user?.emailUpdates === "boolean") {
+      setEmailUpdates(data.user.emailUpdates);
     }
+  } catch (error) {
+    console.error("Profile update error:", error);
+    toast.error("Something went wrong.");
+  } finally {
+    setSaving(false);
+  }
+};
 
-    setSaving(true);
 
-    try {
-      const res = await fetch("/api/profile", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          phone,
-          emailUpdates,
-          currentPassword: currentPassword || undefined,
-          newPassword: newPassword || undefined,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast.error(data.message || "Failed to update profile.");
-        return;
-      }
-
-      await update({
-        name: data.user?.name ?? name,
-        email: data.user?.email ?? email,
-      });
-
-      toast.success(data.message || "Profile updated.");
-
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-
-      if (typeof data.user?.emailUpdates === "boolean") {
-        setEmailUpdates(data.user.emailUpdates);
-      }
-    } catch (error) {
-      console.error("Profile update error:", error);
-      toast.error("Something went wrong.");
-    } finally {
-      setSaving(false);
-    }
-  };
 
   return (
     <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 lg:p-8">

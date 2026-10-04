@@ -190,13 +190,13 @@ export async function POST(request: Request) {
       }
 
       orderItems.push({
-        productId: product._id,
-        name: product.name,
-        media: product.media || [],
-        price: product.price,
-        quantity,
-        size: cartItem.size || null,
-      });
+  productId: product._id,
+  name: product.name,
+  media: product.media || [],
+  price: Number(cartItem.price),
+  quantity,
+  size: cartItem.size || null,
+});
     }
 
     const subtotal = orderItems.reduce(

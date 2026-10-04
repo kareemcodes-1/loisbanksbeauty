@@ -6,7 +6,7 @@ import { toast } from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 
 const CODE_LENGTH = 6;
 const RESEND_COOLDOWN_SECONDS = 60; 
@@ -14,6 +14,7 @@ const RESEND_COOLDOWN_SECONDS = 60;
 function VerifyEmailForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { update } = useSession();
 
   const email = searchParams.get("email") ?? "";
 
@@ -116,65 +117,99 @@ function VerifyEmailForm() {
     }
   };
 
-  const verifyEmail = async () => {
-    if (!email) {
-      toast.error("Email is missing.");
-      return;
-    }
+const verifyEmail = async () => {
+  if (!email) {
+    toast.error("Email is missing.");
+    return;
+  }
 
-    if (codeValue.length !== CODE_LENGTH) {
-      toast.error("Enter the 6-digit verification code.");
-      return;
-    }
+  if (codeValue.length !== CODE_LENGTH) {
+    toast.error("Enter the 6-digit verification code.");
+    return;
+  }
 
-    try {
-      setIsVerifying(true);
+  const purpose = searchParams.get("purpose");
+  const isEmailChange = purpose === "change";
 
-      const res = await fetch("/api/auth/verify-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          code: codeValue,
-        }),
-      });
+  try {
+    setIsVerifying(true);
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast.error(data.message || "Verification failed.");
-        hasAutoSubmitted.current = false;
-        return;
-      }
-
-      if (!data.loginToken) {
-        toast.error("Verification succeeded, but login failed.");
-        hasAutoSubmitted.current = false;
-        return;
-      }
-
-      const loginResult = await signIn("credentials", {
-        redirect: false,
+    const res = await fetch("/api/auth/verify-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         email,
-        verificationLoginToken: data.loginToken,
-      });
+        code: codeValue,
+        purpose: isEmailChange ? "change" : undefined,
+      }),
+    });
 
-      if (!loginResult?.ok) {
-        toast.error("Email verified, but automatic login failed.");
+    const data = await res.json();
+
+    if (!res.ok) {
+      toast.error(data.message || "Verification failed.");
+      hasAutoSubmitted.current = false;
+      return;
+    }
+
+    // ==========================================
+    // Email change flow
+    // ==========================================
+
+    if (isEmailChange) {
+      if (!data.email) {
+        toast.error("Email was updated, but the new email was not returned.");
         hasAutoSubmitted.current = false;
         return;
       }
 
-      toast.success("Email verified successfully.");
-      router.push("/");
-    } catch (error) {
-      console.error("Verify email error:", error);
-      toast.error("Something went wrong. Please try again.");
-      hasAutoSubmitted.current = false;
-    } finally {
-      setIsVerifying(false);
+      // Update the existing NextAuth session.
+      // The user is already logged in, so we do NOT
+      // perform credentials sign-in here.
+      await update({
+        email: data.email,
+      });
+
+      toast.success("Email updated successfully.");
+      router.push("/profile");
+
+      return;
     }
-  };
+
+    // ==========================================
+    // Normal signup verification flow
+    // ==========================================
+
+    if (!data.loginToken) {
+      toast.error("Verification succeeded, but login failed.");
+      hasAutoSubmitted.current = false;
+      return;
+    }
+
+    const loginResult = await signIn("credentials", {
+      redirect: false,
+      email,
+      verificationLoginToken: data.loginToken,
+    });
+
+    if (!loginResult?.ok) {
+      toast.error("Email verified, but automatic login failed.");
+      hasAutoSubmitted.current = false;
+      return;
+    }
+
+    toast.success("Email verified successfully.");
+    router.push("/");
+  } catch (error) {
+    console.error("Verify email error:", error);
+    toast.error("Something went wrong. Please try again.");
+    hasAutoSubmitted.current = false;
+  } finally {
+    setIsVerifying(false);
+  }
+};
+
+
 
   // Auto-submit when all 6 digits are entered
   useEffect(() => {

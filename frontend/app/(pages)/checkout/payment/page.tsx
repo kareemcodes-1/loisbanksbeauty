@@ -52,7 +52,6 @@ export default async function PaymentPage({
     <PaymentInstructions
       orderId={order._id.toString()}
       totalAmount={order.totalAmount}
-      paymentStatus={order.paymentInfo.paymentStatus}
       customerNotifiedAt={
         order.paymentInfo.customerNotifiedAt
           ? order.paymentInfo.customerNotifiedAt.toISOString()

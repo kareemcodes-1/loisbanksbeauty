@@ -106,7 +106,7 @@ function getStatusBadge(status: string) {
     pending: {
       label: "Pending",
       className:
-        "border-amber-200 bg-amber-100 text-amber-700 hover:bg-amber-100",
+        "border-orange-200 bg-orange-100 text-orange-700 hover:bg-orange-100",
     },
 
     confirmed: {
@@ -459,7 +459,12 @@ export function OrdersTable({ onEdit }: OrdersTableProps) {
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
+
             <SelectContent>
+              <SelectItem value="all">
+                All orders
+              </SelectItem>
+
               <SelectItem value="pending">
                 Pending
               </SelectItem>
