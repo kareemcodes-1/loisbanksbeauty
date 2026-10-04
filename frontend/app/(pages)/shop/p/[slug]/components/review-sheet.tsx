@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Star, X } from "lucide-react";
+import { Loader2, Star, X } from "lucide-react";
 import toast from "react-hot-toast";
 
 import {
@@ -203,7 +203,7 @@ const ReviewSheet = ({
               disabled={submitting}
               className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {submitting ? "Submitting..." : "Submit review"}
+              {submitting ? <Loader2 /> : "Submit review"}
             </button>
             <p className="mt-3 text-center text-[0.7rem] text-black/40">
               Reviews are checked before they appear publicly.

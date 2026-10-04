@@ -27,7 +27,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const [reviewsData, eligibility, { products }] = await Promise.all([
     getProductReviews(product.slug),
     getReviewEligibility(product.slug),
-    getProducts({ page: 1, limit: 12 }),
+    getProducts({ page: 1, limit: 10 }),
   ]);
 
   const relatedProducts = products

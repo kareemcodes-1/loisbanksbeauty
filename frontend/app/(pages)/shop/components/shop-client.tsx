@@ -298,7 +298,7 @@ export default function ShopClient({
     <section className="w-full px-[1.5rem] pb-[4rem] pt-[9rem] sm:px-8 lg:px-[3rem]">
       <div className="mx-auto w-full">
         <div className="mx-auto flex max-w-[min(50rem,100%)] flex-col items-center gap-3 text-center">
-          <span className="subtitle">Shop</span>
+          <span className="subtitle">Shop All</span>
 
           <SplitLines
             text="Shop Our Collection"
@@ -381,9 +381,10 @@ export default function ShopClient({
         {/* Product Count */}
 <div className="py-4 sm:py-6">
   <p className="text-[0.7rem] uppercase tracking-[0.05em] text-black/35">
-    {initialProducts.length}{" "}
-    {initialProducts.length === 1 ? "Product" : "Products"}
-  </p>
+  {pagination.total === 0
+    ? "No products"
+    : `Showing ${initialProducts.length} of ${pagination.total} products`}
+</p>
 </div>
 
         {/* Products */}

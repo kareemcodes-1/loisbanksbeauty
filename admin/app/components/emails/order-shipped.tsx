@@ -12,8 +12,8 @@ type Props = {
   trackingUrl?: string;
 };
 
-const APP_URL =
-  process.env.NEXT_PUBLIC_APP_URL || "https://loisbanksbeauty.com";
+const FRONTEND_URL =
+  process.env.NEXT_PUBLIC_FRONTEND_URL || "https://loisbanksbeauty.com";
 
 export default function OrderShippedEmail({
   name,
@@ -37,7 +37,7 @@ export default function OrderShippedEmail({
           <Text className="m-0 text-center text-[13px] text-black/50">
             Or{" "}
             <Link
-              href={`${APP_URL}/orders`}
+              href={`${FRONTEND_URL}/orders`}
               className="font-medium text-black underline"
             >
               view your order
@@ -45,7 +45,7 @@ export default function OrderShippedEmail({
           </Text>
         </>
       ) : (
-        <EmailButton href={`${APP_URL}/orders`}>View order</EmailButton>
+        <EmailButton href={`${FRONTEND_URL}/orders`}>View order</EmailButton>
       )}
     </EmailLayout>
   );

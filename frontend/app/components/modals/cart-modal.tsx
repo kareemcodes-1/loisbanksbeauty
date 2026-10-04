@@ -27,6 +27,9 @@ const CartModal = ({ openCartModal, setOpenCartModal }: CartModalProps) => {
   const currency = useCurrencyStore((s) => s.currency);
   const router = useRouter();
 
+  const totalItems = useCartStore((s) => s.getTotalItems());
+  const hasHydrated = useCartStore((s) => s._hasHydrated);
+
   const handleDecrease = (
     productId: string,
     quantity: number,
@@ -58,7 +61,14 @@ const CartModal = ({ openCartModal, setOpenCartModal }: CartModalProps) => {
       >
         {/* Header */}
         <SheetHeader className="flex shrink-0 flex-row items-center justify-between space-y-0 border-b border-dashed border-[#FD3F92]/40 px-5 py-4 sm:px-6 sm:py-5 lg:px-8">
-          <SheetTitle className="heading-3 text-left">Cart</SheetTitle>
+          <SheetTitle className="heading-3 text-left">
+            Cart
+            {hasHydrated && totalItems > 0 && (
+              <span className="ml-1.5 text-black">
+                ({totalItems > 99 ? "99+" : totalItems})
+              </span>
+            )}
+          </SheetTitle>
 
           <SheetClose asChild>
             <button
@@ -185,35 +195,30 @@ const CartModal = ({ openCartModal, setOpenCartModal }: CartModalProps) => {
         </div>
 
         {items.length > 0 && (
-          <>
-            <div className="shrink-0 border-t border-black/10 px-5 pb-3 pt-4 sm:px-6 lg:px-8">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs font-medium text-black/50">
-                  Shipping
-                </span>
-                <span className="text-xs font-medium text-black/50">
-                  At Checkout
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Subtotal</span>
-                <span className="text-sm font-medium">
-                  {priceFormatter(subtotal, currency)}
-                </span>
-              </div>
-            </div>
+  <>
+    <div className="shrink-0 border-t border-black/10 px-5 pb-3 pt-4 sm:px-6 lg:px-8">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium">Subtotal</span>
+        <span className="text-sm font-medium">
+          {priceFormatter(subtotal, currency)}
+        </span>
+      </div>
+      <p className="mt-2 text-xs text-black/50">
+        Taxes and duties are calculated during checkout
+      </p>
+    </div>
 
-            <div className="shrink-0 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-6 lg:px-8">
-              <button
-                type="button"
-                className="btn-primary w-full"
-                onClick={handleCheckout}
-              >
-                Checkout
-              </button>
-            </div>
-          </>
-        )}
+    <div className="shrink-0 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-6 lg:px-8">
+      <button
+        type="button"
+        className="btn-primary w-full"
+        onClick={handleCheckout}
+      >
+        Secure Checkout
+      </button>
+    </div>
+  </>
+)}
       </SheetContent>
     </Sheet>
   );

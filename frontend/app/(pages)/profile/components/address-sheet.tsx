@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { Country, State } from "country-state-city";
 
@@ -330,7 +330,7 @@ export default function AddressSheet({
               className="btn-primary w-full disabled:opacity-50"
             >
               {saving
-                ? "Saving..."
+                ? <Loader2 />
                 : isEdit
                   ? "Update address"
                   : "Save address"}

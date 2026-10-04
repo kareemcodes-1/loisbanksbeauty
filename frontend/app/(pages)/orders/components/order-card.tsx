@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCurrencyStore } from "@/store/currency";
 import { priceFormatter } from "@/lib/priceFormatter";
 import type { Order } from "@/types";
+import { ChevronRight } from "lucide-react";
 
 type Props = {
   order: Order;
@@ -103,15 +104,24 @@ export default function OrderCard({ order }: Props) {
       </div>
 
       {/* Bottom */}
-      <div className="mt-5 flex items-center justify-between border-t border-black/5 pt-4">
+<div className="mt-5 flex items-center justify-between border-t border-black/5 pt-4">
+  {/* Desktop text link */}
+  <Link
+    href={`/orders/${order._id}`}
+    className="hidden text-[13px] font-medium text-[#FD3F92] transition-all hover:underline sm:inline-block"
+  >
+    View details
+  </Link>
 
-        <Link
-          href={`/orders/${order._id}`}
-          className="text-[13px] font-medium text-[#FD3F92] transition-opacity hover:opacity-70"
-        >
-          View details
-        </Link>
-      </div>
+  {/* Mobile arrow button */}
+  <Link
+    href={`/orders/${order._id}`}
+    className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 text-black/60 transition-colors hover:bg-[#FD3F92] hover:text-white sm:hidden"
+    aria-label="View order details"
+  >
+    <ChevronRight size={18} strokeWidth={1.5} />
+  </Link>
+</div>
     </div>
   );
 }

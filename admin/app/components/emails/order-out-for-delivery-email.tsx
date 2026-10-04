@@ -10,8 +10,8 @@ type Props = {
   orderReference: string;
 };
 
-const APP_URL =
-  process.env.NEXT_PUBLIC_APP_URL || "https://loisbanksbeauty.com";
+const FRONTEND_URL =
+  process.env.NEXT_PUBLIC_FRONTEND_URL || "https://loisbanksbeauty.com";
 
 export default function OrderOutForDeliveryEmail({
   name,
@@ -34,7 +34,7 @@ export default function OrderOutForDeliveryEmail({
         We&apos;ll let you know once it has been delivered.
       </EmailText>
 
-      <EmailButton href={`${APP_URL}/orders`}>View order</EmailButton>
+      <EmailButton href={`${FRONTEND_URL}/orders`}>View order</EmailButton>
     </EmailLayout>
   );
 }

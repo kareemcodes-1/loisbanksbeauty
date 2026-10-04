@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { ProfileUser } from "@/actions/profile.actions";
 import { useSession } from "next-auth/react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 type Props = {
   user: ProfileUser;
@@ -347,7 +347,7 @@ export default function ProfileForm({ user }: Props) {
           disabled={saving}
           className="btn-primary w-full disabled:opacity-50"
         >
-          {saving ? "Saving..." : "Save changes"}
+          {saving ? <Loader2 /> : "Save changes"}
         </button>
       </form>
     </section>

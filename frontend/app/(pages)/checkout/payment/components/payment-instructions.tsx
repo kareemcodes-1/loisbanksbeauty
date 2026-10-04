@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { useCartStore } from "@/store/cart";
 import { useCurrencyStore } from "@/store/currency";
 import { priceFormatter } from "@/lib/priceFormatter";
+import { Loader2 } from "lucide-react";
 
 type Props = {
   orderId: string;
@@ -377,7 +378,7 @@ if (hasNotified) {
     disabled={isSubmitting}
     className="btn-primary mt-6 w-full disabled:cursor-not-allowed disabled:opacity-50"
   >
-    {isSubmitting ? "Sending notification..." : "I've Sent the Money"}
+    {isSubmitting ? <Loader2 /> : "I've Sent the Money"}
   </button>
 
   <p className="mt-4 text-center text-xs leading-relaxed text-black/40">

@@ -23,10 +23,10 @@ const faqs: { question: string; answer: ReactNode }[] = [
       "Yes, we ship across Nigeria and internationally. Please check our list of supported countries or contact us to confirm if we currently deliver to your location.",
   },
   {
-    question: "What payment methods do you accept?",
-    answer:
-      "We accept all major payment methods supported by Paystack, including debit and credit cards, bank transfers, USSD, bank payments, mobile money, and more.",
-  },
+  question: "What payment methods do you accept?",
+  answer:
+    "For now, we only accept bank transfers. We’ll be adding more payment options like Paystack (cards, USSD, mobile money, and more) very soon.",
+},
   {
     question: "How long will my order take to arrive?",
     answer:
@@ -90,7 +90,7 @@ const FAQ = () => {
                   {faq.question}
                 </AccordionTrigger>
 
-                <AccordionContent className="pr-2 pb-3 font-geist text-[0.875rem] leading-6 text-black/70 sm:pr-6 sm:pb-4 sm:text-[0.925rem] sm:leading-7">
+                <AccordionContent className="pr-2 pb-3 font-geist text-[0.875rem] leading-6 text-black/70 sm:pr-6 sm:pb-4 sm:text-[0.925rem] font-medium sm:leading-7">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>

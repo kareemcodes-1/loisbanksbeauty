@@ -1,7 +1,7 @@
-// components/reviews/pending-reviews-list.tsx
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Star } from "lucide-react";
 import type { PendingReviewItem } from "@/actions/review.actions";
 import PendingReviewRow from "./pending-review-row";
@@ -13,6 +13,7 @@ type Props = {
 };
 
 export default function PendingReviewsList({ initialItems }: Props) {
+  const router = useRouter();
   const [items, setItems] = useState(initialItems);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<{
@@ -32,6 +33,7 @@ export default function PendingReviewsList({ initialItems }: Props) {
   };
 
   const handleReviewSuccess = () => {
+    // Optimistic update
     if (selectedProduct) {
       setItems((prev) =>
         prev.filter(
@@ -43,6 +45,9 @@ export default function PendingReviewsList({ initialItems }: Props) {
         )
       );
     }
+
+    // Keep server state in sync
+    router.refresh();
   };
 
   if (items.length === 0) {

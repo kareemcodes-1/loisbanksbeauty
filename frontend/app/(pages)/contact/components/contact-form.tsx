@@ -72,6 +72,7 @@ export default function ContactForm() {
     {
       icon: MapPin,
       value: "33a Sedona mall, Adebayo Doherty strt, Lekki phase 1",
+      href: "https://www.google.com/maps/search/?api=1&query=33a+Sedona+Mall+Adebayo+Doherty+Street+Lekki+Phase+1+Lagos"
     },
   ];
 
@@ -99,7 +100,7 @@ export default function ContactForm() {
                   {item.href ? (
                     <a
                       href={item.href}
-                      className="break-words text-[0.95rem] text-black/90 transition-opacity hover:opacity-60 sm:text-[1.1rem]"
+                      className="break-words text-[0.95rem] text-black/90 transition-opacity font-medium hover:opacity-60 sm:text-[1.1rem]"
                     >
                       {item.value}
                     </a>

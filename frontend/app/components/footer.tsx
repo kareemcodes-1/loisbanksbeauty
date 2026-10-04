@@ -90,9 +90,7 @@ const Footer = () => {
               </Link>
 
               <p className="max-w-xs text-[0.9rem] leading-relaxed text-white/60 sm:text-base">
-                Shop luxury human hair wigs, athleisure wear and beauty
-                essentials. Premium quality, flawless textures and effortless
-                glam.
+                Discover luxury human hair wigs, refined athleisure, and beauty essentials designed for premium quality and effortless glam.
               </p>
 
               <div className="mt-1 flex gap-3">
@@ -188,10 +186,15 @@ const Footer = () => {
 
               <div className="flex flex-col gap-2 text-[0.9rem] text-white/60 sm:text-base">
                 <p className="text-sm font-medium text-white">Address</p>
-                <p className="max-w-xs leading-relaxed">
-                  33a Sedona mall, opp Monty suites, Adebayo Doherty street,
-                  Lekki Phase 1
-                </p>
+                <Link
+      href="https://www.google.com/maps/search/?api=1&query=33a+Sedona+Mall+Adebayo+Doherty+Street+Lekki+Phase+1+Lagos"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="max-w-xs leading-relaxed transition hover:text-white"
+    >
+      33a Sedona mall, opp Monty suites, Adebayo Doherty street,
+      Lekki Phase 1
+    </Link>
               </div>
             </div>
           </div>

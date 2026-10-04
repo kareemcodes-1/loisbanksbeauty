@@ -13,8 +13,8 @@ type Props = {
   orderReference: string;
 };
 
-const APP_URL =
-  process.env.NEXT_PUBLIC_APP_URL || "https://loisbanksbeauty.com";
+const FRONTEND_URL =
+  process.env.NEXT_PUBLIC_FRONTEND_URL || "https://loisbanksbeauty.com";
 
 // Store details
 const STORE_ADDRESS =
@@ -76,7 +76,7 @@ export default function OrderReadyForPickupEmail({
         </Link>
       </EmailCard>
 
-      <EmailButton href={`${APP_URL}/orders`}>View order</EmailButton>
+      <EmailButton href={`${FRONTEND_URL}/orders`}>View order</EmailButton>
 
       <Text className="m-0 text-center text-[13px] text-black/50">
         We look forward to seeing you!

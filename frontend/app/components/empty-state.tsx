@@ -19,16 +19,16 @@ const EmptyState = ({
   const showButton = Boolean(buttonText && (buttonHref || onButtonClick));
 
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-4 px-4 text-center sm:gap-5 sm:px-6">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full border bg-white shadow-[0_8px_30px_rgba(0,0,0,0.08)] sm:h-16 sm:w-16">
+    <div className="h-full flex flex-col items-center justify-center gap-4 px-4 text-center sm:gap-5 sm:px-6">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-black/10 bg-white shadow-sm sm:h-14 sm:w-14">
         <Icon
-          size={24}
-          strokeWidth={1.5}
-          className="text-[#FD3F92] sm:size-7"
+          size={25}
+          strokeWidth={1.6}
+          className="text-[#FD3F92]"
         />
       </div>
 
-      <p className="max-w-[min(22rem,100%)] text-[1.15rem] leading-snug text-black/80 sm:text-[1.5rem] lg:text-[1.7rem]">
+      <p className="max-w-[18rem] text-[1rem] lg:text-[1.4rem] leading-relaxed text-black/70 sm:text-base">
         {message}
       </p>
 
@@ -51,3 +51,4 @@ const EmptyState = ({
 };
 
 export default EmptyState;
+

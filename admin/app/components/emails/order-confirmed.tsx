@@ -29,8 +29,8 @@ type Props = {
   currency?: string;
 };
 
-const APP_URL =
-  process.env.NEXT_PUBLIC_APP_URL || "https://loisbanksbeauty.com";
+const FRONTEND_URL =
+  process.env.NEXT_PUBLIC_FRONTEND_URL || "https://loisbanksbeauty.com";
 
 const formatMoney = (amount: number, currency = "NGN") =>
   new Intl.NumberFormat("en-NG", {
@@ -211,7 +211,7 @@ export default function OrderConfirmedEmail({
         />
       </Section>
 
-      <EmailButton href={`${APP_URL}/orders`}>View order</EmailButton>
+      <EmailButton href={`${FRONTEND_URL}/orders`}>View order</EmailButton>
     </EmailLayout>
   );
 }

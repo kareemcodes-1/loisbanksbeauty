@@ -16,8 +16,8 @@ type Props = {
   unsubscribeUrl: string;
 };
 
-const APP_URL =
-  process.env.NEXT_PUBLIC_APP_URL || "https://loisbanksbeauty.com";
+const FRONTEND_URL =
+  process.env.NEXT_PUBLIC_FRONTEND_URL || "https://loisbanksbeauty.com";
 
 const SERIF = "Georgia, 'Times New Roman', serif";
 
@@ -76,7 +76,7 @@ export default function NewDiscountEmail({
         ) : null}
       </EmailCard>
 
-      <EmailButton href={`${APP_URL}/shop`}>Shop the offer</EmailButton>
+      <EmailButton href={`${FRONTEND_URL}/shop`}>Shop the offer</EmailButton>
 
       <Text className="m-0 mt-6 text-center text-[11px] leading-[1.6] text-black/40">
         You&apos;re receiving this because you subscribed to LoisBanks Beauty

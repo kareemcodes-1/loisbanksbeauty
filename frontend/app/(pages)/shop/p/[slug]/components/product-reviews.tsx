@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import EmptyState from "@/app/components/empty-state";
 import ReviewSheet from "./review-sheet";
+import { useRouter } from "next/navigation";
 
 export type ReviewItem = {
   _id: string;
@@ -98,6 +99,12 @@ const ProductReviews = ({
   const { averageRating, reviewCount, breakdown, reviews } = reviewsData;
   const [sort, setSort] = useState<SortValue>("newest");
   const [writeOpen, setWriteOpen] = useState(false);
+
+  const router = useRouter();
+
+const handleReviewSuccess = () => {
+  router.refresh(); // This re-fetches canReview from the server
+};
 
   const maxCount = Math.max(...breakdown.map((b) => b.count), 1);
 
@@ -299,6 +306,7 @@ const ProductReviews = ({
         onOpenChange={setWriteOpen}
         productSlug={product.slug}
         productName={product.name}
+        onSuccess={handleReviewSuccess}
       />
     </div>
   );

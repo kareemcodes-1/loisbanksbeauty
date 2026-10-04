@@ -11,13 +11,13 @@ import FadeContent from "@/components/animations/fade-content";
 
 const ProductCard = ({ item }: { item: Product }) => {
   const currency = useCurrencyStore((s) => s.currency);
+
   const images = item.media.filter((media) => media.type === "image");
   const firstImage = images[0];
   const secondImage = images[1];
-  const video = item.media.find((media) => media.type === "video");
 
   const fallbackImage = firstImage?.url || "/placeholder.jpg";
-  const hoverImage = secondImage?.url || fallbackImage;
+  const hoverImage = secondImage?.url;
 
   const { originalPrice, finalPrice, hasDiscount, discountLabel } =
     getProductPricing(item);
@@ -36,37 +36,23 @@ const ProductCard = ({ item }: { item: Product }) => {
         initialOpacity={0}
       >
         <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-neutral-100">
+          {/* First image */}
           <Image
             src={fallbackImage}
             alt={item.name}
             fill
             sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 33vw"
-            className={`object-cover transition-opacity duration-500 ${
+            className={`absolute inset-0 object-cover transition-opacity duration-500 ${
               isOutOfStock
                 ? "opacity-50"
-                : video || secondImage
-                  ? "group-hover:opacity-0"
-                  : ""
+                : hoverImage
+                  ? "opacity-100 group-hover:opacity-0"
+                  : "opacity-100"
             }`}
           />
 
-          {video && (
-            <video
-              src={video.url}
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              autoPlay
-              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
-                isOutOfStock
-                  ? "opacity-50"
-                  : "opacity-0 group-hover:opacity-100"
-              }`}
-            />
-          )}
-
-          {!video && secondImage && (
+          {/* Second image on hover */}
+          {hoverImage && (
             <Image
               src={hoverImage}
               alt={item.name}

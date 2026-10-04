@@ -17,8 +17,8 @@ type Props = {
   unsubscribeUrl: string;
 };
 
-const APP_URL =
-  process.env.NEXT_PUBLIC_APP_URL || "https://loisbanksbeauty.com";
+const FRONTEND_URL =
+  process.env.NEXT_PUBLIC_FRONTEND_URL || "https://loisbanksbeauty.com";
 
 const SERIF = "Georgia, 'Times New Roman', serif";
 
@@ -43,7 +43,7 @@ export default function NewProductEmail({
       {/* Product image */}
       {productImage ? (
         <Section className="my-6 overflow-hidden rounded-lg bg-[#f5f5f5]">
-          <Link href={`${APP_URL}/shop/p/${productSlug}`}>
+          <Link href={`${FRONTEND_URL}/shop/p/${productSlug}`}>
             <Img
               src={productImage}
               alt={productName}
@@ -88,14 +88,14 @@ export default function NewProductEmail({
         </Text>
       </Section>
 
-      <EmailButton href={`${APP_URL}/shop/p/${productSlug}`}>
+      <EmailButton href={`${FRONTEND_URL}/shop/p/${productSlug}`}>
         Shop now
       </EmailButton>
 
       <Text className="m-0 text-center text-[13px] text-black/50">
         Or{" "}
         <Link
-          href={`${APP_URL}/shop`}
+          href={`${FRONTEND_URL}/shop`}
           className="font-medium text-black underline"
         >
           browse the full collection

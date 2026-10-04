@@ -14,8 +14,8 @@ import {
 } from "@react-email/components";
 import type { ReactNode } from "react";
 
-const APP_URL =
-  process.env.NEXT_PUBLIC_APP_URL || "https://loisbanksbeauty.com";
+const FRONTEND_URL =
+  process.env.NEXT_PUBLIC_FRONTEND_URL || "https://loisbanksbeauty.com";
 const LOGO_URL =
   "https://res.cloudinary.com/datpkisht/image/upload/v1786684533/gjxznh8gewb2j46cyvgt.jpg";
 
@@ -48,7 +48,7 @@ export default function EmailLayout({ preview, children }: EmailLayoutProps) {
 
             {/* Header */}
             <Section className="px-6 pb-2 pt-8 text-center sm:px-10 sm:pt-10">
-              <Link href={APP_URL}>
+              <Link href={FRONTEND_URL}>
                 <Img
                   src={LOGO_URL}
                   alt="LoisBanks Beauty"
@@ -69,7 +69,7 @@ export default function EmailLayout({ preview, children }: EmailLayoutProps) {
              <Text className="m-0 text-[13px] leading-[1.6] text-black/60">
                 Need help?{" "}
                 <Link
-                  href={`${APP_URL}/contact`}
+                  href={`${FRONTEND_URL}/contact`}
                   className="text-[#fd3f92] underline"
                 >
                   Send us a message
@@ -78,12 +78,12 @@ export default function EmailLayout({ preview, children }: EmailLayoutProps) {
               </Text>
 
               <Text className="m-0 mt-4 text-[12px] leading-[1.8] text-black/50">
-                <Link   href={`${APP_URL}/shop`} className="text-black/50 underline">
+                <Link   href={`${FRONTEND_URL}/shop`} className="text-black/50 underline">
                   Shop
                 </Link>
                 {"  ·  "}
                 <Link
-                  href={`${APP_URL}/contact`}
+                  href={`${FRONTEND_URL}/contact`}
                   className="text-black/50 underline"
                 >
                   Contact

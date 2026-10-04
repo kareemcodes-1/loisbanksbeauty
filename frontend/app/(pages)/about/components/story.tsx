@@ -24,7 +24,7 @@ export default function FounderStory() {
             "
           >
             <Image
-              src="/about.jpg"
+              src="https://res.cloudinary.com/datpkisht/image/upload/v1791123341/ijecxeaaukwpxsupw083.jpg"
               alt="Founder of LoisBanks Beauty"
               fill
               className="object-cover"

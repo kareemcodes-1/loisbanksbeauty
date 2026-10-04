@@ -5,6 +5,7 @@ import connectDB from "@/lib/mongodb";
 import Order from "@/models/Order";
 
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import User from "@/models/User";
 
 type RouteContext = {
   params: Promise<{
@@ -88,6 +89,25 @@ export async function POST(
     order.paymentInfo.customerNotifiedAt = new Date();
 
     await order.save();
+
+    const user = await User.findById(session.user.id);
+
+if (user && user.addresses.length === 0) {
+  // This is their first address → make it default
+  user.addresses.push({
+    firstName: order.shippingAddress.firstName,
+    lastName: order.shippingAddress.lastName,
+    address: order.shippingAddress.address,
+    apartment: order.shippingAddress.apartment || "",
+    city: order.shippingAddress.city,
+    state: order.shippingAddress.state,
+    postalCode: order.shippingAddress.postalCode,
+    country: order.shippingAddress.country,
+    isDefault: true,
+  });
+
+  await user.save();
+}
 
     /*
      * Important:

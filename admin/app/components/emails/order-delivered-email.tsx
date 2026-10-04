@@ -12,8 +12,8 @@ type Props = {
   shippingMethod: "pickup" | "delivery";
 };
 
-const APP_URL =
-  process.env.NEXT_PUBLIC_APP_URL || "https://loisbanksbeauty.com";
+const FRONTEND_URL =
+  process.env.NEXT_PUBLIC_FRONTEND_URL || "https://loisbanksbeauty.com";
 
 export default function OrderDeliveredEmail({
   name,
@@ -40,14 +40,14 @@ export default function OrderDeliveredEmail({
         can.
       </EmailText>
 
-      <EmailButton href={`${APP_URL}/reviews/pending`}>
+      <EmailButton href={`${FRONTEND_URL}/reviews/pending`}>
         Leave a review
       </EmailButton>
 
       <Text className="m-0 text-center text-[13px] text-black/50">
         Or{" "}
         <Link
-          href={`${APP_URL}/orders`}
+          href={`${FRONTEND_URL}/orders`}
           className="font-medium text-black underline"
         >
           view your order

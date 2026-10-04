@@ -54,41 +54,62 @@ export async function getReviewEligibility(
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {
+    console.log("❌ No session");
     return { canReview: false, reason: "unauthenticated" };
   }
 
   await connectDB();
 
   const productQuery = Types.ObjectId.isValid(slugOrId)
-    ? { _id: slugOrId, isActive: true }
-    : { slug: slugOrId, isActive: true };
+    ? { _id: slugOrId }
+    : { slug: slugOrId };
 
   const product = await Product.findOne(productQuery).select("_id").lean();
+
   if (!product) {
+    console.log("❌ Product not found");
     return { canReview: false, reason: "not_purchased" };
   }
 
   const userId = session.user.id;
+  const productId = product._id;
 
+  console.log("🔍 Checking eligibility");
+  console.log("Session userId:", userId);
+  console.log("Product ID:", productId.toString());
+
+  // Check if already reviewed (handle both string & ObjectId)
   const alreadyReviewed = await Review.exists({
-    productId: product._id,
-    userId,
+    productId,
+    $or: [
+      { userId: userId },
+      { userId: new Types.ObjectId(userId) },
+    ],
   });
+
+  console.log("Already reviewed:", !!alreadyReviewed);
 
   if (alreadyReviewed) {
     return { canReview: false, reason: "already_reviewed" };
   }
 
+  // Check if purchased & delivered (handle both string & ObjectId)
   const hasPurchased = await Order.exists({
-    userId: new Types.ObjectId(userId),
     orderStatus: "delivered",
-    "items.productId": product._id,
+    "items.productId": productId,
+    $or: [
+      { userId: userId },
+      { userId: new Types.ObjectId(userId) },
+    ],
   });
+
+  console.log("Has purchased (delivered):", !!hasPurchased);
 
   if (!hasPurchased) {
     return { canReview: false, reason: "not_purchased" };
   }
 
+  console.log("✅ Can review!");
   return { canReview: true };
 }
 

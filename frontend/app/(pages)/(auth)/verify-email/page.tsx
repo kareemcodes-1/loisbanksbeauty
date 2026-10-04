@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { signIn } from "next-auth/react";
 
 const CODE_LENGTH = 6;
-const RESEND_COOLDOWN_SECONDS = 30;
+const RESEND_COOLDOWN_SECONDS = 60; 
 
 function VerifyEmailForm() {
   const router = useRouter();
@@ -17,13 +17,10 @@ function VerifyEmailForm() {
 
   const email = searchParams.get("email") ?? "";
 
-  const [code, setCode] = useState<string[]>(
-    Array(CODE_LENGTH).fill("")
-  );
-
+  const [code, setCode] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendCooldown, setResendCooldown] = useState(RESEND_COOLDOWN_SECONDS);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const hasAutoSubmitted = useRef(false);
@@ -95,7 +92,6 @@ function VerifyEmailForm() {
     }
   };
 
-  // Single source of truth for paste — only on the container.
   const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
     event.preventDefault();
 
@@ -157,7 +153,6 @@ function VerifyEmailForm() {
         return;
       }
 
-      // Automatically log the user in
       const loginResult = await signIn("credentials", {
         redirect: false,
         email,
@@ -171,9 +166,7 @@ function VerifyEmailForm() {
       }
 
       toast.success("Email verified successfully.");
-
       router.push("/");
-
     } catch (error) {
       console.error("Verify email error:", error);
       toast.error("Something went wrong. Please try again.");
@@ -183,8 +176,7 @@ function VerifyEmailForm() {
     }
   };
 
-
-  // Auto-submit once all 6 digits are in (typed or pasted)
+  // Auto-submit when all 6 digits are entered
   useEffect(() => {
     if (codeValue.length === CODE_LENGTH && !hasAutoSubmitted.current) {
       hasAutoSubmitted.current = true;
@@ -193,12 +185,14 @@ function VerifyEmailForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [codeValue]);
 
-  // Resend cooldown ticker
+  // Resend cooldown timer
   useEffect(() => {
     if (resendCooldown <= 0) return;
+
     const timer = setInterval(() => {
       setResendCooldown((seconds) => Math.max(0, seconds - 1));
     }, 1000);
+
     return () => clearInterval(timer);
   }, [resendCooldown]);
 
@@ -240,22 +234,28 @@ function VerifyEmailForm() {
     }
   };
 
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
+
   return (
-    <main className="flex min-h-screen items-center justify-center px-5">
-      <div className="w-full max-w-md">
+    <main className="flex min-h-screen items-center justify-center px-5 lg:pt-[7rem]">
+      <div className="w-full max-w-md text-center">
         {/* Heading */}
-        <div className="mb-8 text-center">
+        <div className="mb-8">
           <span className="subtitle">Email Verification</span>
 
           <h1 className="heading-3 mt-3 text-black">Verify Your Email</h1>
 
-          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+          <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
             We sent a 6-digit verification code to{" "}
             <span className="font-medium text-black">{email}</span>
           </p>
         </div>
 
-        {/* Verification Code */}
+        {/* Code inputs */}
         <div className="space-y-6">
           <div
             className="flex justify-center gap-2 sm:gap-3"
@@ -282,7 +282,7 @@ function VerifyEmailForm() {
             ))}
           </div>
 
-          {/* Verify */}
+          {/* Verify button */}
           <button
             type="button"
             onClick={verifyEmail}
@@ -296,19 +296,26 @@ function VerifyEmailForm() {
             )}
           </button>
 
-          {/* Resend */}
-          <button
-            type="button"
-            onClick={resendCode}
-            disabled={isResending || resendCooldown > 0}
-            className="w-full text-sm text-muted-foreground underline transition-colors hover:text-[#FD3F92] disabled:opacity-50"
-          >
-            {isResending
-              ? "Sending..."
-              : resendCooldown > 0
-                ? `Resend code in ${resendCooldown}s`
-                : "Resend verification code"}
-          </button>
+          {/* Resend section with timer */}
+          <div className="space-y-1">
+            {resendCooldown > 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Resend code in{" "}
+                <span className="font-medium text-black">
+                  {formatTime(resendCooldown)}
+                </span>
+              </p>
+            ) : (
+              <button
+                type="button"
+                onClick={resendCode}
+                disabled={isResending}
+                className="text-sm font-medium text-[#FD3F92] transition-opacity hover:opacity-70 disabled:opacity-50"
+              >
+                {isResending ? "Sending..." : "Resend verification code"}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </main>

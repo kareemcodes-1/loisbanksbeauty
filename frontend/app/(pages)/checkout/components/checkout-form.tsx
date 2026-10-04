@@ -18,6 +18,7 @@ import DeliverySection, {
 import ShippingMethodSection from "./shipping-method";
 import PaymentSection from "./payment-section";
 import OrderSummary from "./order-summary";
+import { Loader2 } from "lucide-react";
 
 type UserData = {
   email: string;
@@ -293,7 +294,7 @@ export default function CheckoutForm({ user }: Props) {
             disabled={isSubmitting}
             className="btn-primary w-full disabled:opacity-50"
           >
-            {isSubmitting ? "Placing order..." : "Place order"}
+            {isSubmitting ? <Loader2 /> : "Pay Now"}
           </button>
         </div>
 
