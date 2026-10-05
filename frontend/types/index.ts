@@ -123,6 +123,12 @@ export interface OrderItem {
   name: string;
   media: OrderMedia[];
   price: number;
+  originalPrice: number;
+  discount: {
+    title: string | null;
+    discountType: "percentage" | "fixed";
+    discountValue: number;
+  } | null;
   quantity: number;
   size?: string | null;
 }

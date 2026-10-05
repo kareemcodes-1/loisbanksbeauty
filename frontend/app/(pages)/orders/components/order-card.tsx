@@ -116,7 +116,7 @@ export default function OrderCard({ order }: Props) {
   {/* Mobile arrow button */}
   <Link
     href={`/orders/${order._id}`}
-    className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 text-black/60 transition-colors hover:bg-[#FD3F92] hover:text-white sm:hidden"
+    className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FD3F92] text-white transition-colors hover:bg-[#11111] hover:text-white sm:hidden"
     aria-label="View order details"
   >
     <ChevronRight size={18} strokeWidth={1.5} />

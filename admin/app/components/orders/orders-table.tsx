@@ -329,14 +329,51 @@ export function OrdersTable({ onEdit }: OrdersTableProps) {
           },
         }),
 
-        columnHelper.accessor("totalAmount", {
-          header: "Total",
-          cell: ({ row }) => (
-            <span className="font-medium tabular-nums">
-              {priceFormatter(row.original.totalAmount)}
-            </span>
-          ),
-        }),
+    columnHelper.accessor("totalAmount", {
+  header: "Total",
+  cell: ({ row }) => {
+    const order = row.original;
+
+    const discountTitles = Array.from(
+      new Set(
+        (order.items || [])
+          .filter(
+            (item) =>
+              item.discount &&
+              typeof item.originalPrice === "number" &&
+              item.originalPrice > item.price
+          )
+          .map((item) => item.discount?.title)
+          .filter((title): title is string => Boolean(title))
+      )
+    );
+
+    const hasDiscount = discountTitles.length > 0 ||
+      order.items?.some(
+        (item) =>
+          item.discount &&
+          typeof item.originalPrice === "number" &&
+          item.originalPrice > item.price
+      );
+
+    return (
+      <div className="flex flex-col gap-0.5">
+        <span className="font-medium tabular-nums">
+          {priceFormatter(order.totalAmount)}
+        </span>
+
+        {hasDiscount && (
+          <span className="max-w-[140px] truncate text-[11px] font-medium text-[#FD3F92]">
+            Discount applied
+            {discountTitles.length > 0
+              ? ` · ${discountTitles.join(", ")}`
+              : ""}
+          </span>
+        )}
+      </div>
+    );
+  },
+}),
 
         columnHelper.accessor("orderStatus", {
           header: "Status",

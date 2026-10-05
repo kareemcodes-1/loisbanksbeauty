@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import connectDB from "@/lib/mongodb";
 import Order from "@/models/Order";
 import Product from "@/models/Product";
+import Discount from "@/models/Discount";
 
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getShippingFee } from "@/lib/shipping";
@@ -138,66 +139,124 @@ export async function POST(request: Request) {
       );
     }
 
-    const orderItems = [];
+    const now = new Date();
 
-    for (const cartItem of items) {
-      const productId = cartItem.productId || cartItem._id;
+// Active discounts that include any of these products
+const activeDiscounts = await Discount.find({
+  isActive: true,
+  startsAt: { $lte: now },
+  expiresAt: { $gte: now },
+  productIds: { $in: productIds },
+}).lean();
 
-      if (!productId) {
-        return NextResponse.json(
-          { message: "A product in your cart is missing an ID." },
-          { status: 400 }
-        );
+const orderItems = [];
+
+for (const cartItem of items) {
+  const productId = cartItem.productId || cartItem._id;
+
+  if (!productId) {
+    return NextResponse.json(
+      { message: "A product in your cart is missing an ID." },
+      { status: 400 }
+    );
+  }
+
+  const product = products.find(
+    (item) => item._id.toString() === productId.toString()
+  );
+
+  if (!product) {
+    return NextResponse.json(
+      { message: "A product in your cart could not be found." },
+      { status: 400 }
+    );
+  }
+
+  if (!product.inStock) {
+    return NextResponse.json(
+      { message: `${product.name} is currently out of stock.` },
+      { status: 400 }
+    );
+  }
+
+  const quantity = Number(cartItem.quantity);
+
+  if (!Number.isInteger(quantity) || quantity < 1) {
+    return NextResponse.json(
+      { message: `Invalid quantity for ${product.name}.` },
+      { status: 400 }
+    );
+  }
+
+  if (
+    cartItem.size &&
+    Array.isArray(product.sizes) &&
+    product.sizes.length > 0 &&
+    !product.sizes.includes(cartItem.size)
+  ) {
+    return NextResponse.json(
+      { message: `Invalid size selected for ${product.name}.` },
+      { status: 400 }
+    );
+  }
+
+  const originalPrice = product.price;
+
+  // Find best active discount for this product (if any)
+  const productDiscounts = activeDiscounts.filter((d) =>
+    (d.productIds || []).some(
+      (id: any) => id.toString() === product._id.toString()
+    )
+  );
+
+  let finalPrice = originalPrice;
+  let discountSnapshot: {
+    title: string | null;
+    discountType: "percentage" | "fixed";
+    discountValue: number;
+  } | null = null;
+
+  if (productDiscounts.length > 0) {
+    // Use the discount that gives the lowest final price
+    let bestPrice = originalPrice;
+    let bestDiscount = productDiscounts[0];
+
+    for (const d of productDiscounts) {
+      let discounted = originalPrice;
+
+      if (d.discountType === "percentage") {
+        discounted = originalPrice - (originalPrice * d.discountValue) / 100;
+      } else {
+        discounted = originalPrice - d.discountValue;
       }
 
-      const product = products.find(
-        (item) => item._id.toString() === productId.toString()
-      );
+      discounted = Math.max(0, discounted);
 
-      if (!product) {
-        return NextResponse.json(
-          { message: "A product in your cart could not be found." },
-          { status: 400 }
-        );
+      if (discounted < bestPrice) {
+        bestPrice = discounted;
+        bestDiscount = d;
       }
-
-      if (!product.inStock) {
-        return NextResponse.json(
-          { message: `${product.name} is currently out of stock.` },
-          { status: 400 }
-        );
-      }
-
-      const quantity = Number(cartItem.quantity);
-
-      if (!Number.isInteger(quantity) || quantity < 1) {
-        return NextResponse.json(
-          { message: `Invalid quantity for ${product.name}.` },
-          { status: 400 }
-        );
-      }
-
-      if (
-        cartItem.size &&
-        Array.isArray(product.sizes) &&
-        product.sizes.length > 0 &&
-        !product.sizes.includes(cartItem.size)
-      ) {
-        return NextResponse.json(
-          { message: `Invalid size selected for ${product.name}.` },
-          { status: 400 }
-        );
-      }
-
-      orderItems.push({
-  productId: product._id,
-  name: product.name,
-  media: product.media || [],
-  price: Number(cartItem.price),
-  quantity,
-  size: cartItem.size || null,
-});
     }
+
+    finalPrice = bestPrice;
+    discountSnapshot = {
+      title: bestDiscount.title ?? null,
+      discountType: bestDiscount.discountType,
+      discountValue: bestDiscount.discountValue,
+    };
+  }
+
+  orderItems.push({
+    productId: product._id,
+    name: product.name,
+    media: product.media || [],
+    price: finalPrice,           // what customer pays
+    originalPrice,               // full price
+    discount: discountSnapshot,  // null if no discount
+    quantity,
+    size: cartItem.size || null,
+  });
+}
 
     const subtotal = orderItems.reduce(
       (total, item) => total + item.price * item.quantity,

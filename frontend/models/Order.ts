@@ -34,11 +34,34 @@ const orderItemSchema = new Schema(
       type: [orderMediaSchema],
       default: [],
     },
+
+    // What the customer actually paid (per unit)
     price: {
       type: Number,
       required: true,
       min: 0,
     },
+
+    // Full price before discount (per unit)
+    originalPrice: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    // Snapshot of discount at time of order (null if none)
+    discount: {
+      type: {
+        title: { type: String, default: null },
+        discountType: {
+          type: String,
+          enum: ["percentage", "fixed"],
+        },
+        discountValue: { type: Number, min: 0 },
+      },
+      default: null,
+    },
+
     quantity: {
       type: Number,
       required: true,
@@ -54,7 +77,6 @@ const orderItemSchema = new Schema(
     _id: true,
   }
 );
-
 const shippingAddressSchema = new Schema(
   {
     firstName: {
@@ -151,18 +173,24 @@ export interface IOrderDocument extends Document {
   userId: mongoose.Types.ObjectId;
 
   items: {
+  _id: mongoose.Types.ObjectId;
+  productId: mongoose.Types.ObjectId;
+  name: string;
+  media: {
     _id: mongoose.Types.ObjectId;
-    productId: mongoose.Types.ObjectId;
-    name: string;
-    media: {
-      _id: mongoose.Types.ObjectId;
-      url: string;
-      type: "image" | "video";
-    }[];
-    price: number;
-    quantity: number;
-    size?: string | null;
+    url: string;
+    type: "image" | "video";
   }[];
+  price: number;          // paid per unit
+  originalPrice: number;  // full price per unit
+  discount: {
+    title: string | null;
+    discountType: "percentage" | "fixed";
+    discountValue: number;
+  } | null;
+  quantity: number;
+  size?: string | null;
+}[];
 
   shippingAddress: {
     firstName: string;
