@@ -82,25 +82,22 @@ const CLOUDINARY_UPLOAD_PRESET =
 async function uploadToCloudinary(
   file: File
 ): Promise<{ url: string; type: "image" | "video" }> {
-  if (
-    !CLOUDINARY_CLOUD_NAME ||
-    !CLOUDINARY_UPLOAD_PRESET
-  ) {
+  if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
     throw new Error(
       "Cloudinary is not configured. Set NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET."
     );
   }
 
   const formData = new FormData();
-
   formData.append("file", file);
-  formData.append(
-    "upload_preset",
-    CLOUDINARY_UPLOAD_PRESET
-  );
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+  const isVideo = file.type.startsWith("video");
 
   const response = await fetch(
-    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`,
+    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${
+      isVideo ? "video" : "image"
+    }/upload`,
     {
       method: "POST",
       body: formData,
@@ -108,21 +105,28 @@ async function uploadToCloudinary(
   );
 
   if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
     throw new Error(
-      "Failed to upload file to Cloudinary"
+      errorData?.error?.message || "Failed to upload file to Cloudinary"
     );
   }
 
   const data = await response.json();
+  let url = data.secure_url as string;
+
+  if (isVideo) {
+    // 1. Add the MP4 transformation
+    url = url.replace("/upload/", "/upload/f_mp4,q_auto/");
+
+    // 2. Force the extension to .mp4 (this is the key part)
+    url = url.replace(/\.(mov|MOV|webm|avi|mkv)$/i, ".mp4");
+  }
 
   return {
-    url: data.secure_url as string,
-    type: file.type.startsWith("video")
-      ? "video"
-      : "image",
+    url,
+    type: isVideo ? "video" : "image",
   };
 }
-
 function createId() {
   return Math.random().toString(36).slice(2);
 }
