@@ -69,6 +69,22 @@ const RefundPolicyPage = () => {
                   You must contact us before sending the product back.
                 </li>
               </ul>
+
+              <p className="text-black/65 leading-7 sm:leading-8 mt-5">
+                Once an exchange is approved and the product has been received
+                by us, the exchange process typically takes:
+              </p>
+
+              <ul className="mt-4 space-y-3 text-black/65 leading-7 list-disc pl-5">
+                <li>
+                  <span className="font-medium text-black">Within Nigeria:</span>{" "}
+                  24 to 48 hours
+                </li>
+                <li>
+                  <span className="font-medium text-black">International orders:</span>{" "}
+                  5 to 6 working days
+                </li>
+              </ul>
             </div>
 
             {/* Refund Exceptions */}

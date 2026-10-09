@@ -8,6 +8,7 @@ import AuthProvider from "@/providers/session-provider";
 import ToastProvider from "@/providers/toast-provider";
 import NextTopLoader from "nextjs-toploader";
 import NewsletterModal from "../components/modals/newsletter-modal";
+import SupportLauncher from "../components/support-launcher";
 
 export default function PageLayout({
   children,
@@ -39,7 +40,7 @@ export default function PageLayout({
 
       <Footer />
 
-      <ChatWidget />
+      <SupportLauncher />
       <NewsletterModal />
     </AuthProvider>
   );
