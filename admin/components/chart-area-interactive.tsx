@@ -153,74 +153,73 @@ export function ChartAreaInteractive({
               tickMargin={8}
               minTickGap={32}
               tickFormatter={(value) => {
-                if (range === "today") {
-                  const [year, month, day, hour] =
-                    value.split("-");
+  if (!value || typeof value !== "string") {
+    return "";
+  }
 
-                  const date = new Date(
-                    Number(year),
-                    Number(month) - 1,
-                    Number(day),
-                    Number(hour)
-                  );
+  if (range === "today") {
+    const [year, month, day, hour] = value.split("-");
 
-                  return date.toLocaleTimeString(
-                    "en-US",
-                    {
-                      hour: "numeric",
-                    }
-                  );
-                }
+    const date = new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+      Number(hour)
+    );
 
-                const date = new Date(
-                  `${value}T00:00:00`
-                );
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+    });
+  }
 
-                return date.toLocaleDateString(
-                  "en-US",
-                  {
-                    month: "short",
-                    day: "numeric",
-                  }
-                );
-              }}
+  const date = new Date(`${value}T00:00:00`);
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}}
             />
 
             <ChartTooltip
-              cursor={false}
-              content={
-                <ChartTooltipContent
-                  labelFormatter={(value) => {
-                    if (range === "today") {
-                      const [year, month, day, hour] =
-                        value.split("-");
+  cursor={false}
+  content={
+    <ChartTooltipContent
+      labelFormatter={(value) => {
+        if (!value || typeof value !== "string") {
+          return "";
+        }
 
-                      const date = new Date(
-                        Number(year),
-                        Number(month) - 1,
-                        Number(day),
-                        Number(hour)
-                      );
+        if (range === "today") {
+          const [year, month, day, hour] =
+            value.split("-");
 
-                      return date.toLocaleString("en-US", {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                        hour: "numeric",
-                      });
-                    }
+          const date = new Date(
+            Number(year),
+            Number(month) - 1,
+            Number(day),
+            Number(hour)
+          );
 
-                    return new Date(
-                      `${value}T00:00:00`
-                    ).toLocaleDateString("en-US", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    });
-                  }}
-                />
-              }
-            />
+          return date.toLocaleString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+          });
+        }
+
+        return new Date(
+          `${value}T00:00:00`
+        ).toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        });
+      }}
+    />
+  }
+/>
 
             <Area
               dataKey="revenue"
