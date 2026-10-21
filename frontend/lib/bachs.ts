@@ -17,10 +17,12 @@ export type CreateBachsCheckoutInput = {
 };
 
 export async function createBachsCheckoutSession(
-  input: CreateBachsCheckoutInput
+  input: CreateBachsCheckoutInput & { usdAmount?: number }
 ) {
-  // Amounts must be decimal strings: "16000.00"
-  const amount = input.amount.toFixed(2);
+  const amountNgn = input.amount.toFixed(2);
+
+  // Approximate USD from your rate, or a fixed rate — used only as base for FX / USD_CARD
+  const amountUsd = (input.usdAmount ?? input.amount / 1600).toFixed(2);
 
   const res = await fetch(`${BACHS_API_BASE}/v1/checkout-sessions`, {
     method: "POST",
@@ -29,10 +31,13 @@ export async function createBachsCheckoutSession(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      // Dynamic order total (no Bachs catalog product needed)
       pricing: {
-        currency: "NGN",
-        amount,
+        currency: "USD",
+        amount: amountUsd,
+        // Exact ₦ so Nigerian checkout matches your order total
+        currency_options: {
+          NGN: amountNgn,
+        },
       },
       customer: {
         email: input.customer.email,
@@ -41,15 +46,15 @@ export async function createBachsCheckoutSession(
           ? { phone_number: input.customer.phone }
           : {}),
       },
-      reference: input.orderId, // unique per org forever
+      reference: input.orderId,
       metadata: {
         order_id: input.orderId,
       },
       success_url: input.successUrl,
       cancel_url: input.cancelUrl,
       expires_in_minutes: 60,
-      // Optional: restrict methods. Omit to let Bachs show all enabled.
-      // payment_method_types: ["NGN_CARD", "NGN_BANK_TRANSFER", "USD_CARD"],
+      // Leave omitted so all enabled methods show (USD card, NGN transfer, momo, crypto…)
+      // payment_method_types: ["USD_CARD", "NGN_CARD", "NGN_BANK_TRANSFER", "CRYPTO"],
     }),
   });
 
