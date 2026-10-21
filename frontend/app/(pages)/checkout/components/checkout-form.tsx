@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 
 import { useCartStore } from "@/store/cart";
 import { useCurrencyStore } from "@/store/currency";
 import { priceFormatter } from "@/lib/priceFormatter";
-import { getShippingFee } from "@/lib/shipping";
 
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -18,7 +18,6 @@ import DeliverySection, {
 import ShippingMethodSection from "./shipping-method";
 import PaymentSection from "./payment-section";
 import OrderSummary from "./order-summary";
-import { Loader2 } from "lucide-react";
 
 type UserData = {
   email: string;
@@ -31,8 +30,17 @@ type Props = {
   user: UserData;
 };
 
+type PublicShippingRate = {
+  _id: string;
+  country: string;
+  countryName: string;
+  state?: string | null;
+  stateCode?: string | null;
+  fee: number;
+};
+
 export default function CheckoutForm({ user }: Props) {
-  const { items, _hasHydrated } = useCartStore();
+  const { items, _hasHydrated, clearCart } = useCartStore();
   const currency = useCurrencyStore((s) => s.currency);
 
   const [contact, setContact] = useState({
@@ -61,17 +69,47 @@ export default function CheckoutForm({ user }: Props) {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Shipping rates from database
+  const [shippingRates, setShippingRates] = useState<PublicShippingRate[]>([]);
+  const [loadingRates, setLoadingRates] = useState(true);
+
+  useEffect(() => {
+    const loadRates = async () => {
+      try {
+        const res = await fetch("/api/shipping-rates");
+        if (!res.ok) throw new Error("Failed to load shipping rates");
+        const data = await res.json();
+        setShippingRates(data);
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to load delivery fees");
+      } finally {
+        setLoadingRates(false);
+      }
+    };
+
+    loadRates();
+  }, []);
+
+  // Cancelled payment return
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("cancelled") === "1") {
+      toast.error(
+        "Payment was cancelled. You can try again when you're ready."
+      );
+    }
+  }, []);
+
   // Auto-select default address
   useEffect(() => {
     if (user.addresses.length === 0) {
       setSelectedAddressId("new");
-
       setDelivery((prev) => ({
         ...prev,
         firstName: user.name?.split(" ")[0] || "",
         lastName: user.name?.split(" ").slice(1).join(" ") || "",
       }));
-
       return;
     }
 
@@ -79,7 +117,6 @@ export default function CheckoutForm({ user }: Props) {
       user.addresses.find((a) => a.isDefault) || user.addresses[0];
 
     setSelectedAddressId(defaultAddr._id);
-
     setDelivery({
       firstName: defaultAddr.firstName,
       lastName: defaultAddr.lastName,
@@ -91,6 +128,35 @@ export default function CheckoutForm({ user }: Props) {
       country: defaultAddr.country,
     });
   }, [user.addresses, user.name]);
+
+  // ===== Find matching shipping rate =====
+  // Priority: 1. Exact state match  2. Country-wide rate
+  const matchedRate = (() => {
+    if (!delivery.country) return null;
+
+    const countryRates = shippingRates.filter(
+      (rate) => rate.country.toUpperCase() === delivery.country.toUpperCase()
+    );
+
+    if (countryRates.length === 0) return null;
+
+    // Try exact state match first
+    if (delivery.state) {
+      const stateRate = countryRates.find(
+        (rate) =>
+          rate.stateCode?.toUpperCase() === delivery.state.toUpperCase() ||
+          rate.state?.toLowerCase() === delivery.state.toLowerCase()
+      );
+      if (stateRate) return stateRate;
+    }
+
+    // Fall back to country-wide rate (no state)
+    const countryWide = countryRates.find(
+      (rate) => !rate.state && !rate.stateCode
+    );
+
+    return countryWide || null;
+  })();
 
   const handleSelectAddress = (id: string | "new") => {
     setSelectedAddressId(id);
@@ -106,12 +172,10 @@ export default function CheckoutForm({ user }: Props) {
         postalCode: "",
         country: "",
       });
-
       return;
     }
 
     const addr = user.addresses.find((a) => a._id === id);
-
     if (!addr) return;
 
     setDelivery({
@@ -126,33 +190,18 @@ export default function CheckoutForm({ user }: Props) {
     });
   };
 
-  // Pickup = 0 · Delivery = fee for selected country
-  const shippingFee = getShippingFee(shippingMethod, delivery.country);
-
-  // Fee shown on the delivery option
-  const deliveryOptionFee = getShippingFee(
-    "delivery",
-    delivery.country
-  );
-
   const handleContactChange = (
     field: keyof typeof contact,
     value: string
   ) => {
-    setContact((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setContact((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleDeliveryChange = (
     field: keyof DeliveryData,
     value: string
   ) => {
-    setDelivery((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setDelivery((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -183,35 +232,18 @@ export default function CheckoutForm({ user }: Props) {
     setIsSubmitting(true);
 
     try {
-      const subtotalBase = items.reduce(
-        (sum, item) => sum + item.price * item.quantity,
-        0
-      );
-
-      const shippingFeeBase = getShippingFee(
-        shippingMethod,
-        delivery.country
-      );
-
-      const totalAmountBase = subtotalBase + shippingFeeBase;
-
       const res = await fetch("/api/orders", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contact,
-          delivery,
-          shippingMethod,
-          shippingFee: shippingFeeBase,
-          selectedAddressId,
-          items,
-          subtotal: subtotalBase,
-          totalAmount: totalAmountBase,
-          currency,
-          paymentMethod: "bank_transfer",
-        }),
+        headers: { "Content-Type": "application/json" },
+        
+body: JSON.stringify({
+  contact,
+  delivery,
+  shippingMethod,
+  selectedAddressId,
+  selectedShippingRateId: matchedRate?._id ?? null,
+  items,
+}),
       });
 
       const data = await res.json();
@@ -221,12 +253,20 @@ export default function CheckoutForm({ user }: Props) {
         return;
       }
 
-      if (!data.orderId) {
-        toast.error("Order was created but something went wrong.");
+      if (data.checkoutUrl) {
+        clearCart();
+        window.location.href = data.checkoutUrl;
         return;
       }
 
-      window.location.href = `/checkout/payment?orderId=${data.orderId}`;
+      toast.error(
+        data.message ||
+          "Payment could not be started. Please check your orders."
+      );
+
+      if (data.orderId) {
+        window.location.href = `/orders/${data.orderId}`;
+      }
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong. Please try again.");
@@ -235,7 +275,7 @@ export default function CheckoutForm({ user }: Props) {
     }
   };
 
-  if (!_hasHydrated) {
+  if (!_hasHydrated || loadingRates) {
     return (
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px] lg:gap-12">
         <div className="space-y-5 sm:space-y-6">
@@ -245,7 +285,6 @@ export default function CheckoutForm({ user }: Props) {
           <Skeleton className="h-32 w-full rounded-2xl" />
           <Skeleton className="h-12 w-full rounded-xl" />
         </div>
-
         <div>
           <Skeleton className="h-96 w-full rounded-2xl" />
         </div>
@@ -261,14 +300,25 @@ export default function CheckoutForm({ user }: Props) {
     );
   }
 
+  const shippingFee =
+  shippingMethod === "delivery" ? matchedRate?.fee ?? 0 : 0;
+
+// Country has region-specific rates, but the customer hasn't picked a region yet
+const needsRegion =
+  Boolean(delivery.country) &&
+  !matchedRate &&
+  !delivery.state &&
+  shippingRates.some(
+    (rate) =>
+      rate.country.toUpperCase() === delivery.country.toUpperCase() &&
+      Boolean(rate.state || rate.stateCode)
+  );
+
   return (
     <form onSubmit={handleSubmit}>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px] lg:gap-12">
         <div className="space-y-5 sm:space-y-6">
-          <ContactSection
-            data={contact}
-            onChange={handleContactChange}
-          />
+          <ContactSection data={contact} onChange={handleContactChange} />
 
           <DeliverySection
             data={delivery}
@@ -279,22 +329,37 @@ export default function CheckoutForm({ user }: Props) {
           />
 
           <ShippingMethodSection
-            method={shippingMethod}
-            onChange={setShippingMethod}
-            shippingFee={deliveryOptionFee}
-            currency={currency}
-            priceFormatter={priceFormatter}
-            countryCode={delivery.country}
-          />
+  method={shippingMethod}
+  onChange={setShippingMethod}
+  deliveryFee={matchedRate?.fee}
+  selectedCountry={delivery.country}
+  needsRegion={needsRegion}
+  currency={currency}
+  priceFormatter={priceFormatter}
+  matchedLocation={
+    matchedRate
+      ? matchedRate.state
+        ? `${matchedRate.state}, ${matchedRate.countryName}`
+        : matchedRate.countryName
+      : undefined
+  }
+/>
 
           <PaymentSection />
 
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={
+              isSubmitting ||
+              (shippingMethod === "delivery" && !matchedRate)
+            }
             className="btn-primary w-full disabled:opacity-50"
           >
-            {isSubmitting ? <Loader2 /> : "Pay Now"}
+            {isSubmitting ? (
+              <Loader2 className="mx-auto size-5 animate-spin" />
+            ) : (
+              "Pay Now"
+            )}
           </button>
         </div>
 

@@ -112,16 +112,6 @@ export interface OrderMedia {
   type: OrderMediaType;
 }
 
-export interface OrderItem {
-  _id: string;
-  productId: string;
-  name: string;
-  media: OrderMedia[];
-  price: number;
-  quantity: number;
-  size?: string | null;
-}
-
 export interface ShippingAddress {
   firstName: string;
   lastName: string;
@@ -150,27 +140,28 @@ export interface OrderItem {
   size?: string | null;
 }
 
-export interface ShippingAddress {
-  firstName: string;
-  lastName: string;
-  address: string;
-  apartment?: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-  phone?: string;
-}
 
-export type PaymentMethod = "bank_transfer";
+export type PaymentProvider = "bachs";
 
-export type PaymentStatus = "pending" | "paid";
+export type PaymentChannel =
+  | "card"
+  | "bank_transfer"
+  | "mobile_money"
+  | "crypto"
+  | "unknown";
+
+export type PaymentStatus = "pending" | "paid" | "failed";
 
 export interface PaymentInfo {
-  paymentMethod: PaymentMethod;
+  paymentProvider: PaymentProvider;
+  paymentChannel: PaymentChannel | null;
+  paymentChannelLabel: string | null;
   paymentStatus: PaymentStatus;
   transactionReference: string | null;
-  customerNotifiedAt: string | null;   // ← added
+  bachsCheckoutId: string | null;
+  paymentMethodDetails?: Record<string, unknown> | null;
+  amountPaid?: string | null;
+  currencyPaid?: string | null;
   paidAt: string | null;
 }
 
@@ -247,6 +238,18 @@ export interface Subscriber {
   email: string;
   isActive: boolean;
   source?: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
+
+export interface ShippingRate {
+  _id: string;
+  country: string;
+  countryName: string;
+  state?: string | null;
+  stateCode?: string | null;
+  fee: number;
+  isActive: boolean;
   createdAt: string | Date;
   updatedAt: string | Date;
 }

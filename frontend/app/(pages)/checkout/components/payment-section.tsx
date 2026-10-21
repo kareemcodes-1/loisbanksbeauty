@@ -20,19 +20,18 @@ export default function PaymentSection() {
               className="text-[#FD3F92]"
               aria-hidden
             >
-              <path d="M3 10h18M5 10V19h14V10M12 3l9 7H3l9-7z" />
+              <rect x="2" y="5" width="20" height="14" rx="2" />
+              <path d="M2 10h20" />
             </svg>
           </div>
 
           <div>
-            <p className="text-sm font-medium">
-              Bank transfer
-            </p>
+            <p className="text-sm font-medium">Secure checkout</p>
 
             <p className="mt-1 text-xs leading-relaxed text-black/50">
-              After placing your order, you&apos;ll receive the bank
-              transfer details and the exact amount to pay. Your order
-              will remain pending until your payment is confirmed.
+              You&apos;ll be redirected to our secure payment page to complete
+              your order. Pay with card, bank transfer, or other available
+              methods
             </p>
           </div>
         </div>

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Star } from "lucide-react";
+
 import type { PendingReviewItem } from "@/actions/review.actions";
 import PendingReviewRow from "./pending-review-row";
 import ReviewSheet from "@/app/(pages)/shop/p/[slug]/components/review-sheet";
@@ -12,41 +13,36 @@ type Props = {
   initialItems: PendingReviewItem[];
 };
 
-export default function PendingReviewsList({ initialItems }: Props) {
+export default function PendingReviewsList({
+  initialItems,
+}: Props) {
   const router = useRouter();
+
   const [items, setItems] = useState(initialItems);
   const [sheetOpen, setSheetOpen] = useState(false);
+
   const [selectedProduct, setSelectedProduct] = useState<{
     slug: string;
     name: string;
   } | null>(null);
 
-  const needsReview = items.filter((i) => i.type === "needs_review");
-  const pendingApproval = items.filter((i) => i.type === "pending_approval");
+  // Sync the list when refreshed server data arrives.
+  useEffect(() => {
+    setItems(initialItems);
+  }, [initialItems]);
 
   const handleRateProduct = (item: PendingReviewItem) => {
     setSelectedProduct({
       slug: item.productSlug,
       name: item.productName,
     });
+
     setSheetOpen(true);
   };
 
   const handleReviewSuccess = () => {
-    // Optimistic update
-    if (selectedProduct) {
-      setItems((prev) =>
-        prev.filter(
-          (item) =>
-            !(
-              item.type === "needs_review" &&
-              item.productSlug === selectedProduct.slug
-            )
-        )
-      );
-    }
-
-    // Keep server state in sync
+    // Let the server determine the new review status.
+    setSheetOpen(false);
     router.refresh();
   };
 
@@ -63,49 +59,25 @@ export default function PendingReviewsList({ initialItems }: Props) {
 
   return (
     <>
-      <div className="space-y-8 sm:space-y-10">
-        {/* Needs review */}
-        {needsReview.length > 0 && (
-          <section>
-            <h2 className="mb-4 text-[1.1rem] font-medium sm:mb-5">
-              Rate your products
-              <span className="ml-2 text-sm font-normal text-black/40">
-                ({needsReview.length})
-              </span>
-            </h2>
-
-            <div className="space-y-4">
-              {needsReview.map((item) => (
-                <PendingReviewRow
-                  key={`needs-${item.productId}`}
-                  item={item}
-                  onRate={() => handleRateProduct(item)}
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Pending approval */}
-        {pendingApproval.length > 0 && (
-          <section>
-            <h2 className="mb-4 text-[1.1rem] font-medium sm:mb-5">
-              Waiting for approval
-              <span className="ml-2 text-sm font-normal text-black/40">
-                ({pendingApproval.length})
-              </span>
-            </h2>
-
-            <div className="space-y-4">
-              {pendingApproval.map((item) => (
-                <PendingReviewRow
-                  key={`pending-${item.reviewId}`}
-                  item={item}
-                />
-              ))}
-            </div>
-          </section>
-        )}
+      <div className="space-y-4">
+        {items.map((item) => (
+            <div
+  key={
+    item.type === "needs_review"
+      ? `needs-${item.productId}`
+      : `pending-${item.reviewId}`
+  }
+>
+  <PendingReviewRow
+    item={item}
+    onRate={
+      item.type === "needs_review"
+        ? () => handleRateProduct(item)
+        : undefined
+    }
+  />
+</div>
+        ))}
       </div>
 
       {selectedProduct && (
@@ -120,3 +92,4 @@ export default function PendingReviewsList({ initialItems }: Props) {
     </>
   );
 }
+

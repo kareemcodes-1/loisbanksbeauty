@@ -101,6 +101,11 @@ function getPaymentBadge(status: string) {
       className:
         "border-orange-200 bg-orange-100 text-orange-700 hover:bg-orange-100",
     },
+    failed: {
+      label: "Failed",
+      className:
+        "border-red-200 bg-red-100 text-red-700 hover:bg-red-100",
+    },
   };
 
   return (
@@ -109,6 +114,32 @@ function getPaymentBadge(status: string) {
       className: "border-border bg-muted text-muted-foreground",
     }
   );
+}
+
+function getPaymentMethodLabel(paymentInfo: {
+  paymentChannelLabel?: string | null;
+  paymentChannel?: string | null;
+  paymentProvider?: string | null;
+  paymentMethod?: string | null; // legacy
+}) {
+  if (paymentInfo.paymentChannelLabel) {
+    return paymentInfo.paymentChannelLabel;
+  }
+
+  switch (paymentInfo.paymentChannel) {
+    case "card":
+      return "Card";
+    case "bank_transfer":
+      return "Bank transfer";
+    case "mobile_money":
+      return "Mobile money";
+    case "crypto":
+      return "Crypto";
+    default:
+      break;
+  }
+
+  return "Secure checkout";
 }
 
 
@@ -391,31 +422,42 @@ export default function OrderDetailPage() {
   </CardHeader>
 
   <CardContent className="space-y-3 text-sm">
-    <div className="flex justify-between">
+    <div className="flex justify-between gap-4">
       <span className="text-muted-foreground">Method</span>
-      <span className="font-medium">
-        {order.paymentInfo.paymentMethod === "bank_transfer"
-          ? "Bank transfer"
-          : order.paymentInfo.paymentMethod}
+      <span className="text-right font-medium">
+        {getPaymentMethodLabel(order.paymentInfo)}
       </span>
     </div>
 
-    <div className="flex justify-between">
+   <div className="flex justify-between gap-4">
+  <span className="text-muted-foreground">Provider</span>
+  <span className="font-medium">
+    {order.paymentInfo.paymentProvider === "bachs"
+      ? "Bachs"
+      : order.paymentInfo.paymentProvider || "—"}
+  </span>
+</div>
+
+    <div className="flex justify-between gap-4">
       <span className="text-muted-foreground">Status</span>
       <Badge className={payment.className}>{payment.label}</Badge>
     </div>
 
-    {order.paymentInfo.customerNotifiedAt && (
-      <div className="flex justify-between">
-        <span className="text-muted-foreground">Customer notified</span>
-        <span>{formatDate(order.paymentInfo.customerNotifiedAt)}</span>
+    {order.paymentInfo.paidAt && (
+      <div className="flex justify-between gap-4">
+        <span className="text-muted-foreground">Paid at</span>
+        <span>{formatDate(order.paymentInfo.paidAt)}</span>
       </div>
     )}
 
-    {order.paymentInfo.paidAt && (
-      <div className="flex justify-between">
-        <span className="text-muted-foreground">Paid at</span>
-        <span>{formatDate(order.paymentInfo.paidAt)}</span>
+    {order.paymentInfo.amountPaid && (
+      <div className="flex justify-between gap-4">
+        <span className="text-muted-foreground">Amount paid</span>
+        <span className="tabular-nums">
+          {order.paymentInfo.currencyPaid
+            ? `${order.paymentInfo.currencyPaid} ${order.paymentInfo.amountPaid}`
+            : order.paymentInfo.amountPaid}
+        </span>
       </div>
     )}
 
@@ -424,6 +466,15 @@ export default function OrderDetailPage() {
         <span className="text-muted-foreground">Reference</span>
         <span className="max-w-[200px] truncate font-mono text-xs">
           {order.paymentInfo.transactionReference}
+        </span>
+      </div>
+    )}
+
+    {order.paymentInfo.bachsCheckoutId && (
+      <div className="flex justify-between gap-4">
+        <span className="text-muted-foreground">Checkout ID</span>
+        <span className="max-w-[200px] truncate font-mono text-xs">
+          {order.paymentInfo.bachsCheckoutId}
         </span>
       </div>
     )}

@@ -129,27 +129,75 @@ const shippingAddressSchema = new Schema(
 
 const paymentInfoSchema = new Schema(
   {
-    paymentMethod: {
+    // Platform that collected the money
+    paymentProvider: {
       type: String,
-      enum: ["bank_transfer"],
+      enum: ["bachs"],
       required: true,
-      default: "bank_transfer",
+      default: "bachs",
     },
+
+    // What the customer actually used on Bachs
+    // Filled by webhook after payment (null until then)
+    paymentChannel: {
+      type: String,
+      enum: [
+        "card",
+        "bank_transfer",
+        "mobile_money",
+        "crypto",
+        "unknown",
+      ],
+      default: null,
+    },
+
+    // Human-readable for admin UI, e.g. "Bank transfer", "Card"
+    paymentChannelLabel: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+
     paymentStatus: {
       type: String,
-      enum: ["pending", "paid"],
+      enum: ["pending", "paid", "failed"],
       required: true,
       default: "pending",
     },
+
+    // Bachs charge_id
     transactionReference: {
       type: String,
       default: null,
       trim: true,
     },
-    customerNotifiedAt: {
-      type: Date,
+
+    bachsCheckoutId: {
+      type: String,
+      default: null,
+      trim: true,
+      index: true,
+    },
+
+    // Optional extra detail from Bachs (bank name, last4, etc.)
+    paymentMethodDetails: {
+      type: Schema.Types.Mixed,
       default: null,
     },
+
+    // What Bachs reported was paid
+    amountPaid: {
+      type: String, // e.g. "16000.00" — keep as string like Bachs
+      default: null,
+    },
+
+    currencyPaid: {
+      type: String, // e.g. "NGN"
+      default: null,
+      uppercase: true,
+      trim: true,
+    },
+
     paidAt: {
       type: Date,
       default: null,
@@ -203,13 +251,24 @@ export interface IOrderDocument extends Document {
     country: string;
   };
 
-  paymentInfo: {
-    paymentMethod: "bank_transfer";
-    paymentStatus: "pending" | "paid";
-    transactionReference: string | null;
-    customerNotifiedAt: Date | null;
-    paidAt: Date | null;
-  };
+ paymentInfo: {
+  paymentProvider: "bachs";
+  paymentChannel:
+    | "card"
+    | "bank_transfer"
+    | "mobile_money"
+    | "crypto"
+    | "unknown"
+    | null;
+  paymentChannelLabel: string | null;
+  paymentStatus: "pending" | "paid" | "failed";
+  transactionReference: string | null;
+  bachsCheckoutId: string | null;
+  paymentMethodDetails: Record<string, unknown> | null;
+  amountPaid: string | null;
+  currencyPaid: string | null;
+  paidAt: Date | null;
+};
 
   orderStatus: OrderStatus;
   shippingMethod: ShippingMethod;

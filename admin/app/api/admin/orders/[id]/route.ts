@@ -29,10 +29,47 @@ const validOrderStatuses: OrderStatus[] = [
   "cancelled",
 ];
 
-const validPaymentStatuses = ["pending", "paid"] as const;
+const validPaymentStatuses = ["pending", "paid", "failed"] as const;
 
 function isValidObjectId(id: string) {
   return /^[0-9a-fA-F]{24}$/.test(id);
+}
+
+function getPaymentMethodLabel(paymentInfo: {
+  paymentChannelLabel?: string | null;
+  paymentChannel?: string | null;
+  paymentProvider?: string | null;
+  paymentMethod?: string | null;
+}): string {
+  if (paymentInfo?.paymentChannelLabel) {
+    return paymentInfo.paymentChannelLabel;
+  }
+
+  switch (paymentInfo?.paymentChannel) {
+    case "card":
+      return "Card";
+    case "bank_transfer":
+      return "Bank transfer";
+    case "mobile_money":
+      return "Mobile money";
+    case "crypto":
+      return "Crypto";
+    default:
+      break;
+  }
+
+  if (paymentInfo?.paymentMethod === "bank_transfer") {
+    return "Bank transfer";
+  }
+
+  if (
+    paymentInfo?.paymentProvider === "bachs" ||
+    paymentInfo?.paymentMethod === "bachs"
+  ) {
+    return "Bachs";
+  }
+
+  return "Secure checkout";
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
@@ -102,12 +139,13 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       paymentStatus,
       trackingNumber,
       transactionReference,
-      adminNote, // NEW
+      adminNote,
     } = body;
 
     const updateData: Record<string, unknown> = {};
 
     // ── Order status ──────────────────────────────────────────
+    // Payment is confirmed by Bachs webhook — do not auto-mark paid here.
     if (orderStatus !== undefined) {
       if (!validOrderStatuses.includes(orderStatus)) {
         return NextResponse.json(
@@ -117,15 +155,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       }
 
       updateData.orderStatus = orderStatus;
-
-      // Confirming the order also marks payment as paid
-      if (orderStatus === "confirmed") {
-        updateData["paymentInfo.paymentStatus"] = "paid";
-        updateData["paymentInfo.paidAt"] = new Date();
-      }
     }
 
-    // ── Payment status ────────────────────────────────────────
+    // ── Payment status (manual override only if needed) ───────
     if (paymentStatus !== undefined) {
       if (!validPaymentStatuses.includes(paymentStatus)) {
         return NextResponse.json(
@@ -141,7 +173,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    // ── Admin note (for underpayment / cancellation reason) ───
+    // ── Admin note (cancel reason / underpayment note) ────────
     if (adminNote !== undefined) {
       updateData.adminNote =
         adminNote === null || adminNote === ""
@@ -172,7 +204,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Previous status (only send email when status actually changes)
     const previousOrder = await Order.findById(id).select("orderStatus").lean();
 
     const order = await Order.findByIdAndUpdate(
@@ -220,7 +251,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
               shippingFee: order.shippingFee,
               tax: order.tax,
               totalAmount: order.totalAmount,
-              paymentMethod: "Bank transfer",
+              paymentMethod: getPaymentMethodLabel(order.paymentInfo),
               shippingMethod: order.shippingMethod,
             });
           }

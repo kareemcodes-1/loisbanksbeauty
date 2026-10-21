@@ -22,6 +22,8 @@ function formatOrder(order: any): OrderType {
         type: m.type,
       })),
       price: item.price,
+      originalPrice: item.originalPrice ?? item.price,
+      discount: item.discount ?? null,
       quantity: item.quantity,
       size: item.size ?? null,
     })),
@@ -37,13 +39,16 @@ function formatOrder(order: any): OrderType {
       phone: order.shippingAddress.phone || "",
     },
     paymentInfo: {
-      paymentMethod: order.paymentInfo.paymentMethod ?? "bank_transfer",
-      paymentStatus: order.paymentInfo.paymentStatus ?? "pending",
-      transactionReference: order.paymentInfo.transactionReference ?? null,
-      customerNotifiedAt: order.paymentInfo.customerNotifiedAt
-        ? new Date(order.paymentInfo.customerNotifiedAt).toISOString()
-        : null,
-      paidAt: order.paymentInfo.paidAt
+      paymentProvider: order.paymentInfo?.paymentProvider ?? "bachs",
+      paymentChannel: order.paymentInfo?.paymentChannel ?? null,
+      paymentChannelLabel: order.paymentInfo?.paymentChannelLabel ?? null,
+      paymentStatus: order.paymentInfo?.paymentStatus ?? "pending",
+      transactionReference: order.paymentInfo?.transactionReference ?? null,
+      bachsCheckoutId: order.paymentInfo?.bachsCheckoutId ?? null,
+      paymentMethodDetails: order.paymentInfo?.paymentMethodDetails ?? null,
+      amountPaid: order.paymentInfo?.amountPaid ?? null,
+      currencyPaid: order.paymentInfo?.currencyPaid ?? null,
+      paidAt: order.paymentInfo?.paidAt
         ? new Date(order.paymentInfo.paidAt).toISOString()
         : null,
     },

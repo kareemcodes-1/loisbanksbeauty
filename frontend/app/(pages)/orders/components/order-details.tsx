@@ -48,8 +48,6 @@ export default function OrderDetails({ order }: Props) {
       })
     : null;
 
-    console.log("Order paymentInfo:", order.paymentInfo);
-  console.log("paymentMethod value:", order.paymentInfo?.paymentMethod);
 
   return (
     <div>
@@ -235,44 +233,60 @@ export default function OrderDetails({ order }: Props) {
               </div>
             </div>
           </section>
-
 <section className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm sm:p-6">
   <h2 className="mb-4 text-[1.1rem] font-medium">Payment</h2>
 
   <div className="space-y-3 text-sm">
-    {/* Payment method */}
-    <div className="flex justify-between">
+    {/* Channel: Card / Bank transfer / Crypto / etc. */}
+    <div className="flex justify-between gap-4">
       <span className="text-black/60">Method</span>
-      <span className="font-medium">
-        {order.paymentInfo.paymentMethod === "bank_transfer"
-          ? "Bank transfer"
-          : order.paymentInfo.paymentMethod}
+      <span className="text-right font-medium">
+        {order.paymentInfo.paymentChannelLabel ||
+          (order.paymentInfo.paymentChannel === "card"
+            ? "Card"
+            : order.paymentInfo.paymentChannel === "bank_transfer"
+              ? "Bank transfer"
+              : order.paymentInfo.paymentChannel === "mobile_money"
+                ? "Mobile money"
+                : order.paymentInfo.paymentChannel === "crypto"
+                  ? "Crypto"
+                  : "Secure checkout")}
       </span>
     </div>
 
-    {/* Payment status */}
-    <div className="flex justify-between items-center">
+    {/* Provider */}
+    <div className="flex justify-between gap-4">
+      <span className="text-black/60">Provider</span>
+      <span className="font-medium">Bachs</span>
+    </div>
+
+    {/* Status */}
+    <div className="flex items-center justify-between gap-4">
       <span className="text-black/60">Status</span>
       <span
         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
           order.paymentInfo.paymentStatus === "paid"
             ? "bg-green-100 text-green-700"
-            : "bg-orange-100 text-orange-700"
+            : order.paymentInfo.paymentStatus === "failed"
+              ? "bg-red-100 text-red-700"
+              : "bg-orange-100 text-orange-700"
         }`}
       >
-        {order.paymentInfo.paymentStatus === "paid" ? "Paid" : "Pending"}
+        {order.paymentInfo.paymentStatus === "paid"
+          ? "Paid"
+          : order.paymentInfo.paymentStatus === "failed"
+            ? "Failed"
+            : "Pending"}
       </span>
     </div>
 
-    {/* Paid on */}
     {paidAt && (
-      <div className="flex justify-between">
+      <div className="flex justify-between gap-4">
         <span className="text-black/60">Paid on</span>
         <span>{paidAt}</span>
       </div>
     )}
 
-    {/* Transaction reference (only if admin recorded one) */}
     {order.paymentInfo.transactionReference && (
       <div className="pt-2">
         <p className="text-xs text-black/40">Transaction reference</p>

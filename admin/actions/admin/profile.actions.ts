@@ -7,11 +7,12 @@ export interface AdminProfile {
   createdAt?: string | Date;
 }
 
-export interface UpdateProfilePayload {
+export type UpdateProfilePayload = {
   name: string;
   email: string;
-  phone?: string;
-}
+  currentPassword?: string;
+  newPassword?: string;
+};
 
 export async function getAdminProfile(): Promise<AdminProfile> {
   const response = await fetch(

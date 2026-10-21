@@ -28,6 +28,7 @@ import {
   Percent,
   MailIcon,
   BookOpenIcon,
+  MapPinIcon,
 } from "lucide-react";
 
 const navMain = [
@@ -55,6 +56,11 @@ const navMain = [
     title: "Orders",
     url: "/admin/orders",
     icon: <ShoppingCartIcon />,
+  },
+  {
+    title: "Shipping Rates",
+    url: "/admin/shipping-rates",
+    icon: <MapPinIcon />, 
   },
   {
     title: "Users",
