@@ -1,14 +1,13 @@
 export type CurrencyCode =
   | "NGN"
   | "USD"
-  | "EUR"
   | "GBP"
+  | "EUR"
   | "CAD"
-  | "EGP"
-  | "KWD"
-  | "SAR"
   | "AED"
-  | "QAR";
+  | "ZAR"
+  | "GHS"
+  | "AUD";
 
 export type CurrencyOption = {
   code: CurrencyCode;
@@ -22,74 +21,66 @@ export type CurrencyOption = {
 export const CURRENCIES: CurrencyOption[] = [
   {
     code: "NGN",
-    label: "Nigerian Naira",
+    label: "NGN",
     locale: "en-NG",
     rateFromNgn: 1,
     countryCode: "ng",
   },
   {
     code: "USD",
-    label: "US Dollar",
+    label: "USD",
     locale: "en-US",
-    // ~1600 NGN = 1 USD  →  1 NGN ≈ 1/1600 USD
     rateFromNgn: 1 / 1600,
     countryCode: "us",
   },
   {
-    code: "EUR",
-    label: "Euro",
-    locale: "de-DE",
-    rateFromNgn: 1 / 1740, // approx — update when you want
-    countryCode: "eu",
-  },
-  {
     code: "GBP",
-    label: "British Pound",
+    label: "GBP",
     locale: "en-GB",
     rateFromNgn: 1 / 2020,
     countryCode: "gb",
   },
   {
+    code: "EUR",
+    label: "EUR",
+    locale: "en-IE",
+    rateFromNgn: 1 / 1740,
+    countryCode: "eu",
+  },
+  {
     code: "CAD",
-    label: "Canadian Dollar",
+    label: "CAD",
     locale: "en-CA",
     rateFromNgn: 1 / 1170,
     countryCode: "ca",
   },
   {
-    code: "EGP",
-    label: "Egyptian Pound",
-    locale: "ar-EG",
-    rateFromNgn: 1 / 32, // rough
-    countryCode: "eg",
-  },
-  {
-    code: "KWD",
-    label: "Kuwaiti Dinar",
-    locale: "ar-KW",
-    rateFromNgn: 1 / 5200,
-    countryCode: "kw",
-  },
-  {
-    code: "SAR",
-    label: "Saudi Riyal",
-    locale: "ar-SA",
-    rateFromNgn: 1 / 427,
-    countryCode: "sa",
-  },
-  {
     code: "AED",
-    label: "UAE Dirham",
-    locale: "ar-AE",
+    label: "AED",
+    locale: "en-AE",
     rateFromNgn: 1 / 436,
     countryCode: "ae",
   },
   {
-    code: "QAR",
-    label: "Qatari Riyal",
-    locale: "ar-QA",
-    rateFromNgn: 1 / 440,
-    countryCode: "qa",
+    code: "ZAR",
+    label: "ZAR",
+    locale: "en-ZA",
+    rateFromNgn: 1 / 90,
+    countryCode: "za",
+  },
+  {
+    code: "GHS",
+    label: "GHS",
+    locale: "en-GH",
+    rateFromNgn: 1 / 145,
+    countryCode: "gh",
+  },
+  {
+    code: "AUD",
+    label: "AUD",
+    locale: "en-AU",
+    rateFromNgn: 1 / 1050,
+    countryCode: "au",
   },
 ];
 
@@ -97,17 +88,15 @@ export function flagUrl(countryCode: string, width = 40) {
   return `https://flagcdn.com/w${width}/${countryCode}.png`;
 }
 
-/** ISO country → preferred currency */
 export const COUNTRY_TO_CURRENCY: Record<string, CurrencyCode> = {
   NG: "NGN",
   US: "USD",
   GB: "GBP",
   CA: "CAD",
-  EG: "EGP",
-  KW: "KWD",
-  SA: "SAR",
   AE: "AED",
-  QA: "QAR",
+  ZA: "ZAR",
+  GH: "GHS",
+  AU: "AUD",
   DE: "EUR",
   FR: "EUR",
   IT: "EUR",
@@ -118,7 +107,7 @@ export const COUNTRY_TO_CURRENCY: Record<string, CurrencyCode> = {
   AT: "EUR",
   PT: "EUR",
   FI: "EUR",
-};
+}
 
 const DEFAULT_CURRENCY: CurrencyCode = "NGN";
 

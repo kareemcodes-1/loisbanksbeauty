@@ -18,8 +18,7 @@ const Footer = () => {
           </Link>
 
           <p className="max-w-xs text-[0.9rem] leading-relaxed text-white/60 sm:text-base">
-            Discover luxury human hair wigs, refined athleisure, and beauty
-            essentials designed for premium quality and effortless glam.
+           Discover luxury hair, beauty essentials, and athleisure wears, curated for effortless confidence and everyday elegance.
           </p>
 
           <div className="mt-1 flex gap-3">
@@ -102,7 +101,7 @@ const Footer = () => {
 
             <div className="flex flex-col gap-1">
               <p className="text-sm font-medium text-white">Hours</p>
-              <p>Mon – Sat | 9 AM – 6 PM</p>
+              <p>Mon – Sat | 9 AM – 8 PM</p>
             </div>
           </div>
         </div>
@@ -114,15 +113,14 @@ const Footer = () => {
           </h4>
 
           <div className="flex flex-col gap-2 text-[0.9rem] text-white/60 sm:text-base">
-            <p className="text-sm font-medium text-white">Address</p>
+            <p className="text-sm font-medium text-white">Office Address</p>
             <Link
               href="https://www.google.com/maps/search/?api=1&query=33a+Sedona+Mall+Adebayo+Doherty+Street+Lekki+Phase+1+Lagos"
               target="_blank"
               rel="noopener noreferrer"
               className="max-w-xs leading-relaxed transition hover:text-white"
             >
-              33a Sedona mall, opp Monty suites, Adebayo Doherty street,
-              Lekki Phase 1
+               1st floor, Jubilee mall, Admiralty way, Lekki phase 1
             </Link>
           </div>
         </div>
@@ -131,7 +129,7 @@ const Footer = () => {
       <div className="mt-12 border-t border-dashed border-pink-500/40 sm:mt-14 md:mt-16" />
 
       <div className="flex flex-col gap-4 pt-6 text-sm text-white/50 sm:pt-8 md:flex-row md:items-center md:justify-between md:gap-6 md:pt-10">
-        <p>© 2026 LoisBanks Beauty. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} LoisBanks Beauty. All rights reserved.</p>
 
         <div className="flex flex-wrap gap-4 sm:gap-6">
           <Link href="/refund-policy" className="transition hover:text-white">

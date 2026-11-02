@@ -50,7 +50,7 @@ export default function FounderStory() {
 
             <SplitLines
               tag="p"
-              text="LoisBanks Beauty is a luxury destination for premium hair and beauty, created with a passion for helping women feel confident, elegant, and effortlessly beautiful. Built on quality, style, and trust, the brand offers timeless hair collections designed to elevate everyday beauty."
+              text="LoisBanks Beauty is a luxury destination for premium hair, beauty essentials, and athleisure wear, created to help women feel confident, elegant, and effortlessly beautiful. Built on quality, style, and trust, every piece is curated for women who know exactly what they want."
               className="paragraph max-w-[36rem] text-white/75"
               duration={1}
               stagger={0.025}

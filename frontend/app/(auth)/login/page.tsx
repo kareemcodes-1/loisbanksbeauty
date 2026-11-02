@@ -1,16 +1,17 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useFormStatus } from "react-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
+import { getSafeCallbackUrl, withCallback } from "@/lib/auth-redirect";
 
 const SubmitBtn = () => {
   const { pending } = useFormStatus();
@@ -22,9 +23,13 @@ const SubmitBtn = () => {
   );
 };
 
-const Login = () => {
+const LoginForm = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
+
+  // Where the user was before they came to log in
+  const callbackUrl = getSafeCallbackUrl(searchParams.get("callbackUrl"));
 
   const formAction = async (formData: FormData) => {
     const email = formData.get("email") as string;
@@ -36,60 +41,54 @@ const Login = () => {
     }
 
     try {
-     const res = await signIn("credentials", {
-  redirect: false,
-  email,
-  password,
-});
+      const res = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      });
 
-if (res?.ok) {
-  toast.success("Logged In.");
-  router.push("/");
-  return;
-}
-
-if (res?.error === "EMAIL_NOT_VERIFIED") {
-  try {
-    const verificationRes = await fetch(
-      "/api/auth/send-verification",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
+      if (res?.ok) {
+        toast.success("Logged In.");
+        router.push(callbackUrl);
+        router.refresh(); // update navbar/session-based UI
+        return;
       }
-    );
 
-    const verificationData = await verificationRes.json();
+      if (res?.error === "EMAIL_NOT_VERIFIED") {
+        try {
+          const verificationRes = await fetch("/api/auth/send-verification", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
 
-    if (!verificationRes.ok) {
-      toast.error(
-        verificationData.message ||
-          "Failed to send verification code."
-      );
-      return;
-    }
+          const verificationData = await verificationRes.json();
 
-    toast.success("Verification code sent to your email.");
+          if (!verificationRes.ok) {
+            toast.error(
+              verificationData.message || "Failed to send verification code."
+            );
+            return;
+          }
 
-    router.push(
-      `/verify-email?email=${encodeURIComponent(email)}`
-    );
+          toast.success("Verification code sent to your email.");
 
-    return;
-  } catch (error) {
-    console.error("Verification email error:", error);
+          router.push(
+            withCallback(
+              `/verify-email?email=${encodeURIComponent(email)}`,
+              callbackUrl
+            )
+          );
 
-    toast.error(
-      "Failed to send verification code. Please try again."
-    );
+          return;
+        } catch (error) {
+          console.error("Verification email error:", error);
+          toast.error("Failed to send verification code. Please try again.");
+          return;
+        }
+      }
 
-    return;
-  }
-}
-
-toast.error("Invalid email or password.");
+      toast.error("Invalid email or password.");
     } catch (error) {
       console.error("Login error:", error);
       toast.error("Something went wrong. Please try again.");
@@ -159,9 +158,7 @@ toast.error("Invalid email or password.");
                   <button
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
-                    aria-label={
-                      showPassword ? "Hide password" : "Show password"
-                    }
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                     className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-black/40 transition-colors hover:text-[#FD3F92] sm:right-4"
                   >
                     {showPassword ? (
@@ -188,7 +185,7 @@ toast.error("Invalid email or password.");
             <p className="mt-6 sm:mt-8 lg:mt-10 text-center text-[0.75rem] uppercase text-muted-foreground sm:text-[0.8rem] lg:text-[0.825rem]">
               Don&apos;t have an account?{" "}
               <Link
-                href="/register"
+                href={withCallback("/register", callbackUrl)}
                 className="text-black underline transition-colors hover:text-[#FD3F92]"
               >
                 Register
@@ -212,5 +209,11 @@ toast.error("Invalid email or password.");
     </main>
   );
 };
+
+const Login = () => (
+  <Suspense fallback={null}>
+    <LoginForm />
+  </Suspense>
+);
 
 export default Login;

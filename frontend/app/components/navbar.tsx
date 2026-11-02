@@ -3,7 +3,7 @@
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 
 import CartModal from "./modals/cart-modal";
@@ -18,24 +18,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-
 import {
   User,
   Menu,
   Search,
   ShoppingCart,
   Package,
-  Ticket,
   Star,
   LogOut,
   ChevronDown,
   LocateFixed,
 } from "lucide-react";
 
-import { CURRENCIES, flagUrl, type CurrencyCode } from "@/lib/currency";
+import { CURRENCIES, flagUrl } from "@/lib/currency";
 import { useCurrencyStore } from "@/store/currency";
 import { useCartStore } from "@/store/cart";
-
+import { withCallback } from "@/lib/auth-redirect";
 
 const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -46,6 +44,7 @@ const Navbar: React.FC = () => {
 
   const { data: session } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
 
   const currency = useCurrencyStore((s) => s.currency);
   const isAuto = useCurrencyStore((s) => s.isAuto);
@@ -89,6 +88,10 @@ const Navbar: React.FC = () => {
 
   const links = [
     {
+      label: "Home",
+      href: "/",
+    },
+    {
       label: "Shop",
       href: "/shop",
     },
@@ -105,8 +108,9 @@ const Navbar: React.FC = () => {
   return (
     <>
       <header
-        className={`fixed left-4 right-4 top-4 z-[300] transition-all duration-500 lg:left-6 lg:right-6 ${scrolled ? "translate-y-0" : ""
-          }`}
+        className={`fixed left-4 right-4 top-4 z-[300] transition-all duration-500 lg:left-6 lg:right-6 ${
+          scrolled ? "translate-y-0" : ""
+        }`}
       >
         <nav className="flex h-[4.4rem] items-center justify-between rounded-full border border-black/10 bg-white px-3 shadow-sm backdrop-blur-md sm:h-[4.7rem] sm:px-4 lg:h-[5rem] lg:px-6">
           <Link
@@ -124,7 +128,7 @@ const Navbar: React.FC = () => {
           </Link>
 
           {/* Navigation Links */}
-          <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-10 lg:flex">
+          <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-7 lg:flex xl:gap-10">
             {links.map((link) => (
               <Link
                 key={link.href}
@@ -139,7 +143,6 @@ const Navbar: React.FC = () => {
           {/* Actions */}
           <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Currency */}
-            {/* Currency */}
             <div className="hidden lg:block">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -149,7 +152,11 @@ const Navbar: React.FC = () => {
                   >
                     {isAuto ? (
                       <span className="flex h-5 w-5 items-center justify-center rounded-full bg-black/5">
-                        <LocateFixed size={13} strokeWidth={2} className="text-black/60" />
+                        <LocateFixed
+                          size={13}
+                          strokeWidth={2}
+                          className="text-black/60"
+                        />
                       </span>
                     ) : (
                       <Image
@@ -184,7 +191,11 @@ const Navbar: React.FC = () => {
                     className="cursor-pointer gap-3 rounded-xl px-3 py-2.5 text-[0.875rem] font-medium"
                   >
                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-black/5">
-                      <LocateFixed size={13} strokeWidth={2} className="text-black/60" />
+                      <LocateFixed
+                        size={13}
+                        strokeWidth={2}
+                        className="text-black/60"
+                      />
                     </span>
                     Auto location
                   </DropdownMenuItem>
@@ -195,10 +206,11 @@ const Navbar: React.FC = () => {
                     <DropdownMenuItem
                       key={c.code}
                       onClick={() => setCurrency(c.code)}
-                      className={`cursor-pointer gap-3 rounded-xl px-3 py-2.5 text-[0.875rem] font-medium ${!isAuto && currency === c.code
+                      className={`cursor-pointer gap-3 rounded-xl px-3 py-2.5 text-[0.875rem] font-medium ${
+                        !isAuto && currency === c.code
                           ? "bg-[#FD3F92]/10 text-[#FD3F92]"
                           : ""
-                        }`}
+                      }`}
                     >
                       <img
                         src={flagUrl(c.countryCode, 40)}
@@ -218,23 +230,23 @@ const Navbar: React.FC = () => {
             </div>
 
             {/* Search */}
-<button
-  type="button"
-  onClick={() => setOpenSearchModal(true)}
-  aria-label="Search"
-  className="group flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-black/15 bg-transparent transition-all duration-300 hover:border-[#FD3F92] hover:bg-[#FD3F92]/10 sm:h-11 sm:w-11"
->
-  <Search
-    size={19}
-    strokeWidth={1.8}
-    className="transition-colors duration-300 group-hover:text-[#FD3F92] sm:hidden"
-  />
-  <Search
-    size={20}
-    strokeWidth={1.8}
-    className="hidden transition-colors duration-300 group-hover:text-[#FD3F92] sm:block"
-  />
-</button>
+            <button
+              type="button"
+              onClick={() => setOpenSearchModal(true)}
+              aria-label="Search"
+              className="group flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-black/15 bg-transparent transition-all duration-300 hover:border-[#FD3F92] hover:bg-[#FD3F92]/10 sm:h-11 sm:w-11"
+            >
+              <Search
+                size={19}
+                strokeWidth={1.8}
+                className="transition-colors duration-300 group-hover:text-[#FD3F92] sm:hidden"
+              />
+              <Search
+                size={20}
+                strokeWidth={1.8}
+                className="hidden transition-colors duration-300 group-hover:text-[#FD3F92] sm:block"
+              />
+            </button>
 
             {/* Cart */}
             <button
@@ -285,13 +297,12 @@ const Navbar: React.FC = () => {
                   className="w-56 rounded-xl p-1.5"
                 >
                   <div className="border-b border-black/5 bg-black/[0.02] px-5 py-[.5rem]">
-                        <p className="truncate font-medium">
-                          {session.user.name}
-                        </p>
-                        <p className="mt-1 truncate text-[.78rem] text-black/50">
-                          {session.user.email}
-                        </p>
-                      </div>
+                    <p className="truncate font-medium">{session.user.name}</p>
+                    <p className="mt-1 truncate text-[.78rem] text-black/50">
+                      {session.user.email}
+                    </p>
+                  </div>
+
                   <DropdownMenuItem
                     onClick={() => router.push("/profile")}
                     className="cursor-pointer gap-3 rounded-lg px-3 py-2.5 text-[0.9rem] font-medium"
@@ -330,7 +341,7 @@ const Navbar: React.FC = () => {
             ) : (
               <button
                 type="button"
-                onClick={() => router.push("/login")}
+                onClick={() => router.push(withCallback("/login", pathname))}
                 aria-label="Login"
                 className="group hidden h-11 w-11 items-center justify-center rounded-full border border-black/15 bg-transparent transition-all duration-300 hover:border-[#FD3F92] hover:bg-[#FD3F92]/10 lg:flex"
               >

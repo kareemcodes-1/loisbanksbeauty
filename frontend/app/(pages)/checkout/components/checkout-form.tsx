@@ -232,19 +232,21 @@ export default function CheckoutForm({ user }: Props) {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        
-body: JSON.stringify({
-  contact,
-  delivery,
-  shippingMethod,
-  selectedAddressId,
-  selectedShippingRateId: matchedRate?._id ?? null,
-  items,
-}),
-      });
+      console.log("[checkout] currency being sent:", currency);
+
+const res = await fetch("/api/orders", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    contact,
+    delivery,
+    shippingMethod,
+    selectedAddressId,
+    selectedShippingRateId: matchedRate?._id ?? null,
+    items,
+    currency,
+  }),
+});
 
       const data = await res.json();
 

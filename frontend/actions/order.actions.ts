@@ -11,7 +11,9 @@ const ORDERS_PER_PAGE = 10;
 function formatOrder(order: any): OrderType {
   return {
     _id: order._id.toString(),
-    userId: order.userId.toString(),
+    // null for guest orders that haven't been linked to an account yet
+    userId: order.userId ? order.userId.toString() : null,
+    contactEmail: order.contactEmail ?? null,
     items: order.items.map((item: any) => ({
       _id: item._id ? item._id.toString() : "",
       productId: item.productId.toString(),
@@ -36,7 +38,7 @@ function formatOrder(order: any): OrderType {
       state: order.shippingAddress.state,
       postalCode: order.shippingAddress.postalCode,
       country: order.shippingAddress.country,
-      phone: order.shippingAddress.phone || "",
+      phone: order.shippingAddress.phone || order.contactPhone || "",
     },
     paymentInfo: {
       paymentProvider: order.paymentInfo?.paymentProvider ?? "bachs",
@@ -80,6 +82,15 @@ export async function getUserOrders(page: number = 1) {
 
   try {
     await connectDB();
+
+    // Link guest orders placed with this account's email, so anything
+    // they bought before registering shows up in their order history.
+    if (session.user.email) {
+      await Order.updateMany(
+        { userId: null, contactEmail: session.user.email.toLowerCase() },
+        { $set: { userId: session.user.id } }
+      );
+    }
 
     const currentPage = Math.max(1, page);
     const totalOrders = await Order.countDocuments({
@@ -130,7 +141,19 @@ export async function getOrderById(orderId: string) {
       return { order: null, error: "Order not found" as const };
     }
 
-    if (order.userId.toString() !== session.user.id) {
+    // Guest orders have no userId, so allow access if the order was placed
+    // with the logged-in user's email. This also covers someone who just
+    // registered and hasn't opened their orders list yet.
+    const isOwnerById =
+      !!order.userId && order.userId.toString() === session.user.id;
+
+    const isOwnerByEmail =
+      !order.userId &&
+      !!order.contactEmail &&
+      !!session.user.email &&
+      order.contactEmail === session.user.email.toLowerCase();
+
+    if (!isOwnerById && !isOwnerByEmail) {
       return { order: null, error: "Unauthorized" as const };
     }
 

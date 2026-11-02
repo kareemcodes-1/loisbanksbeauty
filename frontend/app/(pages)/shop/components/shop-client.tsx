@@ -313,7 +313,7 @@ export default function ShopClient({
           />
 
           <p className="mx-auto max-w-[min(32rem,100%)] text-[0.875rem] leading-relaxed text-black/50 sm:text-[0.9rem] lg:text-[1rem]">
-            Luxury hair, beauty essentials, and athleisure curated for women
+            Luxury hair, beauty essentials, and athleisure wears curated for women
             who know exactly what they want.
           </p>
         </div>

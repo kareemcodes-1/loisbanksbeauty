@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import mongoose from "mongoose";
@@ -11,6 +10,7 @@ import ShippingRate from "@/models/ShippingRate";
 
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { createBachsCheckoutSession } from "@/lib/bachs";
+import type { CurrencyCode } from "@/lib/currency";
 
 export async function GET() {
   try {
@@ -44,14 +44,10 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    // Session is optional: guests can order too.
+    // userId is stored only when the customer is logged in.
     const session = await getServerSession(authOptions);
-
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { message: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+    const userId = session?.user?.id ?? null;
 
     const body = await request.json();
 
@@ -62,11 +58,27 @@ export async function POST(request: NextRequest) {
       selectedAddressId,
       selectedShippingRateId,
       items,
+      currency: rawCurrency,
     } = body;
+
+    const currency = (
+      typeof rawCurrency === "string" ? rawCurrency.toUpperCase() : "NGN"
+    ) as CurrencyCode;
 
     if (!contact?.email || !contact?.phone) {
       return NextResponse.json(
         { message: "Contact details are required." },
+        { status: 400 }
+      );
+    }
+
+    // Normalized so guest orders can be linked to an account by email later
+    const contactEmail = String(contact.email).trim().toLowerCase();
+    const contactPhone = String(contact.phone).trim();
+
+    if (!/^\S+@\S+\.\S+$/.test(contactEmail)) {
+      return NextResponse.json(
+        { message: "Please enter a valid email address." },
         { status: 400 }
       );
     }
@@ -102,7 +114,6 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
 
-    // Validate product IDs before querying the database.
     const productIds = items.map(
       (item: { productId?: string; _id?: string }) =>
         item.productId || item._id
@@ -251,13 +262,11 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Calculate subtotal using server-verified product prices.
     const subtotal = orderItems.reduce(
       (total, item) => total + item.price * item.quantity,
       0
     );
 
-    // Calculate shipping using the selected database rate.
     let shippingFee = 0;
 
     if (shippingMethod === "delivery") {
@@ -287,12 +296,9 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Normalize values to support both state names and state codes.
       const normalize = (value?: string | null) =>
         value?.trim().toLowerCase() ?? "";
 
-      // State-specific rates must match the delivery state.
-      // Country-wide rates with no state apply to any state.
       if (shippingRate.state || shippingRate.stateCode) {
         const selectedState = normalize(delivery.state);
 
@@ -311,19 +317,17 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Always use the fee stored in the database.
       shippingFee = shippingRate.fee;
     }
 
     const tax = 0;
     const totalAmount = subtotal + shippingFee + tax;
 
-    // Create the order with the verified shipping fee.
     const order = await Order.create({
-      userId: session.user.id,
-
+      userId, // null for guests
+      contactEmail,
+      contactPhone,
       items: orderItems,
-
       shippingAddress: {
         firstName: delivery.firstName,
         lastName: delivery.lastName,
@@ -334,32 +338,28 @@ export async function POST(request: NextRequest) {
         postalCode: delivery.postalCode,
         country: delivery.country,
       },
-
       paymentInfo: {
-  paymentProvider: "bachs",
-  paymentChannel: null,
-  paymentChannelLabel: null,
-  paymentStatus: "pending",
-  transactionReference: null,
-  bachsCheckoutId: null,
-  paymentMethodDetails: null,
-  amountPaid: null,
-  currencyPaid: null,
-  paidAt: null,
-},
-
+        paymentProvider: "bachs",
+        paymentChannel: null,
+        paymentChannelLabel: null,
+        paymentStatus: "pending",
+        transactionReference: null,
+        bachsCheckoutId: null,
+        paymentMethodDetails: null,
+        amountPaid: null,
+        currencyPaid: null,
+        paidAt: null,
+      },
       orderStatus: "pending",
       shippingMethod,
       trackingNumber: null,
       adminNote: null,
-
       subtotal,
       shippingFee,
       tax,
       totalAmount,
     });
 
-    // Retained from your existing checkout flow.
     void selectedAddressId;
 
     const orderId = order._id.toString();
@@ -370,8 +370,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json(
         {
-          message:
-            "Order created but payment could not be started.",
+          message: "Order created but payment could not be started.",
           orderId,
         },
         { status: 502 }
@@ -380,22 +379,19 @@ export async function POST(request: NextRequest) {
 
     try {
       const bachsSession = await createBachsCheckoutSession({
-        amount: totalAmount,
+        amount: totalAmount, // always NGN in your system
+        currency, // from storefront → drives Bachs pricing
         orderId,
-
         customer: {
-          email: contact.email,
+          email: contactEmail,
           name: `${delivery.firstName} ${delivery.lastName}`,
-          phone: contact.phone,
+          phone: contactPhone,
         },
-
         successUrl: `${appUrl}/checkout/success?orderId=${orderId}`,
         cancelUrl: `${appUrl}/checkout?cancelled=1`,
       });
 
-      order.paymentInfo.bachsCheckoutId =
-        bachsSession.checkout_id;
-
+      order.paymentInfo.bachsCheckoutId = bachsSession.checkout_id;
       await order.save();
 
       return NextResponse.json(
@@ -407,15 +403,12 @@ export async function POST(request: NextRequest) {
         { status: 201 }
       );
     } catch (bachsError) {
-      console.error(
-        "Bachs checkout session failed:",
-        bachsError
-      );
+      console.error("Bachs checkout session failed:", bachsError);
 
       return NextResponse.json(
         {
           message:
-            "Order created but payment could not be started. Please try again from your orders.",
+            "Order created but payment could not be started. Please try again.",
           orderId,
         },
         { status: 502 }

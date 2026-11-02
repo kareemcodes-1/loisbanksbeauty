@@ -6,10 +6,11 @@ import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Eye, EyeOff, Check } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { getSafeCallbackUrl, withCallback } from "@/lib/auth-redirect";
 
 const SubmitBtn = () => {
   const { pending } = useFormStatus();
@@ -25,31 +26,35 @@ const SubmitBtn = () => {
   );
 };
 
-const Register = () => {
+const RegisterForm = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Where the user was before they came to register
+  const callbackUrl = getSafeCallbackUrl(searchParams.get("callbackUrl"));
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [password, setPassword] = useState("");
 
-   const passwordRequirements = [
-  {
-    label: "At least 8 characters",
-    valid: password.length >= 8,
-  },
-  {
-    label: "At least one letter",
-    valid: /[A-Za-z]/.test(password),
-  },
-  {
-    label: "At least one number",
-    valid: /\d/.test(password),
-  },
-  {
-    label: "At least one special character",
-    valid: /[^A-Za-z\d\s]/.test(password),
-  },
-];
+  const passwordRequirements = [
+    {
+      label: "At least 8 characters",
+      valid: password.length >= 8,
+    },
+    {
+      label: "At least one letter",
+      valid: /[A-Za-z]/.test(password),
+    },
+    {
+      label: "At least one number",
+      valid: /\d/.test(password),
+    },
+    {
+      label: "At least one special character",
+      valid: /[^A-Za-z\d\s]/.test(password),
+    },
+  ];
 
   const isStrongPassword = passwordRequirements.every(
     (requirement) => requirement.valid
@@ -66,13 +71,12 @@ const Register = () => {
       return;
     }
 
-      if (!isStrongPassword) {
-  toast.error(
-    "Please create a password with at least 8 characters, one letter, one number, and one special character."
-  );
-  return;
-}
-
+    if (!isStrongPassword) {
+      toast.error(
+        "Please create a password with at least 8 characters, one letter, one number, and one special character."
+      );
+      return;
+    }
 
     if (passwordValue !== confirmPassword) {
       toast.error("Passwords do not match.");
@@ -101,7 +105,8 @@ const Register = () => {
 
       toast.success("Account created successfully.");
 
-      router.push("/login");
+      // Login handles verification and carries the callback through
+      router.push(withCallback("/login", callbackUrl));
     } catch (error) {
       console.error("Registration error:", error);
       toast.error("Something went wrong. Please try again.");
@@ -116,9 +121,7 @@ const Register = () => {
           <div className="w-full max-w-[26rem] sm:max-w-[28rem] lg:max-w-[30rem]">
             {/* Heading */}
             <div className="mb-6 sm:mb-8 lg:mb-10">
-              <h1 className="heading-3 text-black">
-                Create Your Account
-              </h1>
+              <h1 className="heading-3 text-black">Create Your Account</h1>
             </div>
 
             {/* Form */}
@@ -173,53 +176,31 @@ const Register = () => {
 
                 <div className="relative">
                   <Input
-  type={showPassword ? "text" : "password"}
-  name="password"
-  id="password"
-  autoComplete="new-password"
-  value={password}
-  onChange={(e) => setPassword(e.target.value)}
-  className="h-[2.75rem] rounded-[0.75rem] border-black/15 px-4 pr-[3rem] sm:h-[3rem] sm:px-5 sm:pr-[3.5rem] lg:h-[3.2rem]"
-/>
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    id="password"
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="h-[2.75rem] rounded-full border-black/15 px-4 pr-[3rem] sm:h-[3rem] sm:px-5 sm:pr-[3.5rem] lg:h-[3.2rem]"
+                  />
 
                   <button
                     type="button"
-                    onClick={() =>
-                      setShowPassword((prev) => !prev)
-                    }
-                    aria-label={
-                      showPassword
-                        ? "Hide password"
-                        : "Show password"
-                    }
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                     className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-black/40 transition-colors hover:text-[#FD3F92] sm:right-4"
                   >
                     {showPassword ? (
-                      <EyeOff
-                        size={18}
-                        strokeWidth={1.5}
-                        className="sm:hidden"
-                      />
+                      <EyeOff size={18} strokeWidth={1.5} className="sm:hidden" />
                     ) : (
-                      <Eye
-                        size={18}
-                        strokeWidth={1.5}
-                        className="sm:hidden"
-                      />
+                      <Eye size={18} strokeWidth={1.5} className="sm:hidden" />
                     )}
 
                     {showPassword ? (
-                      <EyeOff
-                        size={20}
-                        strokeWidth={1.5}
-                        className="hidden sm:block"
-                      />
+                      <EyeOff size={20} strokeWidth={1.5} className="hidden sm:block" />
                     ) : (
-                      <Eye
-                        size={20}
-                        strokeWidth={1.5}
-                        className="hidden sm:block"
-                      />
+                      <Eye size={20} strokeWidth={1.5} className="hidden sm:block" />
                     )}
                   </button>
                 </div>
@@ -263,17 +244,12 @@ const Register = () => {
                   htmlFor="confirmPassword"
                   className="text-[0.7rem] font-medium uppercase tracking-[0.05em] text-black/80"
                 >
-                  Confirm Password{" "}
-                  <span className="text-black">*</span>
+                  Confirm Password <span className="text-black">*</span>
                 </Label>
 
                 <div className="relative">
                   <Input
-                    type={
-                      showConfirmPassword
-                        ? "text"
-                        : "password"
-                    }
+                    type={showConfirmPassword ? "text" : "password"}
                     name="confirmPassword"
                     id="confirmPassword"
                     autoComplete="new-password"
@@ -282,42 +258,22 @@ const Register = () => {
 
                   <button
                     type="button"
-                    onClick={() =>
-                      setShowConfirmPassword((prev) => !prev)
-                    }
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
                     aria-label={
-                      showConfirmPassword
-                        ? "Hide password"
-                        : "Show password"
+                      showConfirmPassword ? "Hide password" : "Show password"
                     }
                     className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-black/40 transition-colors hover:text-[#FD3F92] sm:right-4"
                   >
                     {showConfirmPassword ? (
-                      <EyeOff
-                        size={18}
-                        strokeWidth={1.5}
-                        className="sm:hidden"
-                      />
+                      <EyeOff size={18} strokeWidth={1.5} className="sm:hidden" />
                     ) : (
-                      <Eye
-                        size={18}
-                        strokeWidth={1.5}
-                        className="sm:hidden"
-                      />
+                      <Eye size={18} strokeWidth={1.5} className="sm:hidden" />
                     )}
 
                     {showConfirmPassword ? (
-                      <EyeOff
-                        size={20}
-                        strokeWidth={1.5}
-                        className="hidden sm:block"
-                      />
+                      <EyeOff size={20} strokeWidth={1.5} className="hidden sm:block" />
                     ) : (
-                      <Eye
-                        size={20}
-                        strokeWidth={1.5}
-                        className="hidden sm:block"
-                      />
+                      <Eye size={20} strokeWidth={1.5} className="hidden sm:block" />
                     )}
                   </button>
                 </div>
@@ -333,7 +289,7 @@ const Register = () => {
             <p className="mt-6 text-center text-[0.75rem] uppercase text-muted-foreground sm:mt-8 sm:text-[0.8rem] lg:mt-10 lg:text-[0.825rem]">
               Already have an account?{" "}
               <Link
-                href="/login"
+                href={withCallback("/login", callbackUrl)}
                 className="text-black underline transition-colors hover:text-[#FD3F92]"
               >
                 Sign In
@@ -358,5 +314,10 @@ const Register = () => {
   );
 };
 
-export default Register;
+const Register = () => (
+  <Suspense fallback={null}>
+    <RegisterForm />
+  </Suspense>
+);
 
+export default Register;

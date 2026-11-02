@@ -71,8 +71,8 @@ export default function ContactForm() {
     },
     {
       icon: MapPin,
-      value: "33a Sedona mall, Adebayo Doherty strt, Lekki phase 1",
-      href: "https://www.google.com/maps/search/?api=1&query=33a+Sedona+Mall+Adebayo+Doherty+Street+Lekki+Phase+1+Lagos"
+      value: "1st floor, Jubilee mall, Admiralty way, Lekki phase 1",
+      href: "https://www.google.com/maps/search/?api=1&query=1st%20floor%2C%20Jubilee%20mall%2C%20Admiralty%20way%2C%20Lekki%20phase%201%2C%20Lagos%2C%20Nigeria"
     },
   ];
 

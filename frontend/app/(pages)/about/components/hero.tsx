@@ -27,7 +27,7 @@ export default function AboutHero() {
         />
 
         <SplitLines
-          text="Where Beauty Meets Purpose"
+          text="Elevating women through beauty"
           tag="h1"
           className="heading-hero max-w-[min(48rem,100%)] text-white"
           duration={1}

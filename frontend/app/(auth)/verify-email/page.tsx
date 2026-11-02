@@ -7,9 +7,10 @@ import { Loader2 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { signIn, useSession } from "next-auth/react";
+import { getSafeCallbackUrl } from "@/lib/auth-redirect";
 
 const CODE_LENGTH = 6;
-const RESEND_COOLDOWN_SECONDS = 60; 
+const RESEND_COOLDOWN_SECONDS = 60;
 
 function VerifyEmailForm() {
   const router = useRouter();
@@ -17,6 +18,9 @@ function VerifyEmailForm() {
   const { update } = useSession();
 
   const email = searchParams.get("email") ?? "";
+
+  // Where the user was before they started logging in / registering
+  const callbackUrl = getSafeCallbackUrl(searchParams.get("callbackUrl"));
 
   const [code, setCode] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const [isVerifying, setIsVerifying] = useState(false);
@@ -117,99 +121,100 @@ function VerifyEmailForm() {
     }
   };
 
-const verifyEmail = async () => {
-  if (!email) {
-    toast.error("Email is missing.");
-    return;
-  }
-
-  if (codeValue.length !== CODE_LENGTH) {
-    toast.error("Enter the 6-digit verification code.");
-    return;
-  }
-
-  const purpose = searchParams.get("purpose");
-  const isEmailChange = purpose === "change";
-
-  try {
-    setIsVerifying(true);
-
-    const res = await fetch("/api/auth/verify-email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email,
-        code: codeValue,
-        purpose: isEmailChange ? "change" : undefined,
-      }),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      toast.error(data.message || "Verification failed.");
-      hasAutoSubmitted.current = false;
+  const verifyEmail = async () => {
+    if (!email) {
+      toast.error("Email is missing.");
       return;
     }
 
-    // ==========================================
-    // Email change flow
-    // ==========================================
+    if (codeValue.length !== CODE_LENGTH) {
+      toast.error("Enter the 6-digit verification code.");
+      return;
+    }
 
-    if (isEmailChange) {
-      if (!data.email) {
-        toast.error("Email was updated, but the new email was not returned.");
+    const purpose = searchParams.get("purpose");
+    const isEmailChange = purpose === "change";
+
+    try {
+      setIsVerifying(true);
+
+      const res = await fetch("/api/auth/verify-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          code: codeValue,
+          purpose: isEmailChange ? "change" : undefined,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.message || "Verification failed.");
         hasAutoSubmitted.current = false;
         return;
       }
 
-      // Update the existing NextAuth session.
-      // The user is already logged in, so we do NOT
-      // perform credentials sign-in here.
-      await update({
-        email: data.email,
+      // ==========================================
+      // Email change flow
+      // ==========================================
+
+      if (isEmailChange) {
+        if (!data.email) {
+          toast.error("Email was updated, but the new email was not returned.");
+          hasAutoSubmitted.current = false;
+          return;
+        }
+
+        // Update the existing NextAuth session.
+        // The user is already logged in, so we do NOT
+        // perform credentials sign-in here.
+        await update({
+          email: data.email,
+        });
+
+        toast.success("Email updated successfully.");
+        router.push("/profile");
+
+        return;
+      }
+
+      // ==========================================
+      // Normal signup verification flow
+      // ==========================================
+
+      if (!data.loginToken) {
+        toast.error("Verification succeeded, but login failed.");
+        hasAutoSubmitted.current = false;
+        return;
+      }
+
+      const loginResult = await signIn("credentials", {
+        redirect: false,
+        email,
+        verificationLoginToken: data.loginToken,
       });
 
-      toast.success("Email updated successfully.");
-      router.push("/profile");
+      if (!loginResult?.ok) {
+        toast.error("Email verified, but automatic login failed.");
+        hasAutoSubmitted.current = false;
+        return;
+      }
 
-      return;
-    }
+      toast.success("Email verified successfully.");
 
-    // ==========================================
-    // Normal signup verification flow
-    // ==========================================
-
-    if (!data.loginToken) {
-      toast.error("Verification succeeded, but login failed.");
+      // Send them back to the page they came from
+      router.push(callbackUrl);
+      router.refresh();
+    } catch (error) {
+      console.error("Verify email error:", error);
+      toast.error("Something went wrong. Please try again.");
       hasAutoSubmitted.current = false;
-      return;
+    } finally {
+      setIsVerifying(false);
     }
-
-    const loginResult = await signIn("credentials", {
-      redirect: false,
-      email,
-      verificationLoginToken: data.loginToken,
-    });
-
-    if (!loginResult?.ok) {
-      toast.error("Email verified, but automatic login failed.");
-      hasAutoSubmitted.current = false;
-      return;
-    }
-
-    toast.success("Email verified successfully.");
-    router.push("/");
-  } catch (error) {
-    console.error("Verify email error:", error);
-    toast.error("Something went wrong. Please try again.");
-    hasAutoSubmitted.current = false;
-  } finally {
-    setIsVerifying(false);
-  }
-};
-
-
+  };
 
   // Auto-submit when all 6 digits are entered
   useEffect(() => {
@@ -286,14 +291,14 @@ const verifyEmail = async () => {
 
           <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
             We sent a 6-digit verification code to{" "}
-            <span className="font-medium text-black">{email}</span>
+            <span className="break-all font-medium text-black">{email}</span>
           </p>
         </div>
 
         {/* Code inputs */}
         <div className="space-y-6">
           <div
-            className="flex justify-center gap-2 sm:gap-3"
+            className="flex justify-center gap-1.5 sm:gap-3"
             onPaste={handlePaste}
           >
             {code.map((digit, index) => (
@@ -307,12 +312,10 @@ const verifyEmail = async () => {
                 autoComplete={index === 0 ? "one-time-code" : "off"}
                 maxLength={CODE_LENGTH}
                 value={digit}
-                onChange={(event) =>
-                  handleChange(index, event.target.value)
-                }
+                onChange={(event) => handleChange(index, event.target.value)}
                 onKeyDown={(event) => handleKeyDown(index, event)}
                 aria-label={`Verification code digit ${index + 1}`}
-                className="h-12 w-12 rounded-xl border-black/15 p-0 text-center font-mono text-lg font-medium focus:border-[#FD3F92] focus:ring-[#FD3F92]/20 sm:h-14 sm:w-14 sm:text-xl"
+                className="h-12 w-full min-w-0 max-w-12 flex-1 rounded-xl border-black/15 p-0 text-center font-mono text-lg font-medium focus:border-[#FD3F92] focus:ring-[#FD3F92]/20 sm:h-14 sm:max-w-14 sm:text-xl"
               />
             ))}
           </div>

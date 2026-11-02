@@ -131,18 +131,6 @@ export interface ShippingAddress {
 }
 
 
-export interface ShippingAddress {
-  firstName: string;
-  lastName: string;
-  address: string;
-  apartment?: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-  phone?: string;
-}
-
 export type PaymentProvider = "bachs";
 
 export type PaymentChannel =
@@ -197,6 +185,7 @@ export type ShippingMethod = "pickup" | "delivery";
 export interface Order {
   _id: string;
 
+  // null = guest order that hasn't been linked to an account yet
   userId:
     | string
     | {
@@ -204,7 +193,11 @@ export interface Order {
         name?: string;
         email?: string;
         phone?: string;
-      };
+      }
+    | null;
+
+  // Email the order was placed with (works for guests and members)
+  contactEmail: string | null;
 
   items: OrderItem[];
   shippingAddress: ShippingAddress;
@@ -214,7 +207,6 @@ export interface Order {
   shippingMethod: ShippingMethod;
   trackingNumber: string | null;
 
-  // NEW
   adminNote: string | null;
 
   subtotal: number;

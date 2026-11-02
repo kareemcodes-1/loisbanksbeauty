@@ -23,25 +23,23 @@ const RefundPolicyPage = () => {
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col gap-8 sm:gap-10">
 
-            {/* No Refunds */}
-            <div>
-              <h2 className="text-[1.25rem] sm:text-[1.4rem] lg:text-[1.7rem] font-medium mb-3 sm:mb-4">
-                No Refunds or Returns
-              </h2>
+           <div>
+  <h2 className="text-[1.25rem] sm:text-[1.4rem] lg:text-[1.7rem] font-medium mb-3 sm:mb-4">
+    No Refunds, Exchanges Only
+  </h2>
 
-              <p className="text-black/65 leading-7 sm:leading-8">
-                All purchases are considered final. We do not accept returns
-                or offer refunds simply because you have changed your mind,
-                selected the wrong item, or no longer want the product after
-                purchase.
-              </p>
+  <p className="text-black/65 leading-7 sm:leading-8">
+    We do not accept refunds. All purchases are final, but we are happy to
+    offer an exchange if there is an issue with your order, such as receiving
+    the wrong or a damaged item.
+  </p>
 
-              <p className="text-black/65 leading-7 sm:leading-8 mt-4">
-                Due to the nature of our hair and beauty products, returned
-                products cannot be resold once they have been delivered to a
-                customer.
-              </p>
-            </div>
+  <p className="text-black/65 leading-7 sm:leading-8 mt-4">
+    Due to the nature of our hair and beauty products, items cannot be resold
+    once they have been delivered, which is why we offer exchanges instead of
+    refunds.
+  </p>
+</div>
 
             {/* Exchanges */}
             <div>
