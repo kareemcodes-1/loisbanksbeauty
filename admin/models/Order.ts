@@ -218,7 +218,9 @@ export type OrderStatus =
 export type ShippingMethod = "pickup" | "delivery";
 
 export interface IOrderDocument extends Document {
-  userId: mongoose.Types.ObjectId;
+    userId: mongoose.Types.ObjectId | null; // null = guest order
+  contactEmail: string | null;
+  contactPhone: string | null;
 
   items: {
   _id: mongoose.Types.ObjectId;
@@ -289,11 +291,24 @@ export interface IOrderDocument extends Document {
 const orderSchema = new Schema<IOrderDocument>(
   {
     userId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-      index: true,
-    },
+  type: Schema.Types.ObjectId,
+  ref: "User",
+  required: false,
+  default: null,
+  index: true,
+},
+contactEmail: {
+  type: String,
+  default: null,
+  trim: true,
+  lowercase: true,
+  index: true,
+},
+contactPhone: {
+  type: String,
+  default: null,
+  trim: true,
+},
 
     items: {
       type: [orderItemSchema],
