@@ -15,6 +15,6 @@ export function priceFormatter(
     style: "currency",
     currency: code,
     minimumFractionDigits: 0,
-    maximumFractionDigits: code === "KWD" ? 3 : 2,
+    maximumFractionDigits: 2,
   }).format(converted);
 }
