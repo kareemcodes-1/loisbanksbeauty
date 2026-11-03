@@ -12,6 +12,7 @@ import {
 import {
   getProducts,
   deleteProduct,
+  reorderProducts,
 } from "@/actions/admin/product.actions";
 
 import {
@@ -20,6 +21,28 @@ import {
   tableFeatures,
   useTable,
 } from "@tanstack/react-table";
+
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+
+import { CSS } from "@dnd-kit/utilities";
+
+import toast from "react-hot-toast";
 
 import {
   Table,
@@ -44,6 +67,8 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   Loader2Icon,
+  GripVerticalIcon,
+  ArrowUpDownIcon,
 } from "lucide-react";
 
 import {
@@ -193,6 +218,91 @@ function ProductsTableSkeleton() {
   );
 }
 
+/*
+ * One draggable row (used in reorder mode)
+ */
+function SortableProductRow({
+  product,
+  position,
+}: {
+  product: Product;
+  position: number;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: product._id });
+
+  // Move vertically only, never stretch
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(
+      transform ? { ...transform, x: 0, scaleX: 1, scaleY: 1 } : null
+    ),
+    transition,
+  };
+
+  const image = product.media?.find((item) => item.type === "image");
+  const status = getAvailabilityStatus(product);
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-center gap-2 border-b bg-background px-2 py-3 last:border-b-0 sm:gap-3 sm:px-4 ${
+        isDragging ? "relative z-10 shadow-lg ring-2 ring-primary/30" : ""
+      }`}
+    >
+      {/* Only the grip starts a drag, so the page still scrolls on phones */}
+      <button
+        type="button"
+        ref={setActivatorNodeRef}
+        {...attributes}
+        {...listeners}
+        aria-label={`Drag ${product.name}`}
+        className="flex size-10 shrink-0 cursor-grab touch-none items-center justify-center rounded-md text-muted-foreground hover:bg-muted active:cursor-grabbing"
+      >
+        <GripVerticalIcon className="size-5" />
+      </button>
+
+      <span className="w-6 shrink-0 text-center text-xs tabular-nums text-muted-foreground">
+        {position}
+      </span>
+
+      <div className="relative size-11 shrink-0 overflow-hidden rounded-md border bg-muted">
+        {image ? (
+          <Image
+            src={image.url}
+            alt={product.name}
+            fill
+            className="object-cover"
+            sizes="44px"
+          />
+        ) : (
+          <div className="flex size-full items-center justify-center">
+            <PackageIcon className="size-5 text-muted-foreground" />
+          </div>
+        )}
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">{product.name}</p>
+        <p className="truncate text-xs text-muted-foreground">
+          {priceFormatter(product.price)}
+        </p>
+      </div>
+
+      <Badge className={`hidden shrink-0 sm:inline-flex ${status.className}`}>
+        {status.label}
+      </Badge>
+    </li>
+  );
+}
+
 export function ProductsTable({
   onEdit,
 }: ProductsTableProps) {
@@ -204,14 +314,21 @@ export function ProductsTable({
 
   const [page, setPage] = React.useState(1);
 
+  // Default to the same order customers see in the shop
   const [sortBy, setSortBy] =
-    React.useState("createdAt");
+    React.useState("order");
 
   const [sortOrder, setSortOrder] =
-    React.useState<"asc" | "desc">("desc");
+    React.useState<"asc" | "desc">("asc");
 
   const [productToDelete, setProductToDelete] =
     React.useState<Product | null>(null);
+
+  // Reorder mode
+  const [reorderMode, setReorderMode] = React.useState(false);
+  const [reorderItems, setReorderItems] = React.useState<Product[]>([]);
+  const [initialIds, setInitialIds] = React.useState<string[]>([]);
+  const hydrated = React.useRef(false);
 
   const limit = 10;
 
@@ -261,6 +378,89 @@ export function ProductsTable({
 
   const products = data?.products ?? [];
   const pagination = data?.pagination;
+
+  /*
+   * Fetch ALL products, only while reorder mode is on
+   */
+  const {
+    data: reorderData,
+    isLoading: reorderLoading,
+    isError: reorderError,
+  } = useQuery({
+    queryKey: ["products-reorder"],
+    queryFn: () =>
+      getProducts({
+        page: 1,
+        limit: 1000,
+        search: "",
+        sortBy: "order",
+        sortOrder: "asc",
+      }),
+    enabled: reorderMode,
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+  });
+
+  React.useEffect(() => {
+    if (reorderMode && reorderData?.products && !hydrated.current) {
+      hydrated.current = true;
+      setReorderItems(reorderData.products);
+      setInitialIds(reorderData.products.map((item: Product) => item._id));
+    }
+  }, [reorderMode, reorderData]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const startReorder = () => {
+    // Always start from fresh data
+    queryClient.removeQueries({ queryKey: ["products-reorder"] });
+    hydrated.current = false;
+    setReorderItems([]);
+    setInitialIds([]);
+    setReorderMode(true);
+  };
+
+  const exitReorder = () => {
+    setReorderMode(false);
+    setReorderItems([]);
+    hydrated.current = false;
+  };
+
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
+
+    setReorderItems((current) => {
+      const from = current.findIndex((item) => item._id === active.id);
+      const to = current.findIndex((item) => item._id === over.id);
+
+      return from === -1 || to === -1 ? current : arrayMove(current, from, to);
+    });
+  };
+
+  const hasOrderChanges =
+    reorderItems.length > 0 &&
+    reorderItems.some((item, index) => item._id !== initialIds[index]);
+
+  const saveOrderMutation = useMutation({
+    mutationFn: () => reorderProducts(reorderItems.map((item) => item._id)),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Product order saved");
+      exitReorder();
+    },
+
+    onError: (error) => {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to save order"
+      );
+    },
+  });
 
   /*
    * Delete mutation
@@ -512,6 +712,88 @@ export function ProductsTable({
     );
   }
 
+  /*
+   * Reorder mode: drag products into the order customers will see
+   */
+  if (reorderMode) {
+    const isSavingOrder = saveOrderMutation.isPending;
+    const stillLoading = reorderLoading || (!hydrated.current && !reorderError);
+
+    return (
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground">
+            Drag the{" "}
+            <GripVerticalIcon className="-mt-0.5 inline size-4 align-middle" />{" "}
+            handle to move a product. The first product is the first one
+            customers see in the shop.
+          </p>
+
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={exitReorder}
+              disabled={isSavingOrder}
+              className="flex-1 sm:flex-none"
+            >
+              Cancel
+            </Button>
+
+            <Button
+              type="button"
+              onClick={() => saveOrderMutation.mutate()}
+              disabled={!hasOrderChanges || isSavingOrder}
+              className="flex-1 sm:flex-none"
+            >
+              {isSavingOrder && (
+                <Loader2Icon className="size-4 animate-spin" />
+              )}
+              {isSavingOrder ? "Saving..." : "Save order"}
+            </Button>
+          </div>
+        </div>
+
+        <Card>
+          <CardContent className="p-0">
+            {stillLoading ? (
+              <div className="space-y-px">
+                {Array.from({ length: 8 }).map((_, index) => (
+                  <Skeleton key={index} className="h-[4.5rem] w-full rounded-none" />
+                ))}
+              </div>
+            ) : reorderError ? (
+              <p className="py-10 text-center text-sm text-destructive">
+                Failed to load products.
+              </p>
+            ) : (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={reorderItems.map((item) => item._id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <ul>
+                    {reorderItems.map((item, index) => (
+                      <SortableProductRow
+                        key={item._id}
+                        product={item}
+                        position={index + 1}
+                      />
+                    ))}
+                  </ul>
+                </SortableContext>
+              </DndContext>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-4">
       {/* Search & Sort */}
@@ -529,48 +811,64 @@ export function ProductsTable({
           />
         </div>
 
-        <Select
-          value={`${sortBy}-${sortOrder}`}
-          onValueChange={handleSortChange}
-        >
-          <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue placeholder="Sort products" />
-          </SelectTrigger>
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+          <Select
+            value={`${sortBy}-${sortOrder}`}
+            onValueChange={handleSortChange}
+          >
+            <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectValue placeholder="Sort products" />
+            </SelectTrigger>
 
-          <SelectContent>
-            <SelectItem value="createdAt-desc">
-              Newest
-            </SelectItem>
+            <SelectContent>
+              <SelectItem value="order-asc">
+                Shop display order
+              </SelectItem>
 
-            <SelectItem value="createdAt-asc">
-              Oldest
-            </SelectItem>
+              <SelectItem value="createdAt-desc">
+                Newest
+              </SelectItem>
 
-            <SelectItem value="name-asc">
-              Name A-Z
-            </SelectItem>
+              <SelectItem value="createdAt-asc">
+                Oldest
+              </SelectItem>
 
-            <SelectItem value="name-desc">
-              Name Z-A
-            </SelectItem>
+              <SelectItem value="name-asc">
+                Name A-Z
+              </SelectItem>
 
-            <SelectItem value="price-asc">
-              Price: Low to High
-            </SelectItem>
+              <SelectItem value="name-desc">
+                Name Z-A
+              </SelectItem>
 
-            <SelectItem value="price-desc">
-              Price: High to Low
-            </SelectItem>
+              <SelectItem value="price-asc">
+                Price: Low to High
+              </SelectItem>
 
-            <SelectItem value="averageRating-desc">
-              Rating: Highest
-            </SelectItem>
+              <SelectItem value="price-desc">
+                Price: High to Low
+              </SelectItem>
 
-            <SelectItem value="averageRating-asc">
-              Rating: Lowest
-            </SelectItem>
-          </SelectContent>
-        </Select>
+              <SelectItem value="averageRating-desc">
+                Rating: Highest
+              </SelectItem>
+
+              <SelectItem value="averageRating-asc">
+                Rating: Lowest
+              </SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={startReorder}
+            className="w-full sm:w-auto"
+          >
+            <ArrowUpDownIcon />
+            Reorder
+          </Button>
+        </div>
       </div>
 
       {/* Table */}

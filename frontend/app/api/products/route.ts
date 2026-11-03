@@ -88,20 +88,17 @@ export async function GET(request: NextRequest) {
 
     // Sorting
     let sort: Record<string, 1 | -1> = {
-      createdAt: -1,
-    };
+  order: 1,          
+  createdAt: -1, 
+};
 
-    if (sortParam === "price-asc") {
-      sort = {
-        price: 1,
-      };
-    }
+if (sortParam === "price-asc") {
+  sort = { price: 1 };
+}
 
-    if (sortParam === "price-desc") {
-      sort = {
-        price: -1,
-      };
-    }
+if (sortParam === "price-desc") {
+  sort = { price: -1 };
+}
 
     const now = new Date();
 

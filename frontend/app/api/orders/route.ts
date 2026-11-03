@@ -10,6 +10,7 @@ import ShippingRate from "@/models/ShippingRate";
 
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { createBachsCheckoutSession } from "@/lib/bachs";
+import { calculateCharges } from "@/lib/charges";
 import type { CurrencyCode } from "@/lib/currency";
 
 export async function GET() {
@@ -320,8 +321,11 @@ export async function POST(request: NextRequest) {
       shippingFee = shippingRate.fee;
     }
 
-    const tax = 0;
-    const totalAmount = subtotal + shippingFee + tax;
+    // Tax and subcharge are calculated on the server so the browser can't change them
+    const { tax, subcharge, total: totalAmount } = calculateCharges(
+      subtotal,
+      shippingFee
+    );
 
     const order = await Order.create({
       userId, // null for guests
@@ -357,6 +361,7 @@ export async function POST(request: NextRequest) {
       subtotal,
       shippingFee,
       tax,
+      subcharge,
       totalAmount,
     });
 
@@ -379,7 +384,7 @@ export async function POST(request: NextRequest) {
 
     try {
       const bachsSession = await createBachsCheckoutSession({
-        amount: totalAmount, // always NGN in your system
+        amount: totalAmount, // NGN total including tax and subcharge
         currency, // from storefront → drives Bachs pricing
         orderId,
         customer: {

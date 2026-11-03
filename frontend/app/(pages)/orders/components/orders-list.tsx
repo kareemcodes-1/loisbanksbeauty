@@ -44,8 +44,9 @@ export default function OrdersList({
   return (
     <div className="space-y-6 sm:space-y-8">
       <div className="flex items-center justify-between">
-        <p className="text-[0.7rem] uppercase tracking-[0.05em] text-black/50">
-          {totalOrders} {totalOrders === 1 ? "order" : "orders"}
+        <p className="text-[0.7rem] uppercase tracking-[0.05em] text-black/35">
+          Showing {orders.length} of {totalOrders}{" "}
+          {totalOrders === 1 ? "order" : "orders"}
         </p>
       </div>
 

@@ -6,10 +6,14 @@ import "@/models/Collection";
 import { SortOrder } from "mongoose";
 import { notifySubscribersNewProduct } from "@/lib/notify-subscribers";
 import { priceFormatter } from "@/lib/priceFormatter";
+import { ensureProductOrder } from "@/lib/product-order";
 
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
+
+    // One-time numbering of products that don't have a display order yet
+    await ensureProductOrder();
 
     const { searchParams } = new URL(request.url);
 
@@ -25,10 +29,10 @@ export async function GET(request: NextRequest) {
 
     const search = searchParams.get("search")?.trim() || "";
 
-    const sortBy = searchParams.get("sortBy") || "createdAt";
+    const sortBy = searchParams.get("sortBy") || "order";
 
     const sortOrder: SortOrder =
-      searchParams.get("sortOrder") === "asc" ? 1 : -1;
+      searchParams.get("sortOrder") === "desc" ? -1 : 1;
 
     const allowedSortFields = [
       "name",
@@ -41,7 +45,7 @@ export async function GET(request: NextRequest) {
 
     const safeSortBy = allowedSortFields.includes(sortBy)
       ? sortBy
-      : "createdAt";
+      : "order";
 
     const skip = (page - 1) * limit;
 
@@ -73,6 +77,11 @@ export async function GET(request: NextRequest) {
     const sort: Record<string, SortOrder> = {
       [safeSortBy]: sortOrder,
     };
+
+    // Keep a stable order when two products share the same value
+    if (safeSortBy === "order") {
+      sort.createdAt = -1;
+    }
 
     const [products, total] = await Promise.all([
       Product.find(filter)
@@ -126,8 +135,17 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
+    // New products go to the top of the shop
+    await ensureProductOrder();
+
+    const first = await Product.findOne()
+      .sort({ order: 1 })
+      .select("order")
+      .lean();
+
     const product = await Product.create({
       ...body,
+      order: (first?.order ?? 0) - 1,
     });
 
     // Notify active subscribers (non-blocking)

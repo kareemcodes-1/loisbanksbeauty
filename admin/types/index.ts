@@ -58,11 +58,6 @@ export interface ProductMedia {
   type: ProductMediaType;
 }
 
-export interface ShippingAndReturns {
-  deliveryTime: string;
-  returnsPolicy: string;
-}
-
 
 export interface Product {
   _id: string;
@@ -73,9 +68,15 @@ export interface Product {
   price: number;
 
   media: ProductMedia[];
+  order?: number;
 
   featured: boolean;
   inStock: boolean;
+  discount?: {
+    discountType: "percentage" | "fixed";
+    discountValue: number;
+    title?: string;
+  } | null;
 
   sizes: string[];
 
@@ -112,6 +113,7 @@ export interface OrderMedia {
   type: OrderMediaType;
 }
 
+
 export interface ShippingAddress {
   firstName: string;
   lastName: string;
@@ -122,22 +124,6 @@ export interface ShippingAddress {
   postalCode: string;
   country: string;
   phone?: string;
-}
-
-export interface OrderItem {
-  _id: string;
-  productId: string;
-  name: string;
-  media: OrderMedia[];
-  price: number;
-  originalPrice: number;
-  discount: {
-    title: string | null;
-    discountType: "percentage" | "fixed";
-    discountValue: number;
-  } | null;
-  quantity: number;
-  size?: string | null;
 }
 
 
@@ -165,6 +151,22 @@ export interface PaymentInfo {
   paidAt: string | null;
 }
 
+export interface OrderItem {
+  _id: string;
+  productId: string;
+  name: string;
+  media: OrderMedia[];
+  price: number;
+  originalPrice: number;
+  discount: {
+    title: string | null;
+    discountType: "percentage" | "fixed";
+    discountValue: number;
+  } | null;
+  quantity: number;
+  size?: string | null;
+}
+
 export type OrderStatus =
   | "pending"
   | "confirmed"
@@ -179,6 +181,7 @@ export type ShippingMethod = "pickup" | "delivery";
 export interface Order {
   _id: string;
 
+  // null = guest order that hasn't been linked to an account yet
   userId:
     | string
     | {
@@ -186,7 +189,11 @@ export interface Order {
         name?: string;
         email?: string;
         phone?: string;
-      };
+      }
+    | null;
+
+  // Email the order was placed with (works for guests and members)
+  contactEmail: string | null;
 
   items: OrderItem[];
   shippingAddress: ShippingAddress;
@@ -196,12 +203,12 @@ export interface Order {
   shippingMethod: ShippingMethod;
   trackingNumber: string | null;
 
-  // NEW
   adminNote: string | null;
 
   subtotal: number;
   shippingFee: number;
-  tax: number;
+   tax: number;
+  subcharge: number;
   totalAmount: number;
 
   createdAt: string;
@@ -253,4 +260,3 @@ export interface ShippingRate {
   createdAt: string | Date;
   updatedAt: string | Date;
 }
-

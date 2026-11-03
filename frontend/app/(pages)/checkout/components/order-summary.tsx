@@ -4,6 +4,11 @@ import Image from "next/image";
 import { useCartStore } from "@/store/cart";
 import { useCurrencyStore } from "@/store/currency";
 import { priceFormatter } from "@/lib/priceFormatter";
+import {
+  calculateCharges,
+  TAX_PERCENT,
+  SUBCHARGE_PERCENT,
+} from "@/lib/charges";
 
 type Props = {
   shippingFee: number;
@@ -14,7 +19,7 @@ export default function OrderSummary({ shippingFee }: Props) {
   const currency = useCurrencyStore((s) => s.currency);
 
   const subtotal = getSubtotal();
-  const total = subtotal + shippingFee;
+  const { tax, subcharge, total } = calculateCharges(subtotal, shippingFee);
 
   return (
     <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm sm:p-6 lg:sticky lg:top-28 lg:p-8">
@@ -43,7 +48,7 @@ export default function OrderSummary({ shippingFee }: Props) {
                     alt={item.name}
                     fill
                     sizes="64px"
-                    className="object-cover"
+                    className="rounded-lg object-cover"
                   />
                 )}
                 <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black text-[10px] font-medium text-white">
@@ -77,12 +82,24 @@ export default function OrderSummary({ shippingFee }: Props) {
       </div>
 
       <div className="mt-5 space-y-3 border-t border-black/10 pt-4 sm:mt-6 sm:pt-5">
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center justify-between gap-3 text-sm">
           <span className="text-black/60">Subtotal</span>
           <span>{priceFormatter(subtotal, currency)}</span>
         </div>
 
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center justify-between gap-3 text-sm">
+          <span className="text-black/60">Tax ({TAX_PERCENT}%)</span>
+          <span>{priceFormatter(tax, currency)}</span>
+        </div>
+
+        <div className="flex items-center justify-between gap-3 text-sm">
+          <span className="text-black/60">
+            Subcharge ({SUBCHARGE_PERCENT}%)
+          </span>
+          <span>{priceFormatter(subcharge, currency)}</span>
+        </div>
+
+        <div className="flex items-center justify-between gap-3 text-sm">
           <span className="text-black/60">Shipping</span>
           <span>
             {shippingFee === 0
@@ -91,7 +108,7 @@ export default function OrderSummary({ shippingFee }: Props) {
           </span>
         </div>
 
-        <div className="flex items-center justify-between border-t border-black/10 pt-4 text-base font-medium">
+        <div className="flex items-center justify-between gap-3 border-t border-black/10 pt-4 text-base font-medium">
           <span>Total</span>
           <span>{priceFormatter(total, currency)}</span>
         </div>

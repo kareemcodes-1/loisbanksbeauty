@@ -38,25 +38,32 @@ const navMain = [
     icon: <LayoutDashboardIcon />,
   },
   {
+    title: "Orders",
+    url: "/admin/orders",
+    icon: <ShoppingCartIcon />,
+  },
+  {
     title: "Products",
     url: "/admin/products",
     icon: <PackageIcon />,
   },
+
   {
     title: "Collections",
     url: "/admin/collections",
     icon: <LayersIcon />,
   },
   {
+    title: "Discounts",
+    url: "/admin/discounts",
+    icon: <Percent />,
+  },
+  {
     title: "Hero Banner",
     url: "/admin/hero-banner",
     icon: <ImageIcon />,
   },
-  {
-    title: "Orders",
-    url: "/admin/orders",
-    icon: <ShoppingCartIcon />,
-  },
+  
   {
     title: "Shipping Rates",
     url: "/admin/shipping-rates",
@@ -67,11 +74,7 @@ const navMain = [
     url: "/admin/users",
     icon: <UsersIcon />,
   },
-  {
-    title: "Discounts",
-    url: "/admin/discounts",
-    icon: <Percent />,
-  },
+  
   {
     title: "Reviews",
     url: "/admin/reviews",

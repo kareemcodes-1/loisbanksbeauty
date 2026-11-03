@@ -75,6 +75,7 @@ export interface Product {
   media: ProductMedia[];
 
   featured: boolean;
+    order?: number;
   inStock: boolean;
   discount?: {
     discountType: "percentage" | "fixed";
@@ -211,7 +212,8 @@ export interface Order {
 
   subtotal: number;
   shippingFee: number;
-  tax: number;
+   tax: number;
+  subcharge: number;
   totalAmount: number;
 
   createdAt: string;

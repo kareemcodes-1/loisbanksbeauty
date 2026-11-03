@@ -32,7 +32,6 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function OrderCard({ order }: Props) {
-  console.log(order)
   const currency = useCurrencyStore((s) => s.currency);
 
   const firstImage =

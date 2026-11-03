@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 
 import connectDB from "@/lib/mongodb";
@@ -7,6 +6,8 @@ import {
   verifyBachsWebhook,
   mapBachsPaymentChannel,
 } from "@/lib/bachs";
+import { sendOrderReceivedEmail } from "@/lib/email/send";
+import { CURRENCIES } from "@/lib/currency";
 
 export async function POST(request: Request) {
   const rawBody = await request.text();
@@ -120,6 +121,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ received: true });
       }
 
+      // Already processed: skip, so the customer never gets a duplicate email
       if (order.paymentInfo.paymentStatus === "paid") {
         return NextResponse.json({ received: true });
       }
@@ -138,6 +140,40 @@ export async function POST(request: Request) {
 
       // orderStatus stays pending — admin confirms later
       await order.save();
+
+      // ==========================================
+      // Email the customer: "we received your order"
+      // Never let an email problem fail the webhook,
+      // or Bachs will keep retrying it.
+      // ==========================================
+      try {
+        if (order.contactEmail) {
+          // Show prices in the currency they paid in, if we support it
+          const paidCurrency = CURRENCIES.find(
+            (c) =>
+              c.code === order.paymentInfo.currencyPaid?.toUpperCase()
+          )?.code;
+
+          await sendOrderReceivedEmail({
+            to: order.contactEmail,
+            orderId: order._id.toString(),
+            reference: order.paymentInfo.transactionReference,
+            customerName: order.shippingAddress.firstName,
+            items: order.items.map((item) => ({
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+              size: item.size,
+            })),
+            totalAmount: order.totalAmount,
+            paymentMethod: order.paymentInfo.paymentChannelLabel,
+            currency: paidCurrency,
+            isGuest: !order.userId,
+          });
+        }
+      } catch (emailError) {
+        console.error("Failed to send order received email:", emailError);
+      }
     }
 
     if (event.type === "collection.failed") {

@@ -134,3 +134,19 @@ export async function deleteProduct(id: string) {
 
   return response.json();
 }
+
+export async function reorderProducts(orderedIds: string[]) {
+  const res = await fetch("/api/admin/products/reorder", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ orderedIds }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to save order");
+  }
+
+  return data;
+}

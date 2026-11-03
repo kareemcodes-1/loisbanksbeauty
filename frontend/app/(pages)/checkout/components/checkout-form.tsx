@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, ShoppingBag } from "lucide-react";
 
 import { useCartStore } from "@/store/cart";
 import { useCurrencyStore } from "@/store/currency";
@@ -18,6 +18,7 @@ import DeliverySection, {
 import ShippingMethodSection from "./shipping-method";
 import PaymentSection from "./payment-section";
 import OrderSummary from "./order-summary";
+import EmptyState from "@/app/components/empty-state";
 
 type UserData = {
   email: string;
@@ -40,7 +41,7 @@ type PublicShippingRate = {
 };
 
 export default function CheckoutForm({ user }: Props) {
-  const { items, _hasHydrated, clearCart } = useCartStore();
+  const { items, _hasHydrated } = useCartStore();
   const currency = useCurrencyStore((s) => s.currency);
 
   const [contact, setContact] = useState({
@@ -101,14 +102,15 @@ export default function CheckoutForm({ user }: Props) {
     }
   }, []);
 
-  // Auto-select default address
+  // Auto-select default address (logged-in users with saved addresses)
   useEffect(() => {
     if (user.addresses.length === 0) {
       setSelectedAddressId("new");
       setDelivery((prev) => ({
         ...prev,
-        firstName: user.name?.split(" ")[0] || "",
-        lastName: user.name?.split(" ").slice(1).join(" ") || "",
+        firstName: prev.firstName || user.name?.split(" ")[0] || "",
+        lastName:
+          prev.lastName || user.name?.split(" ").slice(1).join(" ") || "",
       }));
       return;
     }
@@ -207,6 +209,9 @@ export default function CheckoutForm({ user }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Block double submits (double click / double tap)
+    if (isSubmitting) return;
+
     if (items.length === 0) {
       toast.error("Your cart is empty.");
       return;
@@ -222,6 +227,7 @@ export default function CheckoutForm({ user }: Props) {
       !delivery.lastName ||
       !delivery.address ||
       !delivery.city ||
+      !delivery.state ||
       !delivery.country ||
       !delivery.postalCode
     ) {
@@ -231,22 +237,24 @@ export default function CheckoutForm({ user }: Props) {
 
     setIsSubmitting(true);
 
-    try {
-      console.log("[checkout] currency being sent:", currency);
+    // Stays true while the browser is being sent to the payment page,
+    // so the button doesn't re-enable and allow a second order.
+    let redirecting = false;
 
-const res = await fetch("/api/orders", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    contact,
-    delivery,
-    shippingMethod,
-    selectedAddressId,
-    selectedShippingRateId: matchedRate?._id ?? null,
-    items,
-    currency,
-  }),
-});
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contact,
+          delivery,
+          shippingMethod,
+          selectedAddressId,
+          selectedShippingRateId: matchedRate?._id ?? null,
+          items,
+          currency,
+        }),
+      });
 
       const data = await res.json();
 
@@ -256,24 +264,19 @@ const res = await fetch("/api/orders", {
       }
 
       if (data.checkoutUrl) {
-        clearCart();
+        redirecting = true;
         window.location.href = data.checkoutUrl;
         return;
       }
 
       toast.error(
-        data.message ||
-          "Payment could not be started. Please check your orders."
+        data.message || "Payment could not be started. Please try again."
       );
-
-      if (data.orderId) {
-        window.location.href = `/orders/${data.orderId}`;
-      }
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong. Please try again.");
     } finally {
-      setIsSubmitting(false);
+      if (!redirecting) setIsSubmitting(false);
     }
   };
 
@@ -296,30 +299,33 @@ const res = await fetch("/api/orders", {
 
   if (items.length === 0) {
     return (
-      <div className="py-20 text-center">
-        <p className="text-black/60">Your cart is empty.</p>
-      </div>
+      <EmptyState
+        icon={ShoppingBag}
+        message="Your cart is empty."
+        buttonText="Continue Shopping"
+        buttonHref="/shop"
+      />
     );
   }
 
   const shippingFee =
-  shippingMethod === "delivery" ? matchedRate?.fee ?? 0 : 0;
+    shippingMethod === "delivery" ? matchedRate?.fee ?? 0 : 0;
 
-// Country has region-specific rates, but the customer hasn't picked a region yet
-const needsRegion =
-  Boolean(delivery.country) &&
-  !matchedRate &&
-  !delivery.state &&
-  shippingRates.some(
-    (rate) =>
-      rate.country.toUpperCase() === delivery.country.toUpperCase() &&
-      Boolean(rate.state || rate.stateCode)
-  );
+  // Country has region-specific rates, but the customer hasn't picked a region yet
+  const needsRegion =
+    Boolean(delivery.country) &&
+    !matchedRate &&
+    !delivery.state &&
+    shippingRates.some(
+      (rate) =>
+        rate.country.toUpperCase() === delivery.country.toUpperCase() &&
+        Boolean(rate.state || rate.stateCode)
+    );
 
   return (
     <form onSubmit={handleSubmit}>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px] lg:gap-12">
-        <div className="space-y-5 sm:space-y-6">
+        <div className="min-w-0 space-y-5 sm:space-y-6">
           <ContactSection data={contact} onChange={handleContactChange} />
 
           <DeliverySection
@@ -331,21 +337,21 @@ const needsRegion =
           />
 
           <ShippingMethodSection
-  method={shippingMethod}
-  onChange={setShippingMethod}
-  deliveryFee={matchedRate?.fee}
-  selectedCountry={delivery.country}
-  needsRegion={needsRegion}
-  currency={currency}
-  priceFormatter={priceFormatter}
-  matchedLocation={
-    matchedRate
-      ? matchedRate.state
-        ? `${matchedRate.state}, ${matchedRate.countryName}`
-        : matchedRate.countryName
-      : undefined
-  }
-/>
+            method={shippingMethod}
+            onChange={setShippingMethod}
+            deliveryFee={matchedRate?.fee}
+            selectedCountry={delivery.country}
+            needsRegion={needsRegion}
+            currency={currency}
+            priceFormatter={priceFormatter}
+            matchedLocation={
+              matchedRate
+                ? matchedRate.state
+                  ? `${matchedRate.state}, ${matchedRate.countryName}`
+                  : matchedRate.countryName
+                : undefined
+            }
+          />
 
           <PaymentSection />
 
@@ -365,7 +371,7 @@ const needsRegion =
           </button>
         </div>
 
-        <div>
+        <div className="min-w-0">
           <OrderSummary shippingFee={shippingFee} />
         </div>
       </div>

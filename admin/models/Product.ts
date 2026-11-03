@@ -34,6 +34,7 @@ export interface IProductDocument extends Document {
 
   featured: boolean;
   inStock: boolean;
+  order?: number;
 
   sizes: string[];
   averageRating: number;
@@ -58,6 +59,12 @@ const productSchema = new Schema<IProductDocument>(
       lowercase: true,
       trim: true,
     },
+
+    order: {
+  type: Number,
+  default: 0,
+  index: true,
+},
 
     collectionId: {
       type: Schema.Types.ObjectId,

@@ -61,6 +61,7 @@ function formatOrder(order: any): OrderType {
     subtotal: order.subtotal,
     shippingFee: order.shippingFee,
     tax: order.tax,
+subcharge: order.subcharge ?? 0,
     totalAmount: order.totalAmount,
     createdAt: new Date(order.createdAt).toISOString(),
     updatedAt: new Date(order.updatedAt).toISOString(),

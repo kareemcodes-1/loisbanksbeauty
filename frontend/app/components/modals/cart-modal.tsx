@@ -14,6 +14,11 @@ import {
 import { useCartStore } from "@/store/cart";
 import { useCurrencyStore } from "@/store/currency";
 import { priceFormatter } from "@/lib/priceFormatter";
+import {
+  calculateCharges,
+  TAX_PERCENT,
+  SUBCHARGE_PERCENT,
+} from "@/lib/charges";
 import EmptyState from "../empty-state";
 import { useRouter } from "next/navigation";
 
@@ -47,6 +52,7 @@ const CartModal = ({ openCartModal, setOpenCartModal }: CartModalProps) => {
   };
 
   const subtotal = getSubtotal();
+  const { tax, subcharge, total } = calculateCharges(subtotal);
 
   const handleCheckout = () => {
     setOpenCartModal(false);
@@ -195,30 +201,46 @@ const CartModal = ({ openCartModal, setOpenCartModal }: CartModalProps) => {
         </div>
 
         {items.length > 0 && (
-  <>
-    <div className="shrink-0 border-t border-black/10 px-5 pb-3 pt-4 sm:px-6 lg:px-8">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium">Subtotal</span>
-        <span className="text-sm font-medium">
-          {priceFormatter(subtotal, currency)}
-        </span>
-      </div>
-      <p className="mt-2 text-xs text-black/50">
-        Taxes and duties are calculated during checkout
-      </p>
-    </div>
+          <>
+            <div className="shrink-0 border-t border-black/10 px-5 pb-3 pt-4 sm:px-6 lg:px-8">
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between gap-3 text-black/70">
+                  <span>Subtotal</span>
+                  <span>{priceFormatter(subtotal, currency)}</span>
+                </div>
 
-    <div className="shrink-0 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-6 lg:px-8">
-      <button
-        type="button"
-        className="btn-primary w-full"
-        onClick={handleCheckout}
-      >
-        Secure Checkout
-      </button>
-    </div>
-  </>
-)}
+                <div className="flex items-center justify-between gap-3 text-black/70">
+                  <span>Tax ({TAX_PERCENT}%)</span>
+                  <span>{priceFormatter(tax, currency)}</span>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 text-black/70">
+                  <span>Subcharge ({SUBCHARGE_PERCENT}%)</span>
+                  <span>{priceFormatter(subcharge, currency)}</span>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 border-t border-dashed border-black/15 pt-3 font-medium text-black">
+                  <span>Total</span>
+                  <span>{priceFormatter(total, currency)}</span>
+                </div>
+              </div>
+
+              <p className="mt-2 text-xs text-black/50">
+                Shipping is calculated at checkout
+              </p>
+            </div>
+
+            <div className="shrink-0 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-6 lg:px-8">
+              <button
+                type="button"
+                className="btn-primary w-full"
+                onClick={handleCheckout}
+              >
+                Secure Checkout
+              </button>
+            </div>
+          </>
+        )}
       </SheetContent>
     </Sheet>
   );

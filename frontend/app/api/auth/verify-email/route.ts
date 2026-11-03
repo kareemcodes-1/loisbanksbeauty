@@ -1,10 +1,10 @@
-
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import Subscriber from "@/models/Subscriber";
+import { linkGuestOrders } from "@/lib/orders/link-guest-orders";
 
 export async function POST(request: Request) {
   try {
@@ -125,6 +125,13 @@ export async function POST(request: Request) {
       user.emailVerificationAttempts = 0;
 
       await user.save();
+
+      // Guest orders placed with the new email now belong to this account
+      try {
+        await linkGuestOrders(user._id, newEmail);
+      } catch (linkError) {
+        console.error("Failed to link guest orders:", linkError);
+      }
 
       // ==========================================
       // Move email subscription to the new email
@@ -262,6 +269,17 @@ export async function POST(request: Request) {
 
     await user.save();
 
+    // Email is now verified, so attach any guest orders placed with it.
+    // Wrapped so a failure here never blocks verification or login.
+    try {
+      const linked = await linkGuestOrders(user._id, user.email);
+      if (linked > 0) {
+        console.log(`Linked ${linked} guest order(s) to ${user.email}`);
+      }
+    } catch (linkError) {
+      console.error("Failed to link guest orders:", linkError);
+    }
+
     return NextResponse.json(
       {
         success: true,
@@ -281,4 +299,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

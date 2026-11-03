@@ -2,7 +2,7 @@ import "server-only";
 
 import { render } from "@react-email/render";
 import { sendEmail } from "./zeptomail";
-
+import type { CurrencyCode } from "@/lib/currency";
 import WelcomeEmail from "@/app/components/emails/welcome";
 import PasswordResetEmail from "@/app/components/emails/password-reset";
 import ContactEnquiryEmail from "@/app/components/emails/contact-enquiry";
@@ -10,12 +10,57 @@ import EmailVerificationEmail from "@/app/components/emails/email-verification";
 
 import NewOrderEmail from "@/app/components/emails/new-order";
 import { priceFormatter } from "../priceFormatter";
+import OrderReceivedEmail from "@/app/components/emails/order-received";
 
 export async function sendWelcomeEmail(to: string, name: string) {
   const html = await render(<WelcomeEmail name={name} />);
   await sendEmail({
     to,
     subject: "Welcome to LoisBanks Beauty",
+    html,
+  });
+}
+
+export async function sendOrderReceivedEmail(props: {
+  to: string;
+  orderId: string;
+  reference?: string | null;
+  customerName: string; // first name
+  items: {
+    name: string;
+    price: number;
+    quantity: number;
+    size?: string | null;
+  }[];
+  totalAmount: number;
+  paymentMethod?: string | null;
+  currency?: CurrencyCode;
+  isGuest: boolean;
+}) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+
+  // Same reference the customer sees on the success page
+  const reference =
+    props.reference || props.orderId.slice(-8).toUpperCase();
+
+  const html = await render(
+    <OrderReceivedEmail
+      reference={reference}
+      customerName={props.customerName}
+      customerEmail={props.to}
+      items={props.items}
+      totalAmount={props.totalAmount}
+      paymentMethod={props.paymentMethod}
+      currency={props.currency}
+      isGuest={props.isGuest}
+      ordersUrl={`${appUrl}/orders`}
+      registerUrl={`${appUrl}/register?callbackUrl=${encodeURIComponent("/orders")}`}
+    />
+  );
+
+  await sendEmail({
+    to: props.to,
+    subject: `We received your order #${reference}`,
     html,
   });
 }

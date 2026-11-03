@@ -281,7 +281,8 @@ export interface IOrderDocument extends Document {
 
   subtotal: number;
   shippingFee: number;
-  tax: number;
+    tax: number;
+  subcharge: number;
   totalAmount: number;
 
   createdAt: Date;
@@ -377,6 +378,13 @@ contactPhone: {
     },
 
     tax: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+    },
+
+        subcharge: {
       type: Number,
       required: true,
       min: 0,

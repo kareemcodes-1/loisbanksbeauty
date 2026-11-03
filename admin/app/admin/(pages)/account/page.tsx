@@ -36,13 +36,6 @@ import {
   type UpdateProfilePayload,
 } from "@/actions/admin/profile.actions";
 
-const isStrongPassword = (password: string) =>
-  password.length >= 8 &&
-  /[A-Z]/.test(password) &&
-  /[a-z]/.test(password) &&
-  /[0-9]/.test(password) &&
-  /[^A-Za-z0-9]/.test(password);
-
 export default function AccountPage() {
   const { update } = useSession();
   const queryClient = useQueryClient();
@@ -122,12 +115,6 @@ export default function AccountPage() {
       }
       if (newPassword !== confirmPassword) {
         toast.error("New passwords do not match.");
-        return;
-      }
-      if (!isStrongPassword(newPassword)) {
-        toast.error(
-          "Password must be at least 8 characters and include uppercase, lowercase, number, and symbol."
-        );
         return;
       }
     }
@@ -294,7 +281,12 @@ export default function AccountPage() {
                 </div>
 
                 <div className="flex justify-end">
-                  <Button type="submit" disabled={isSaving} size="lg">
+                  <Button
+                    type="submit"
+                    disabled={isSaving}
+                    size="lg"
+                    className="w-full sm:w-auto"
+                  >
                     {isSaving && (
                       <Loader2Icon className="size-4 animate-spin" />
                     )}

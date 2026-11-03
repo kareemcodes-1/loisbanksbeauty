@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import bcrypt from "bcryptjs";
 
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // adjust path if needed
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 
@@ -44,7 +45,7 @@ export async function PUT(request: NextRequest) {
     await connectDB();
 
     const body = await request.json();
-    const { name, email, phone } = body;
+    const { name, email, phone, currentPassword, newPassword } = body;
 
     if (!name?.trim() || !email?.trim()) {
       return NextResponse.json(
@@ -53,9 +54,11 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+
     // Check if email is already taken by another user
     const existing = await User.findOne({
-      email: email.trim().toLowerCase(),
+      email: normalizedEmail,
       _id: { $ne: session.user.id },
     });
 
@@ -66,15 +69,53 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const updated = await User.findByIdAndUpdate(
-      session.user.id,
-      {
-        name: name.trim(),
-        email: email.trim().toLowerCase(),
-        phone: phone?.trim() || "",
-      },
-      { new: true, runValidators: true }
-    ).select("name email phone role createdAt");
+    const update: Record<string, unknown> = {
+      name: name.trim(),
+      email: normalizedEmail,
+      phone: phone?.trim() || "",
+    };
+
+    // ==========================================
+    // Password change (only when a new one is sent)
+    // Any password is allowed, no strength rules.
+    // ==========================================
+    if (newPassword) {
+      if (!currentPassword) {
+        return NextResponse.json(
+          { message: "Enter your current password to set a new one." },
+          { status: 400 }
+        );
+      }
+
+      // The password field is hidden by default, so ask for it explicitly
+      const account = await User.findById(session.user.id).select("+password");
+
+      if (!account?.password) {
+        return NextResponse.json(
+          { message: "User not found" },
+          { status: 404 }
+        );
+      }
+
+      const currentIsCorrect = await bcrypt.compare(
+        currentPassword,
+        account.password
+      );
+
+      if (!currentIsCorrect) {
+        return NextResponse.json(
+          { message: "Current password is incorrect." },
+          { status: 400 }
+        );
+      }
+
+      update.password = await bcrypt.hash(newPassword, 12);
+    }
+
+    const updated = await User.findByIdAndUpdate(session.user.id, update, {
+      new: true,
+      runValidators: true,
+    }).select("name email phone role createdAt");
 
     if (!updated) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
@@ -116,14 +157,6 @@ export async function DELETE() {
     if (!deleted) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
-
-    // Optional: cascade delete (uncomment & expand later if needed)
-    // await Promise.all([
-    //   Product.deleteMany({ createdBy: userId }),
-    //   Collection.deleteMany({ createdBy: userId }),
-    //   Discount.deleteMany({ createdBy: userId }),
-    //   // etc.
-    // ]);
 
     return NextResponse.json(
       { message: "Account deleted successfully" },
