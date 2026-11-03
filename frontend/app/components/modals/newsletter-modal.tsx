@@ -117,12 +117,11 @@ export default function NewsletterModal() {
 
           {/* Form side */}
           <div className="flex w-full flex-col justify-center gap-5 bg-[#FD3F92] px-6 py-10 text-white sm:gap-6 sm:px-8 sm:py-12 md:w-1/2 md:px-10">
-            <h2 className="heading-2">Don&apos;t Miss What&apos;s Next</h2>
+            <h2 className="heading-2">Join the VIP List</h2>
 
-            <p className="max-w-[22rem] text-[0.9rem] leading-relaxed text-white/90 sm:text-[0.95rem]">
-              Sign up for early access to new drops, restocks, and
-              subscriber-only discounts.
-            </p>
+<p className="max-w-[22rem] text-[0.9rem] leading-relaxed text-white/90 sm:text-[0.95rem]">
+ Be the first to access new arrivals, exclusive collections, and special offers before everyone else.
+</p>
 
             <form
               onSubmit={handleSubmit}
@@ -143,7 +142,7 @@ export default function NewsletterModal() {
                   disabled={loading}
                   className="flex h-12 w-full flex-1 items-center justify-center rounded-full bg-white py-[.9rem] px-6 text-[0.8rem] font-medium uppercase tracking-wide text-black transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {loading ? "Subscribing..." : "Subscribe"}
+                  {loading ? "Joining..." : "Join the List"}
                 </button>
 
                 <button
@@ -151,7 +150,7 @@ export default function NewsletterModal() {
                   onClick={dismiss}
                   className="flex h-12 w-full flex-1 items-center justify-center rounded-full border border-white/50 bg-transparent py-[.9rem] px-6 text-[0.8rem] font-medium uppercase tracking-wide text-white transition hover:bg-white/15"
                 >
-                  No thanks
+                 Maybe Later
                 </button>
               </div>
             </form>
