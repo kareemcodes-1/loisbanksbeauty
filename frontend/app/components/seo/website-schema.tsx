@@ -5,6 +5,7 @@ export default function WebsiteSchema() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "LoisBanks Beauty",
+    alternateName: "LoisBanks",
     url: "https://loisbanksbeauty.com",
     potentialAction: {
       "@type": "SearchAction",
@@ -15,6 +16,11 @@ export default function WebsiteSchema() {
       "query-input": "required name=search_term_string",
     },
     hasPart: [
+      {
+        "@type": "SiteNavigationElement",
+        name: "Home",
+        url: "https://loisbanksbeauty.com",
+      },
       {
         "@type": "SiteNavigationElement",
         name: "Shop",

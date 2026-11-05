@@ -3,9 +3,10 @@ import Testimonials from "@/app/components/testimonials";
 
 
 export const metadata: Metadata = {
-  title: "Shop Luxury Human Hair Wigs, Athleisure & Beauty Essentials",
+  title: "Shop Luxury Hair, Beauty Essentials & Athleisure",
   description:
-    "Shop luxury human hair wigs, athleisure wear and beauty essentials. Premium quality, flawless textures and effortless glam — affordable luxury delivered worldwide.",
+    "Shop premium human hair wigs, beauty essentials and athleisure wear curated for women. Based in Lekki, Lagos, delivering worldwide.",
+  alternates: { canonical: "/shop" },
 };
 
 export default function RootLayout({

@@ -7,6 +7,7 @@ import Order from "@/models/Order";
 import Product from "@/models/Product";
 import Discount from "@/models/Discount";
 import ShippingRate from "@/models/ShippingRate";
+import User from "@/models/User";
 
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { createBachsCheckoutSession } from "@/lib/bachs";
@@ -366,6 +367,41 @@ export async function POST(request: NextRequest) {
     });
 
     void selectedAddressId;
+
+    if (userId) {
+      try {
+        await User.updateOne(
+          { _id: userId, "addresses.0": { $exists: false } },
+          {
+            $push: {
+              addresses: {
+                firstName: delivery.firstName,
+                lastName: delivery.lastName,
+                address: delivery.address,
+                apartment: delivery.apartment || "",
+                city: delivery.city,
+                state: delivery.state,
+                postalCode: delivery.postalCode,
+                country: delivery.country,
+                isDefault: true,
+              },
+            },
+          }
+        );
+
+        // Also remember their phone number if the account has none,
+        // since checkout pre-fills it
+        await User.updateOne(
+          {
+            _id: userId,
+            $or: [{ phone: { $exists: false } }, { phone: null }, { phone: "" }],
+          },
+          { $set: { phone: contactPhone } }
+        );
+      } catch (saveError) {
+        console.error("Failed to save default address:", saveError);
+      }
+    }
 
     const orderId = order._id.toString();
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;
