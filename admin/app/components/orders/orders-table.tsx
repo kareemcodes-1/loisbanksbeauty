@@ -22,6 +22,8 @@ import {
   useTable,
 } from "@tanstack/react-table";
 
+import { formatPaidAmount } from "@/lib/format-paid-amount";
+
 import {
   Table,
   TableBody,
@@ -329,10 +331,18 @@ export function OrdersTable({ onEdit }: OrdersTableProps) {
           },
         }),
 
-    columnHelper.accessor("totalAmount", {
+columnHelper.accessor("totalAmount", {
   header: "Total",
   cell: ({ row }) => {
     const order = row.original;
+
+    // What the customer actually paid, in the currency they paid in
+    const paid = formatPaidAmount(
+      order.paymentInfo?.amountPaid,
+      order.paymentInfo?.currencyPaid
+    );
+
+    const paymentStatus = order.paymentInfo?.paymentStatus;
 
     const discountTitles = Array.from(
       new Set(
@@ -348,7 +358,8 @@ export function OrdersTable({ onEdit }: OrdersTableProps) {
       )
     );
 
-    const hasDiscount = discountTitles.length > 0 ||
+    const hasDiscount =
+      discountTitles.length > 0 ||
       order.items?.some(
         (item) =>
           item.discount &&
@@ -358,9 +369,25 @@ export function OrdersTable({ onEdit }: OrdersTableProps) {
 
     return (
       <div className="flex flex-col gap-0.5">
-        <span className="font-medium tabular-nums">
-          {priceFormatter(order.totalAmount)}
+        {/* Paid amount, or the naira total if nothing has been paid yet */}
+        <span className="whitespace-nowrap font-medium tabular-nums">
+          {paid ? paid.primary : priceFormatter(order.totalAmount)}
         </span>
+
+        {/* Paid in another currency: show the network and the naira total for reference */}
+        {paid && !paid.isNaira && (
+          <span className="whitespace-nowrap text-[11px] tabular-nums text-muted-foreground">
+            {paid.network ? `${paid.network} · ` : ""}
+            {priceFormatter(order.totalAmount)}
+          </span>
+        )}
+
+        {/* Unpaid orders */}
+        {!paid && paymentStatus && paymentStatus !== "paid" && (
+          <span className="text-[11px] font-medium text-muted-foreground">
+            {paymentStatus === "failed" ? "Payment failed" : "Awaiting payment"}
+          </span>
+        )}
 
         {hasDiscount && (
           <span className="max-w-[140px] truncate text-[11px] font-medium text-[#FD3F92]">
