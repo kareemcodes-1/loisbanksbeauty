@@ -39,16 +39,18 @@ const CartModal = ({ openCartModal, setOpenCartModal }: CartModalProps) => {
     productId: string,
     quantity: number,
     size: string | null,
+    color: string | null,
   ) => {
-    updateQuantity(productId, quantity - 1, size);
+    updateQuantity(productId, quantity - 1, size, color);
   };
 
   const handleIncrease = (
     productId: string,
     quantity: number,
     size: string | null,
+    color: string | null,
   ) => {
-    updateQuantity(productId, quantity + 1, size);
+    updateQuantity(productId, quantity + 1, size, color);
   };
 
   const subtotal = getSubtotal();
@@ -99,9 +101,11 @@ const CartModal = ({ openCartModal, setOpenCartModal }: CartModalProps) => {
                 const hasDiscount =
                   item.originalPrice && item.originalPrice > item.price;
 
+                const itemColor = item.color ?? null;
+
                 return (
                   <div
-                    key={`${item.productId}-${item.size ?? "default"}`}
+                    key={`${item.productId}-${item.size ?? "default"}-${itemColor ?? "default"}`}
                     className="flex w-full items-start gap-3 border-b border-black/10 py-4 sm:gap-4 sm:py-5"
                   >
                     <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-neutral-100 sm:h-20 sm:w-20">
@@ -122,9 +126,11 @@ const CartModal = ({ openCartModal, setOpenCartModal }: CartModalProps) => {
                           <p className="truncate text-sm font-medium text-black">
                             {item.name}
                           </p>
-                          {item.size && (
+                          {(item.size || itemColor) && (
                             <p className="mt-1 text-xs text-black/50">
-                              {item.size}
+                              {[item.size, itemColor]
+                                .filter(Boolean)
+                                .join(" · ")}
                             </p>
                           )}
                         </div>
@@ -151,6 +157,7 @@ const CartModal = ({ openCartModal, setOpenCartModal }: CartModalProps) => {
                                 item.productId,
                                 item.quantity,
                                 item.size,
+                                itemColor,
                               )
                             }
                             className="cursor-pointer text-black/50 transition-colors hover:text-black"
@@ -168,6 +175,7 @@ const CartModal = ({ openCartModal, setOpenCartModal }: CartModalProps) => {
                                 item.productId,
                                 item.quantity,
                                 item.size,
+                                itemColor,
                               )
                             }
                             className="cursor-pointer text-black/50 transition-colors hover:text-black"
@@ -178,7 +186,9 @@ const CartModal = ({ openCartModal, setOpenCartModal }: CartModalProps) => {
 
                         <button
                           type="button"
-                          onClick={() => removeItem(item.productId, item.size)}
+                          onClick={() =>
+                            removeItem(item.productId, item.size, itemColor)
+                          }
                           aria-label={`Remove ${item.name}`}
                           className="cursor-pointer text-black/30 transition-colors hover:text-black"
                         >

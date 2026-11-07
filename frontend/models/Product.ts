@@ -37,6 +37,7 @@ export interface IProductDocument extends Document {
   order?: number;
 
   sizes: string[];
+    colors: string[];
   averageRating: number;
   reviewCount: number;
 
@@ -100,6 +101,11 @@ const productSchema = new Schema<IProductDocument>(
     },
 
     sizes: {
+      type: [String],
+      default: [],
+    },
+
+        colors: {
       type: [String],
       default: [],
     },

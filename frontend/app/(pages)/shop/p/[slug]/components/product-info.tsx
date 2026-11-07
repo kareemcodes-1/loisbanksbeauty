@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Minus, Plus, Star } from "lucide-react";
+import toast from "react-hot-toast";
 import {
   Accordion,
   AccordionContent,
@@ -16,6 +17,8 @@ import { useCartStore } from "@/store/cart";
 import { useCurrencyStore } from "@/store/currency";
 import { priceFormatter } from "@/lib/priceFormatter";
 import { getProductPricing } from "@/lib/product-pricing";
+import { getColorSwatch, isLightSwatch } from "@/lib/color-map";
+import { Check } from "lucide-react";
 
 type ProductInfoProps = {
   product: Product;
@@ -30,8 +33,12 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
   const [selectedSize, setSelectedSize] = useState<string | null>(
     product.sizes?.[0] ?? null,
   );
+  // No default color: the customer has to choose one on purpose
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
   const disabled = !product.inStock;
+
+  const hasColors = (product.colors?.length ?? 0) > 0;
 
   const reviewCount = product.reviewCount ?? 0;
   const averageRating = product.averageRating ?? 0;
@@ -39,14 +46,28 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
   const { originalPrice, finalPrice, hasDiscount, discountLabel } =
     getProductPricing(product);
 
+  // Returns false (and tells the customer) if a color is required but not chosen
+  const ensureColorSelected = () => {
+    if (hasColors && !selectedColor) {
+      toast.error("Please select a color.");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleAddToCart = () => {
     if (disabled) return;
-    addItem(product, quantity, selectedSize);
+    if (!ensureColorSelected()) return;
+
+    addItem(product, quantity, selectedSize, selectedColor);
   };
 
   const handleBuyNow = () => {
     if (disabled) return;
-    addItem(product, 1, selectedSize);
+    if (!ensureColorSelected()) return;
+
+    addItem(product, 1, selectedSize, selectedColor);
     router.push("/checkout");
   };
 
@@ -74,7 +95,7 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
           {product.collectionId && (
             <>
               <Link
-                    href={`/shop?collections=${product._id}`}
+                href={`/shop?collections=${product.collectionId._id}`}
                 className="transition-colors hover:text-black"
               >
                 {product.collectionId.name}
@@ -162,6 +183,60 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
           </div>
         </div>
 
+        {/* Color */}
+{hasColors && (
+  <div className="mb-5 sm:mb-6">
+    <p className="mb-3 text-[0.7rem] font-medium uppercase tracking-[0.15em] text-black/50">
+      Color:
+      {selectedColor && (
+        <span className="ml-1 tracking-normal text-black">
+          {selectedColor}
+        </span>
+      )}
+    </p>
+
+    <div className="flex flex-wrap gap-3">
+      {product.colors?.map((color) => {
+        const isSelected = selectedColor === color;
+        const isLight = isLightSwatch(color);
+
+        return (
+          <button
+            key={color}
+            type="button"
+            onClick={() => setSelectedColor(color)}
+            aria-pressed={isSelected}
+            aria-label={color}
+            title={color}
+            className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all duration-300 sm:h-11 sm:w-11 ${
+              isSelected
+                ? "ring-2 ring-black ring-offset-2"
+                : "ring-1 ring-black/15 ring-offset-2 hover:ring-black/40"
+            }`}
+          >
+            <span
+              className={`absolute inset-[3px] rounded-full ${
+                isLight ? "border border-black/10" : ""
+              }`}
+              style={{ background: getColorSwatch(color) }}
+            />
+
+            {isSelected && (
+              <Check
+                size={16}
+                strokeWidth={2.5}
+                className={`relative ${
+                  isLight ? "text-black" : "text-white"
+                }`}
+              />
+            )}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+)}
+
         {/* Size */}
         {product.sizes && product.sizes.length > 0 && (
           <div className="mb-5 sm:mb-6">
@@ -238,8 +313,7 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
             value="description"
             className="rounded-xl border border-black/10 bg-white px-3.5 py-1.5 shadow-xs sm:rounded-2xl sm:px-5 sm:py-2 md:px-6"
           >
-            <AccordionTrigger className="py-3 text-left font-geist text-[0.8rem] font-medium uppercase transition-colors hover:text-[#FD3F92] sm:py-4 sm:text-[15px] md:text-[1rem]"
-            >
+            <AccordionTrigger className="py-3 text-left font-geist text-[0.8rem] font-medium uppercase transition-colors hover:text-[#FD3F92] sm:py-4 sm:text-[15px] md:text-[1rem]">
               Description
             </AccordionTrigger>
 

@@ -14,8 +14,22 @@ export interface CartItem {
   originalPrice: number; // original price (before discount)
   quantity: number;
   size: string | null;
+  color: string | null;
   media: Product["media"];
 }
+
+// A cart line is one product in one size and one color.
+// Items saved in the browser before colors existed have no color,
+// so a missing color counts as "no color".
+const isSameLine = (
+  item: { productId: string; size?: string | null; color?: string | null },
+  productId: string,
+  size: string | null,
+  color: string | null,
+) =>
+  item.productId === productId &&
+  (item.size ?? null) === (size ?? null) &&
+  (item.color ?? null) === (color ?? null);
 
 interface CartState {
   items: CartItem[];
@@ -27,17 +41,20 @@ interface CartState {
     product: Product,
     quantity?: number,
     size?: string | null,
+    color?: string | null,
   ) => void;
 
   removeItem: (
     productId: string,
     size?: string | null,
+    color?: string | null,
   ) => void;
 
   updateQuantity: (
     productId: string,
     quantity: number,
     size?: string | null,
+    color?: string | null,
   ) => void;
 
   clearCart: () => void;
@@ -45,6 +62,7 @@ interface CartState {
   getItemQuantity: (
     productId: string,
     size?: string | null,
+    color?: string | null,
   ) => number;
 
   getTotalItems: () => number;
@@ -62,13 +80,12 @@ export const useCartStore = create<CartState>()(
         set({ _hasHydrated: state });
       },
 
-      addItem: (product, quantity = 1, size = null) => {
+      addItem: (product, quantity = 1, size = null, color = null) => {
         const { originalPrice, finalPrice } = getProductPricing(product);
 
         set((state) => {
-          const existingItemIndex = state.items.findIndex(
-            (item) =>
-              item.productId === product._id && item.size === size,
+          const existingItemIndex = state.items.findIndex((item) =>
+            isSameLine(item, product._id, size, color),
           );
 
           if (existingItemIndex !== -1) {
@@ -94,6 +111,7 @@ export const useCartStore = create<CartState>()(
             originalPrice,
             quantity,
             size,
+            color,
             media: product.media,
           };
 
@@ -105,26 +123,25 @@ export const useCartStore = create<CartState>()(
         toast.success(`${product.name} added to cart`);
       },
 
-      removeItem: (productId, size = null) => {
+      removeItem: (productId, size = null, color = null) => {
         set((state) => ({
           items: state.items.filter(
-            (item) =>
-              !(item.productId === productId && item.size === size),
+            (item) => !isSameLine(item, productId, size, color),
           ),
         }));
 
         toast.success("Removed from cart");
       },
 
-      updateQuantity: (productId, quantity, size = null) => {
+      updateQuantity: (productId, quantity, size = null, color = null) => {
         if (quantity <= 0) {
-          get().removeItem(productId, size);
+          get().removeItem(productId, size, color);
           return;
         }
 
         set((state) => ({
           items: state.items.map((item) =>
-            item.productId === productId && item.size === size
+            isSameLine(item, productId, size, color)
               ? { ...item, quantity }
               : item,
           ),
@@ -135,10 +152,9 @@ export const useCartStore = create<CartState>()(
         set({ items: [] });
       },
 
-      getItemQuantity: (productId, size = null) => {
-        const item = get().items.find(
-          (item) =>
-            item.productId === productId && item.size === size,
+      getItemQuantity: (productId, size = null, color = null) => {
+        const item = get().items.find((item) =>
+          isSameLine(item, productId, size, color),
         );
 
         return item?.quantity ?? 0;

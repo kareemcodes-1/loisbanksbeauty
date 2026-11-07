@@ -130,6 +130,7 @@ export default function OrderDetails({ order }: Props) {
                       <p className="mt-1 text-xs text-black/50">
                         Qty: {item.quantity}
                         {item.size ? ` · Size: ${item.size}` : ""}
+  {item.color ? ` · Color: ${item.color}` : ""}
                       </p>
                     </div>
 

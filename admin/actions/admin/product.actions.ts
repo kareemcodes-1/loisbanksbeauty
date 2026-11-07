@@ -20,6 +20,7 @@ export interface ProductPayload {
   inStock: boolean;
 
   sizes?: string[];
+    colors: string[];
 
   media: {
     url: string;

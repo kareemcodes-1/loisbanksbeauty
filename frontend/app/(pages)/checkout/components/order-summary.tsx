@@ -36,9 +36,11 @@ export default function OrderSummary({ shippingFee }: Props) {
           const hasDiscount =
             item.originalPrice && item.originalPrice > item.price;
 
+          const itemColor = item.color ?? null;
+
           return (
             <div
-              key={`${item.productId}-${item.size ?? "default"}`}
+              key={`${item.productId}-${item.size ?? "default"}-${itemColor ?? "default"}`}
               className="flex gap-3 sm:gap-4"
             >
               <div className="relative h-14 w-14 shrink-0 rounded-lg bg-neutral-100 sm:h-16 sm:w-16">
@@ -58,8 +60,10 @@ export default function OrderSummary({ shippingFee }: Props) {
 
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{item.name}</p>
-                {item.size && (
-                  <p className="mt-0.5 text-xs text-black/50">{item.size}</p>
+                {(item.size || itemColor) && (
+                  <p className="mt-0.5 text-xs text-black/50">
+                    {[item.size, itemColor].filter(Boolean).join(" · ")}
+                  </p>
                 )}
               </div>
 

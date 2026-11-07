@@ -320,10 +320,12 @@ export default function OrderDetailPage() {
                         {item.name}
                       </p>
 
-                      <p className="text-sm text-muted-foreground">
-                        Qty {item.quantity} ×{" "}
-                        {priceFormatter(item.price)}
-                      </p>
+                     <p className="text-sm text-muted-foreground">
+  Qty {item.quantity} ×{" "}
+  {priceFormatter(item.price)}
+  {item.size ? ` · ${item.size}` : ""}
+  {item.color ? ` · ${item.color}` : ""}
+</p>
 
                       <p className="mt-1 font-medium tabular-nums">
                         {priceFormatter(

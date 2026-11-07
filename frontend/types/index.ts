@@ -84,6 +84,7 @@ export interface Product {
   } | null;
 
   sizes: string[];
+    colors?: string[];
 
   averageRating: number;
   reviewCount: number;
@@ -170,6 +171,7 @@ export interface OrderItem {
   } | null;
   quantity: number;
   size?: string | null;
+    color?: string | null;
 }
 
 export type OrderStatus =

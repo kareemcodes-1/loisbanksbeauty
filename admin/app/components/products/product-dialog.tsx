@@ -168,6 +168,9 @@ export function ProductDialog({
   const [sizes, setSizes] = React.useState<string[]>([]);
   const [sizeInput, setSizeInput] = React.useState("");
 
+  const [colors, setColors] = React.useState<string[]>([]);
+  const [colorInput, setColorInput] = React.useState("");
+
   const [media, setMedia] = React.useState<MediaItem[]>([]);
 
   const [isUploading, setIsUploading] =
@@ -253,6 +256,9 @@ export function ProductDialog({
       setSizes(product.sizes ?? []);
       setSizeInput("");
 
+      setColors(product.colors ?? []);
+      setColorInput("");
+
       setFeatured(product.featured);
 
       setMedia(
@@ -274,6 +280,9 @@ export function ProductDialog({
 
       setSizes([]);
       setSizeInput("");
+
+      setColors([]);
+      setColorInput("");
 
       setFeatured(false);
 
@@ -372,6 +381,7 @@ export function ProductDialog({
         inStock,
 
         sizes,
+        colors,
 
         media: uploadedMedia,
       };
@@ -417,6 +427,41 @@ export function ProductDialog({
   const handleRemoveSize = (size: string) => {
     setSizes((prev) =>
       prev.filter((s) => s !== size)
+    );
+  };
+
+  // Accepts one color, or several separated by commas: "Black, Brown, Honey Blonde"
+  const handleAddColor = () => {
+    const values = colorInput
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean);
+
+    if (values.length === 0) return;
+
+    setColors((prev) => {
+      const next = [...prev];
+
+      for (const value of values) {
+        // Avoid duplicates (case-insensitive).
+        if (
+          !next.some(
+            (c) => c.toLowerCase() === value.toLowerCase()
+          )
+        ) {
+          next.push(value);
+        }
+      }
+
+      return next;
+    });
+
+    setColorInput("");
+  };
+
+  const handleRemoveColor = (color: string) => {
+    setColors((prev) =>
+      prev.filter((c) => c !== color)
     );
   };
 
@@ -537,10 +582,16 @@ export function ProductDialog({
               id="name"
               value={name}
               onChange={(event) => {
-  const value = event.target.value;
-  setName(value);
-  setSlug(generateSlug(value));
-}}
+                const value = event.target.value;
+                setName(value);
+
+                // Only auto-generate the slug for NEW products.
+                // Changing the slug of an existing product would break
+                // its link and its place in Google.
+                if (!isEditing) {
+                  setSlug(generateSlug(value));
+                }
+              }}
               placeholder="Enter product name"
               required
             />
@@ -553,13 +604,13 @@ export function ProductDialog({
             </Label>
 
             <Input
-  id="slug"
-  value={slug}
-  onChange={(event) => setSlug(event.target.value)}
-  placeholder="product-slug"
-  required
-  className="font-mono text-sm"
-/>
+              id="slug"
+              value={slug}
+              onChange={(event) => setSlug(event.target.value)}
+              placeholder="product-slug"
+              required
+              className="font-mono text-sm"
+            />
           </div>
 
           {/* Collection */}
@@ -686,6 +737,72 @@ export function ProductDialog({
                       disabled={isBusy}
                       className="rounded-full p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none"
                       aria-label={`Remove size ${size}`}
+                    >
+                      <XIcon className="size-3.5" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Colors */}
+          <div className="space-y-2">
+            <Label htmlFor="color-input">
+              Colors
+            </Label>
+
+            <p className="text-xs text-muted-foreground">
+              Optional. Add the colors this product comes
+              in, one at a time or separated by commas.
+            </p>
+
+            <div className="flex gap-2">
+              <Input
+                id="color-input"
+                value={colorInput}
+                onChange={(e) =>
+                  setColorInput(e.target.value)
+                }
+                placeholder="e.g. Black, Brown, Honey Blonde"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddColor();
+                  }
+                }}
+                disabled={isBusy}
+              />
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleAddColor}
+                disabled={
+                  isBusy || !colorInput.trim()
+                }
+              >
+                Add
+              </Button>
+            </div>
+
+            {colors.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {colors.map((color) => (
+                  <span
+                    key={color}
+                    className="inline-flex items-center gap-1.5 rounded-full border bg-muted/40 px-3 py-1 text-sm"
+                  >
+                    {color}
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleRemoveColor(color)
+                      }
+                      disabled={isBusy}
+                      className="rounded-full p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none"
+                      aria-label={`Remove color ${color}`}
                     >
                       <XIcon className="size-3.5" />
                     </button>

@@ -58,6 +58,11 @@ export interface ProductMedia {
   type: ProductMediaType;
 }
 
+export interface ShippingAndReturns {
+  deliveryTime: string;
+  returnsPolicy: string;
+}
+
 
 export interface Product {
   _id: string;
@@ -68,9 +73,9 @@ export interface Product {
   price: number;
 
   media: ProductMedia[];
-  order?: number;
 
   featured: boolean;
+    order?: number;
   inStock: boolean;
   discount?: {
     discountType: "percentage" | "fixed";
@@ -79,6 +84,7 @@ export interface Product {
   } | null;
 
   sizes: string[];
+    colors?: string[];
 
   averageRating: number;
   reviewCount: number;
@@ -165,6 +171,7 @@ export interface OrderItem {
   } | null;
   quantity: number;
   size?: string | null;
+    color?: string | null;
 }
 
 export type OrderStatus =

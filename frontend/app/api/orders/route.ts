@@ -203,6 +203,18 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      if (
+  cartItem.color &&
+  Array.isArray(product.colors) &&
+  product.colors.length > 0 &&
+  !product.colors.includes(cartItem.color)
+) {
+  return NextResponse.json(
+    { message: `Invalid color selected for ${product.name}.` },
+    { status: 400 }
+  );
+}
+
       const originalPrice = product.price;
 
       const productDiscounts = activeDiscounts.filter((discount) =>
@@ -261,6 +273,7 @@ export async function POST(request: NextRequest) {
         discount: discountSnapshot,
         quantity,
         size: cartItem.size || null,
+        color: cartItem.color || null,
       });
     }
 
