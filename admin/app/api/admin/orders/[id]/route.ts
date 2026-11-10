@@ -226,13 +226,17 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       previousOrder.orderStatus !== orderStatus;
 
     if (statusChanged) {
+      // Logged-in customer: use their account name and email.
+      // Guest: fall back to the email they checked out with (contactEmail)
+      // and the name on the shipping address.
       const user = order.userId as {
         name?: string;
         email?: string;
       } | null;
 
-      const email = user?.email;
-      const name = user?.name ?? "there";
+      const email = user?.email || order.contactEmail;
+      const name = user?.name || order.shippingAddress?.firstName || "there";
+
       const orderReference = String(order._id).slice(-8).toUpperCase();
 
       if (email) {
@@ -284,6 +288,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         } catch (emailError) {
           console.error("Order status email failed:", emailError);
         }
+      } else {
+        console.warn(
+          `Order ${order._id}: no email on file (no user, no contactEmail) — status email skipped`,
+        );
       }
     }
 
