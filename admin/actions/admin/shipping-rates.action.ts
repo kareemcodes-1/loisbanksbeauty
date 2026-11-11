@@ -1,4 +1,4 @@
-import { ShippingRate } from "@/types";
+import type { ShippingRate } from "@/types";
 
 
 export interface PaginationMeta {
