@@ -35,7 +35,7 @@ export async function GET() {
         },
       ],
 
-      limit: 10,
+      limit: 5,
     });
 
     const countries =
