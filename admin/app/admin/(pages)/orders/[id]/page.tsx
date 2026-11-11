@@ -320,12 +320,12 @@ export default function OrderDetailPage() {
                         {item.name}
                       </p>
 
-                     <p className="text-sm text-muted-foreground">
-  Qty {item.quantity} ×{" "}
-  {priceFormatter(item.price)}
-  {item.size ? ` · ${item.size}` : ""}
-  {item.color ? ` · ${item.color}` : ""}
-</p>
+                      <p className="text-sm text-muted-foreground">
+                        Qty {item.quantity} ×{" "}
+                        {priceFormatter(item.price)}
+                        {item.size ? ` · ${item.size}` : ""}
+                        {item.color ? ` · ${item.color}` : ""}
+                      </p>
 
                       <p className="mt-1 font-medium tabular-nums">
                         {priceFormatter(
@@ -400,88 +400,94 @@ export default function OrderDetailPage() {
                 {address.firstName} {address.lastName}
               </p>
 
-              {customer?.email && (
+              {!customer && (
+                <Badge className="border-border bg-muted text-muted-foreground">
+                  Guest
+                </Badge>
+              )}
+
+              {(customer?.email || order.contactEmail) && (
                 <p className="text-muted-foreground">
-                  {customer.email}
+                  {customer?.email || order.contactEmail}
                 </p>
               )}
 
-              {customer?.phone && (
+              {(customer?.phone || order.contactPhone) && (
                 <p className="text-muted-foreground">
-                  {customer.phone}
+                  {customer?.phone || order.contactPhone}
                 </p>
               )}
             </CardContent>
           </Card>
 
           {/* Payment */}
-<Card>
-  <CardHeader className="pb-3">
-    <CardTitle className="flex items-center gap-2 text-base">
-      <CreditCardIcon className="size-4" />
-      Payment
-    </CardTitle>
-  </CardHeader>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CreditCardIcon className="size-4" />
+                Payment
+              </CardTitle>
+            </CardHeader>
 
-  <CardContent className="space-y-3 text-sm">
-    <div className="flex justify-between gap-4">
-      <span className="text-muted-foreground">Method</span>
-      <span className="text-right font-medium">
-        {getPaymentMethodLabel(order.paymentInfo)}
-      </span>
-    </div>
+            <CardContent className="space-y-3 text-sm">
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">Method</span>
+                <span className="text-right font-medium">
+                  {getPaymentMethodLabel(order.paymentInfo)}
+                </span>
+              </div>
 
-   <div className="flex justify-between gap-4">
-  <span className="text-muted-foreground">Provider</span>
-  <span className="font-medium">
-    {order.paymentInfo.paymentProvider === "bachs"
-      ? "Bachs"
-      : order.paymentInfo.paymentProvider || "—"}
-  </span>
-</div>
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">Provider</span>
+                <span className="font-medium">
+                  {order.paymentInfo.paymentProvider === "bachs"
+                    ? "Bachs"
+                    : order.paymentInfo.paymentProvider || "—"}
+                </span>
+              </div>
 
-    <div className="flex justify-between gap-4">
-      <span className="text-muted-foreground">Status</span>
-      <Badge className={payment.className}>{payment.label}</Badge>
-    </div>
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">Status</span>
+                <Badge className={payment.className}>{payment.label}</Badge>
+              </div>
 
-    {order.paymentInfo.paidAt && (
-      <div className="flex justify-between gap-4">
-        <span className="text-muted-foreground">Paid at</span>
-        <span>{formatDate(order.paymentInfo.paidAt)}</span>
-      </div>
-    )}
+              {order.paymentInfo.paidAt && (
+                <div className="flex justify-between gap-4">
+                  <span className="text-muted-foreground">Paid at</span>
+                  <span>{formatDate(order.paymentInfo.paidAt)}</span>
+                </div>
+              )}
 
-    {order.paymentInfo.amountPaid && (
-      <div className="flex justify-between gap-4">
-        <span className="text-muted-foreground">Amount paid</span>
-        <span className="tabular-nums">
-          {order.paymentInfo.currencyPaid
-            ? `${order.paymentInfo.currencyPaid} ${order.paymentInfo.amountPaid}`
-            : order.paymentInfo.amountPaid}
-        </span>
-      </div>
-    )}
+              {order.paymentInfo.amountPaid && (
+                <div className="flex justify-between gap-4">
+                  <span className="text-muted-foreground">Amount paid</span>
+                  <span className="tabular-nums">
+                    {order.paymentInfo.currencyPaid
+                      ? `${order.paymentInfo.currencyPaid} ${order.paymentInfo.amountPaid}`
+                      : order.paymentInfo.amountPaid}
+                  </span>
+                </div>
+              )}
 
-    {order.paymentInfo.transactionReference && (
-      <div className="flex justify-between gap-4">
-        <span className="text-muted-foreground">Reference</span>
-        <span className="max-w-[200px] truncate font-mono text-xs">
-          {order.paymentInfo.transactionReference}
-        </span>
-      </div>
-    )}
+              {order.paymentInfo.transactionReference && (
+                <div className="flex justify-between gap-4">
+                  <span className="text-muted-foreground">Reference</span>
+                  <span className="max-w-[200px] truncate font-mono text-xs">
+                    {order.paymentInfo.transactionReference}
+                  </span>
+                </div>
+              )}
 
-    {order.paymentInfo.bachsCheckoutId && (
-      <div className="flex justify-between gap-4">
-        <span className="text-muted-foreground">Checkout ID</span>
-        <span className="max-w-[200px] truncate font-mono text-xs">
-          {order.paymentInfo.bachsCheckoutId}
-        </span>
-      </div>
-    )}
-  </CardContent>
-</Card>
+              {order.paymentInfo.bachsCheckoutId && (
+                <div className="flex justify-between gap-4">
+                  <span className="text-muted-foreground">Checkout ID</span>
+                  <span className="max-w-[200px] truncate font-mono text-xs">
+                    {order.paymentInfo.bachsCheckoutId}
+                  </span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Shipping Address */}
           <Card>
@@ -511,6 +517,12 @@ export default function OrderDetailPage() {
                 {address.city}, {address.state}{" "}
                 {address.postalCode}
               </p>
+
+              {address.area && (
+                <p className="text-muted-foreground">
+                  Area: {address.area}
+                </p>
+              )}
 
               <p className="text-muted-foreground">
                 {address.country}

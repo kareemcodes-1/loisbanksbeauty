@@ -54,6 +54,7 @@ export function ShippingRateDialog({
   const [countryName, setCountryName] = React.useState("");
   const [state, setState] = React.useState<string | null>(null);
   const [stateCode, setStateCode] = React.useState<string | null>(null);
+  const [area, setArea] = React.useState("");
   const [fee, setFee] = React.useState("");
   const [isActive, setIsActive] = React.useState(true);
   const [formError, setFormError] = React.useState<string | null>(null);
@@ -101,6 +102,7 @@ export function ShippingRateDialog({
       setCountryName(rate.countryName);
       setState(rate.state || null);
       setStateCode(rate.stateCode || null);
+      setArea(rate.area || "");
       setFee(String(rate.fee));
       setIsActive(rate.isActive);
     } else {
@@ -108,6 +110,7 @@ export function ShippingRateDialog({
       setCountryName("");
       setState(null);
       setStateCode(null);
+      setArea("");
       setFee("");
       setIsActive(true);
     }
@@ -121,18 +124,21 @@ export function ShippingRateDialog({
     setCountryName(selected?.name || "");
     setState(null);
     setStateCode(null);
+    setArea("");
   };
 
   const handleStateChange = (value: string) => {
     if (value === "none") {
       setState(null);
       setStateCode(null);
+      setArea("");
       return;
     }
 
     const selected = states.find((s) => s.isoCode === value);
     setState(selected?.name || null);
     setStateCode(value);
+    setArea("");
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -141,6 +147,11 @@ export function ShippingRateDialog({
 
     if (!country) {
       setFormError("Please select a country");
+      return;
+    }
+
+    if (area.trim() && !state) {
+      setFormError("Select a state before adding an area");
       return;
     }
 
@@ -154,6 +165,7 @@ export function ShippingRateDialog({
       countryName,
       state,
       stateCode,
+      area: state ? area.trim() || null : null,
       fee: Number(fee),
       isActive,
     };
@@ -231,6 +243,25 @@ export function ShippingRateDialog({
               Leave empty to set a fee for the entire country
             </p>
           </div>
+
+          {/* Area (optional, only once a state is picked) */}
+          {state && (
+            <div className="space-y-2">
+              <Label htmlFor="area">Area within {state} (optional)</Label>
+              <Input
+                id="area"
+                value={area}
+                onChange={(e) => setArea(e.target.value)}
+                placeholder="e.g. Lagos Island, Lagos Mainland"
+              />
+              <p className="text-xs text-muted-foreground">
+                Leave empty for one fee covering all of {state}. Fill this in
+                when a state has different fees for different areas — add one
+                rate per area, each with its own fee. Once any area rate
+                exists for a state, customers must pick an area to see a fee.
+              </p>
+            </div>
+          )}
 
           {/* Fee */}
           <div className="space-y-2">

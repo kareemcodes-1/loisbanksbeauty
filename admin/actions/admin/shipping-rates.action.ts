@@ -17,6 +17,7 @@ export interface ShippingRatePayload {
   stateCode?: string | null;
   fee: number;
   isActive?: boolean;
+  area?: string | null;
 }
 
 export interface GetShippingRatesResult {

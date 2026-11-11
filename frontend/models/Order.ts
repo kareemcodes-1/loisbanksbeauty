@@ -125,6 +125,11 @@ const shippingAddressSchema = new Schema(
       trim: true,
       uppercase: true,
     },
+    area: {
+  type: String,
+  default: null,
+  trim: true,
+},
   },
   {
     _id: false,
@@ -257,6 +262,7 @@ items: {
     state: string;
     postalCode: string;
     country: string;
+    area?: string | null;
   };
 
  paymentInfo: {

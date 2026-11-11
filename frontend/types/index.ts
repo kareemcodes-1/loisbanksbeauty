@@ -130,6 +130,7 @@ export interface ShippingAddress {
   postalCode: string;
   country: string;
   phone?: string;
+   area?: string | null;
 }
 
 
@@ -201,6 +202,7 @@ export interface Order {
 
   // Email the order was placed with (works for guests and members)
   contactEmail: string | null;
+  contactPhone: string | null;
 
   items: OrderItem[];
   shippingAddress: ShippingAddress;

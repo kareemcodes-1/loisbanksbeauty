@@ -3,8 +3,11 @@ import mongoose, { Document, Model, Schema } from "mongoose";
 export interface IShippingRateDocument extends Document {
   country: string;          // e.g. "GH", "US", "NG"
   countryName: string;      // e.g. "Ghana", "United States"
-  state?: string | null;    // e.g. "Greater Accra" (optional)
+  state?: string | null;    // e.g. "Lagos" (optional)
   stateCode?: string | null;
+  // Sub-region within a state that has its own fee,
+  // e.g. "Lagos Island" vs "Lagos Mainland". Optional.
+  area?: string | null;
   fee: number;
   isActive: boolean;
   createdAt: Date;
@@ -34,6 +37,11 @@ const shippingRateSchema = new Schema<IShippingRateDocument>(
       default: null,
       trim: true,
     },
+    area: {
+      type: String,
+      default: null,
+      trim: true,
+    },
     fee: {
       type: Number,
       required: true,
@@ -47,9 +55,12 @@ const shippingRateSchema = new Schema<IShippingRateDocument>(
   { timestamps: true }
 );
 
-// Prevent duplicate: same country + same state
+// Prevent duplicates: same country + same state + same area.
+// A country-wide rate has state: null, area: null.
+// A plain state rate has area: null.
+// An area-specific rate (Lagos Island, Lagos Mainland) has its own area value.
 shippingRateSchema.index(
-  { country: 1, state: 1 },
+  { country: 1, state: 1, area: 1 },
   { unique: true, sparse: true }
 );
 

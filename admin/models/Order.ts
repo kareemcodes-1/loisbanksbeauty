@@ -72,6 +72,11 @@ const orderItemSchema = new Schema(
       default: null,
       trim: true,
     },
+    color: {
+  type: String,
+  default: null,
+  trim: true,
+},
   },
   {
     _id: true,
@@ -120,6 +125,11 @@ const shippingAddressSchema = new Schema(
       trim: true,
       uppercase: true,
     },
+    area: {
+  type: String,
+  default: null,
+  trim: true,
+},
   },
   {
     _id: false,
@@ -222,7 +232,7 @@ export interface IOrderDocument extends Document {
   contactEmail: string | null;
   contactPhone: string | null;
 
-  items: {
+items: {
   _id: mongoose.Types.ObjectId;
   productId: mongoose.Types.ObjectId;
   name: string;
@@ -231,8 +241,8 @@ export interface IOrderDocument extends Document {
     url: string;
     type: "image" | "video";
   }[];
-  price: number;          // paid per unit
-  originalPrice: number;  // full price per unit
+  price: number;
+  originalPrice: number;
   discount: {
     title: string | null;
     discountType: "percentage" | "fixed";
@@ -240,6 +250,7 @@ export interface IOrderDocument extends Document {
   } | null;
   quantity: number;
   size?: string | null;
+  color?: string | null;   // ← add this
 }[];
 
   shippingAddress: {
@@ -251,6 +262,7 @@ export interface IOrderDocument extends Document {
     state: string;
     postalCode: string;
     country: string;
+    area?: string | null;
   };
 
  paymentInfo: {

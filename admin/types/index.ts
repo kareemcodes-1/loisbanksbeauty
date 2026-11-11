@@ -58,10 +58,6 @@ export interface ProductMedia {
   type: ProductMediaType;
 }
 
-export interface ShippingAndReturns {
-  deliveryTime: string;
-  returnsPolicy: string;
-}
 
 
 export interface Product {
@@ -130,6 +126,7 @@ export interface ShippingAddress {
   postalCode: string;
   country: string;
   phone?: string;
+   area?: string | null;
 }
 
 
@@ -199,8 +196,9 @@ export interface Order {
       }
     | null;
 
-  // Email the order was placed with (works for guests and members)
+  // Contact details the order was placed with (works for guests and members)
   contactEmail: string | null;
+  contactPhone: string | null;
 
   items: OrderItem[];
   shippingAddress: ShippingAddress;
@@ -214,7 +212,7 @@ export interface Order {
 
   subtotal: number;
   shippingFee: number;
-   tax: number;
+  tax: number;
   subcharge: number;
   totalAmount: number;
 
@@ -262,6 +260,7 @@ export interface ShippingRate {
   countryName: string;
   state?: string | null;
   stateCode?: string | null;
+  area?: string | null;
   fee: number;
   isActive: boolean;
   createdAt: string | Date;

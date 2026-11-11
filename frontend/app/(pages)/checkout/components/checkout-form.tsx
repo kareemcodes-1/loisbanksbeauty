@@ -7,6 +7,7 @@ import { Loader2, ShoppingBag } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { useCurrencyStore } from "@/store/currency";
 import { priceFormatter } from "@/lib/priceFormatter";
+import { getDeliveryEstimate } from "@/lib/delivery-estimate";
 
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -37,8 +38,12 @@ type PublicShippingRate = {
   countryName: string;
   state?: string | null;
   stateCode?: string | null;
+  /** Sub-region within a state with its own fee, e.g. "Lagos Island" */
+  area?: string | null;
   fee: number;
 };
+
+const normalize = (value?: string | null) => value?.trim().toLowerCase() ?? "";
 
 export default function CheckoutForm({ user }: Props) {
   const { items, _hasHydrated } = useCartStore();
@@ -67,6 +72,9 @@ export default function CheckoutForm({ user }: Props) {
   const [shippingMethod, setShippingMethod] = useState<"pickup" | "delivery">(
     "pickup"
   );
+
+  // Sub-region within the selected state, e.g. "Lagos Island" vs "Lagos Mainland"
+  const [selectedArea, setSelectedArea] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -131,34 +139,67 @@ export default function CheckoutForm({ user }: Props) {
     });
   }, [user.addresses, user.name]);
 
-  // ===== Find matching shipping rate =====
-  // Priority: 1. Exact state match  2. Country-wide rate
-  const matchedRate = (() => {
-    if (!delivery.country) return null;
+  // A new country or state can change which area options apply,
+  // so don't carry an old area selection across
+  useEffect(() => {
+    setSelectedArea("");
+  }, [delivery.country, delivery.state]);
 
-    const countryRates = shippingRates.filter(
-      (rate) => rate.country.toUpperCase() === delivery.country.toUpperCase()
-    );
+  // ===== Shipping rate matching =====
+  const countryRates = delivery.country
+    ? shippingRates.filter(
+        (rate) => rate.country.toUpperCase() === delivery.country.toUpperCase()
+      )
+    : [];
 
-    if (countryRates.length === 0) return null;
-
-    // Try exact state match first
-    if (delivery.state) {
-      const stateRate = countryRates.find(
+  const stateRates = delivery.state
+    ? countryRates.filter(
         (rate) =>
-          rate.stateCode?.toUpperCase() === delivery.state.toUpperCase() ||
-          rate.state?.toLowerCase() === delivery.state.toLowerCase()
-      );
-      if (stateRate) return stateRate;
+          normalize(rate.stateCode) === normalize(delivery.state) ||
+          normalize(rate.state) === normalize(delivery.state)
+      )
+    : [];
+
+  // Areas within the selected state that have their own fee (e.g. Lagos Island / Mainland)
+  const areaOptions = Array.from(
+    new Map(
+      stateRates
+        .filter((rate) => rate.area)
+        .map((rate) => [
+          rate.area as string,
+          { area: rate.area as string, fee: rate.fee },
+        ])
+    ).values()
+  );
+
+  // Priority: 1. Exact area match  2. Exact state match  3. Country-wide rate
+  const matchedRate = (() => {
+    if (!delivery.country || countryRates.length === 0) return null;
+
+    if (delivery.state) {
+      if (areaOptions.length > 0) {
+        if (!selectedArea) return null;
+
+        return (
+          stateRates.find(
+            (rate) => normalize(rate.area) === normalize(selectedArea)
+          ) || null
+        );
+      }
+
+      const plainStateRate = stateRates.find((rate) => !rate.area);
+      if (plainStateRate) return plainStateRate;
     }
 
-    // Fall back to country-wide rate (no state)
+    // Fall back to a country-wide rate (no state, no area)
     const countryWide = countryRates.find(
-      (rate) => !rate.state && !rate.stateCode
+      (rate) => !rate.state && !rate.stateCode && !rate.area
     );
 
     return countryWide || null;
   })();
+
+  const deliveryEstimate = getDeliveryEstimate(delivery.country, delivery.state);
 
   const handleSelectAddress = (id: string | "new") => {
     setSelectedAddressId(id);
@@ -235,6 +276,15 @@ export default function CheckoutForm({ user }: Props) {
       return;
     }
 
+    if (
+      shippingMethod === "delivery" &&
+      areaOptions.length > 0 &&
+      !selectedArea
+    ) {
+      toast.error("Please select your delivery area.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     // Stays true while the browser is being sent to the payment page,
@@ -247,7 +297,10 @@ export default function CheckoutForm({ user }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contact,
-          delivery,
+          delivery: {
+            ...delivery,
+            area: selectedArea || null,
+          },
           shippingMethod,
           selectedAddressId,
           selectedShippingRateId: matchedRate?._id ?? null,
@@ -346,11 +399,17 @@ export default function CheckoutForm({ user }: Props) {
             priceFormatter={priceFormatter}
             matchedLocation={
               matchedRate
-                ? matchedRate.state
-                  ? `${matchedRate.state}, ${matchedRate.countryName}`
-                  : matchedRate.countryName
+                ? selectedArea
+                  ? `${selectedArea}, ${matchedRate.countryName}`
+                  : matchedRate.state
+                    ? `${matchedRate.state}, ${matchedRate.countryName}`
+                    : matchedRate.countryName
                 : undefined
             }
+            deliveryEstimate={deliveryEstimate}
+            areaOptions={areaOptions}
+            selectedArea={selectedArea}
+            onAreaChange={setSelectedArea}
           />
 
           <PaymentSection />

@@ -204,16 +204,16 @@ export async function POST(request: NextRequest) {
       }
 
       if (
-  cartItem.color &&
-  Array.isArray(product.colors) &&
-  product.colors.length > 0 &&
-  !product.colors.includes(cartItem.color)
-) {
-  return NextResponse.json(
-    { message: `Invalid color selected for ${product.name}.` },
-    { status: 400 }
-  );
-}
+        cartItem.color &&
+        Array.isArray(product.colors) &&
+        product.colors.length > 0 &&
+        !product.colors.includes(cartItem.color)
+      ) {
+        return NextResponse.json(
+          { message: `Invalid color selected for ${product.name}.` },
+          { status: 400 }
+        );
+      }
 
       const originalPrice = product.price;
 
@@ -332,6 +332,21 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      // Some states (e.g. Lagos) are split into areas with their own fee
+      // (Lagos Island vs Lagos Mainland). If this rate is area-specific,
+      // make sure the customer's chosen area actually matches it.
+      if (shippingRate.area) {
+        if (normalize(shippingRate.area) !== normalize(delivery.area)) {
+          return NextResponse.json(
+            {
+              message:
+                "The selected shipping rate does not match your delivery area.",
+            },
+            { status: 400 }
+          );
+        }
+      }
+
       shippingFee = shippingRate.fee;
     }
 
@@ -355,6 +370,7 @@ export async function POST(request: NextRequest) {
         state: delivery.state,
         postalCode: delivery.postalCode,
         country: delivery.country,
+        area: delivery.area || null,
       },
       paymentInfo: {
         paymentProvider: "bachs",

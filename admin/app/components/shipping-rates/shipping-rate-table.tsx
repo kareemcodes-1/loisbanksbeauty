@@ -208,17 +208,26 @@ export function ShippingRatesTable({ onEdit }: ShippingRatesTableProps) {
         }),
 
         /* State / Region */
-        columnHelper.display({
-          id: "state",
-          header: "State / Region",
-          cell: ({ row }) => (
-            <span className="text-sm">
-              {row.original.state || (
-                <span className="text-muted-foreground">Country-wide</span>
-              )}
+columnHelper.display({
+  id: "state",
+  header: "State / Region",
+  cell: ({ row }) => (
+    <div className="text-sm">
+      {row.original.state ? (
+        <>
+          <span>{row.original.state}</span>
+          {row.original.area && (
+            <span className="block text-xs text-muted-foreground">
+              {row.original.area}
             </span>
-          ),
-        }),
+          )}
+        </>
+      ) : (
+        <span className="text-muted-foreground">Country-wide</span>
+      )}
+    </div>
+  ),
+}),
 
         /* Fee */
         columnHelper.accessor("fee", {
