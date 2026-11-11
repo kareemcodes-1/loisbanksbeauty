@@ -41,13 +41,14 @@ export async function PUT(
     const body = await request.json();
 
     const {
-      country,
-      countryName,
-      state = null,
-      stateCode = null,
-      fee,
-      isActive,
-    } = body;
+  country,
+  countryName,
+  state = null,
+  stateCode = null,
+  area,
+  fee,
+  isActive,
+} = body;
 
     if (country !== undefined && !country?.trim()) {
       return NextResponse.json(
@@ -84,17 +85,18 @@ export async function PUT(
     }
 
     const updatedRate = await ShippingRate.findByIdAndUpdate(
-      id,
-      {
-        ...(country && { country: country.toUpperCase() }),
-        ...(countryName && { countryName: countryName.trim() }),
-        ...(state !== undefined && { state: state || null }),
-        ...(stateCode !== undefined && { stateCode: stateCode || null }),
-        ...(fee !== undefined && { fee }),
-        ...(isActive !== undefined && { isActive }),
-      },
-      { new: true, runValidators: true }
-    );
+  id,
+  {
+    ...(country && { country: country.toUpperCase() }),
+    ...(countryName && { countryName: countryName.trim() }),
+    ...(state !== undefined && { state: state || null }),
+    ...(stateCode !== undefined && { stateCode: stateCode || null }),
+    ...(area !== undefined && { area: area || null }),
+    ...(fee !== undefined && { fee }),
+    ...(isActive !== undefined && { isActive }),
+  },
+  { new: true, runValidators: true }
+);
 
     if (!updatedRate) {
       return NextResponse.json(

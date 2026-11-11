@@ -88,13 +88,14 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const {
-      country,
-      countryName,
-      state = null,
-      stateCode = null,
-      fee,
-      isActive = true,
-    } = body;
+  country,
+  countryName,
+  state = null,
+  stateCode = null,
+  area = null,
+  fee,
+  isActive = true,
+} = body;
 
     if (!country?.trim() || !countryName?.trim()) {
       return NextResponse.json(
@@ -128,13 +129,14 @@ export async function POST(request: NextRequest) {
     }
 
     const newRate = await ShippingRate.create({
-      country: country.toUpperCase(),
-      countryName: countryName.trim(),
-      state: state || null,
-      stateCode: stateCode || null,
-      fee,
-      isActive,
-    });
+  country: country.toUpperCase(),
+  countryName: countryName.trim(),
+  state: state || null,
+  stateCode: stateCode || null,
+  area: area || null,
+  fee,
+  isActive,
+});
 
     return NextResponse.json(newRate, { status: 201 });
   } catch (error) {

@@ -194,14 +194,18 @@ export function ShippingRateDialog({
         onOpenChange(next);
       }}
     >
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[85vh] flex flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Edit shipping rate" : "Add shipping rate"}
           </DialogTitle>
         </DialogHeader>
 
-        <form id="shipping-rate-form" onSubmit={handleSubmit} className="space-y-5">
+       <form
+  id="shipping-rate-form"
+  onSubmit={handleSubmit}
+  className="flex-1 min-h-0 overflow-y-auto space-y-5 pr-2"
+>
           {/* Country */}
           <div className="space-y-2">
             <Label>Country</Label>
@@ -296,7 +300,7 @@ export function ShippingRateDialog({
           )}
         </form>
 
-        <DialogFooter className="gap-2 sm:justify-end">
+        <DialogFooter className="shrink-0 gap-2 sm:justify-end">
           <Button
             type="button"
             variant="outline"
