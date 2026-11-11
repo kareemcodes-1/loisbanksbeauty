@@ -15,11 +15,10 @@ export interface ShippingRatePayload {
   countryName: string;
   state?: string | null;
   stateCode?: string | null;
+  area?: string | null;
   fee: number;
   isActive?: boolean;
-  area?: string | null;
 }
-
 export interface GetShippingRatesResult {
   rates: ShippingRate[];
   pagination: PaginationMeta;

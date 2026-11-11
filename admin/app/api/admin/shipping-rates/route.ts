@@ -82,65 +82,74 @@ export async function GET(request: NextRequest) {
 }
 
 // CREATE new shipping rate
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   try {
     await connectDB();
 
-    const body = await request.json();
+    const body = await req.json();
+
     const {
-  country,
-  countryName,
-  state = null,
-  stateCode = null,
-  area = null,
-  fee,
-  isActive = true,
-} = body;
+      country,
+      countryName,
+      state,
+      stateCode,
+      area,
+      fee,
+      isActive = true,
+    } = body;
 
-    if (!country?.trim() || !countryName?.trim()) {
+    if (!country || !countryName || fee === undefined || fee === null) {
       return NextResponse.json(
-        { message: "Country is required" },
+        { message: "Country, country name, and fee are required" },
         { status: 400 }
       );
     }
 
-    if (fee === undefined || fee < 0) {
-      return NextResponse.json(
-        { message: "A valid fee is required" },
-        { status: 400 }
-      );
-    }
+    const normalizedCountry = country.trim().toUpperCase();
+    const normalizedState = state?.trim() || null;
+    const normalizedArea = normalizedState
+      ? area?.trim() || null
+      : null;
 
-    // Prevent duplicate (same country + same state)
+    // Check for an existing rate with the same country, state, and area
     const exists = await ShippingRate.findOne({
-      country: country.toUpperCase(),
-      state: state || null,
+      country: normalizedCountry,
+      state: normalizedState,
+      area: normalizedArea,
     });
 
     if (exists) {
       return NextResponse.json(
         {
-          message: state
-            ? `A rate for ${state}, ${countryName} already exists`
-            : `A country-wide rate for ${countryName} already exists`,
+          message: normalizedArea
+            ? `A shipping rate for ${normalizedArea}, ${normalizedState}, ${countryName} already exists`
+            : normalizedState
+              ? `A shipping rate for ${normalizedState}, ${countryName} already exists`
+              : `A country-wide shipping rate for ${countryName} already exists`,
         },
         { status: 400 }
       );
     }
 
     const newRate = await ShippingRate.create({
-  country: country.toUpperCase(),
-  countryName: countryName.trim(),
-  state: state || null,
-  stateCode: stateCode || null,
-  area: area || null,
-  fee,
-  isActive,
-});
+      country: normalizedCountry,
+      countryName: countryName.trim(),
+      state: normalizedState,
+      stateCode: stateCode?.trim() || null,
+      area: normalizedArea,
+      fee,
+      isActive,
+    });
 
-    return NextResponse.json(newRate, { status: 201 });
+    return NextResponse.json(
+      {
+        message: "Shipping rate created successfully",
+        data: newRate,
+      },
+      { status: 201 }
+    );
   } catch (error) {
-    console.error("POST /api/admin/shipping-rates error:", error);
+    console.error("Create shipping rate error:", error);
 
     return NextResponse.json(
       { message: "Failed to create shipping rate" },
