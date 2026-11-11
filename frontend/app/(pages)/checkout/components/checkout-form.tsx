@@ -398,14 +398,14 @@ export default function CheckoutForm({ user }: Props) {
             currency={currency}
             priceFormatter={priceFormatter}
             matchedLocation={
-              matchedRate
-                ? selectedArea
-                  ? `${selectedArea}, ${matchedRate.countryName}`
-                  : matchedRate.state
-                    ? `${matchedRate.state}, ${matchedRate.countryName}`
-                    : matchedRate.countryName
-                : undefined
-            }
+  matchedRate
+    ? selectedArea
+      ? `${selectedArea}, ${matchedRate.state}, ${matchedRate.countryName}`
+      : matchedRate.state
+        ? `${matchedRate.state}, ${matchedRate.countryName}`
+        : matchedRate.countryName
+    : undefined
+}
             deliveryEstimate={deliveryEstimate}
             areaOptions={areaOptions}
             selectedArea={selectedArea}

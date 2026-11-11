@@ -168,6 +168,9 @@ export default function OrderDetails({ order }: Props) {
               <p>
                 {order.shippingAddress.city},{" "}
                 {order.shippingAddress.state}{" "}
+               {order.shippingAddress.area && (
+                <p>{order.shippingAddress.area}</p>
+              )}
                 {order.shippingAddress.postalCode}
               </p>
 
