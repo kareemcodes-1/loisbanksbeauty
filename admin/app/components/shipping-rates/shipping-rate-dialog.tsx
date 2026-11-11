@@ -160,15 +160,15 @@ export function ShippingRateDialog({
       return;
     }
 
-    export interface ShippingRatePayload {
-  country: string;
-  countryName: string;
-  state?: string | null;
-  stateCode?: string | null;
-  area?: string | null;
-  fee: number;
-  isActive?: boolean;
-}
+    const payload: ShippingRatePayload = {
+      country,
+      countryName,
+      state,
+      stateCode,
+      area: state ? area.trim() || null : null,
+      fee: Number(fee),
+      isActive,
+    };
 
     try {
       if (isEditing) {

@@ -19,6 +19,8 @@ export interface ShippingRatePayload {
   fee: number;
   isActive?: boolean;
 }
+
+
 export interface GetShippingRatesResult {
   rates: ShippingRate[];
   pagination: PaginationMeta;
